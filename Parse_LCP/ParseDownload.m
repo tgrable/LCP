@@ -8,6 +8,7 @@
 
 #import "ParseDownload.h"
 #import "Reachability.h"
+#import "AFNetworking.h"
 #import <Parse/Parse.h>
 
 @interface ParseDownload ()

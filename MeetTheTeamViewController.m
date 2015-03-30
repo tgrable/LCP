@@ -208,6 +208,8 @@
 
 - (void)buldGrid:(NSMutableArray *)teamMemberObjects {
     
+    // TODO: Fix grid setup to display team memeber photos in proper position every time.
+    
     int x = 438, y = 99, count = 0, btnCount = 0;
     for (LCPTeamMembers *tm in teamMemberObjects) {
         if (btnCount < 9) {

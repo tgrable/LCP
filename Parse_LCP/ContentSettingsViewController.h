@@ -8,6 +8,6 @@
 
 #import <UIKit/UIKit.h>
 
-@interface ContentSettingsViewController : UIViewController<UIScrollViewDelegate>
+@interface ContentSettingsViewController : UIViewController<UIScrollViewDelegate, UITextFieldDelegate, UITextViewDelegate>
 
 @end

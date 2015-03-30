@@ -12,5 +12,5 @@
 
 - (void)downloadAndPinPFObjects;
 - (void)unpinAllPFObjects;
-
+- (BOOL)checkForValidEmail:(NSString *)email;
 @end

@@ -19,6 +19,8 @@
 @property (strong, nonatomic) UIView *background;
 @property (strong, nonatomic) UIImageView *logo, *overlay;
 @property (strong, nonatomic) NSMutableDictionary *posterDict, *headerDict, *teamDict;
+@property (nonatomic) MPMoviePlayerController *moviePlayerController;
+
 @end
 
 @implementation BrandMeetsWorldViewController
@@ -29,6 +31,7 @@
 @synthesize background;                         //UIView
 @synthesize logo, overlay;                      //UIImageView
 @synthesize posterDict, headerDict, teamDict;   //NSMutableDictionary
+@synthesize moviePlayerController;              //MPMoviePlayerController
 
 - (BOOL)prefersStatusBarHidden
 {
@@ -36,41 +39,46 @@
 }
 
 #pragma mark
-#pragma mark - ViewController
+#pragma mark - ViewController Life Cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    //This view is independent of any user input and will not change
+    //so all data will only need to loaded one time.
     
     posterDict = [[NSMutableDictionary alloc] init];
     headerDict = [[NSMutableDictionary alloc] init];
     teamDict = [[NSMutableDictionary alloc] init];
     
-    background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, 952, 696)];
+    //UIView 36 pixels smaller than the device bounds used to hold the rest of the view objects
+    background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, (self.view.bounds.size.width - (36 * 2)), (self.view.bounds.size.height - (36 * 2)))];
     [background setBackgroundColor:[UIColor lightGrayColor]];
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
-}
 
-- (void) viewWillAppear:(BOOL)animated {
+    //NSUserDefaults to check if data has been downloaded.
+    //If data has been downloaded pull from local datastore
+    NSUserDefaults *videoDefaults = [NSUserDefaults standardUserDefaults];
+    if ([[videoDefaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
+        
+        //We're calling this first to give this query a head start so the video player and poster sit under the navigation buttons.
+        [self fetchVideoFromLocalDataStore];
+        
+        // TODO: Address if video data has not been downloaded
+    }
     
-    overlay = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 952, 696)];
-    [overlay setBackgroundColor:[UIColor lightGrayColor]];
-    [overlay setImage:[UIImage imageNamed:@"bmwposter.png"]];
-    [overlay setUserInteractionEnabled:YES];
-    overlay.alpha = 1.0;
-    //[overlay addGestureRecognizer:tapGesture];
-    [background addSubview:overlay];
-    
+    //Logo and setting navigation buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(20, 20, 108, 33)];
+    [logoButton setFrame:CGRectMake(56, 56, 108, 33)];
     [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
     logoButton.showsTouchWhenHighlighted = YES;
     [logoButton setBackgroundImage:[UIImage imageNamed:@"logo.png"] forState:UIControlStateNormal];
-    [background addSubview:logoButton];
+    [self.view addSubview:logoButton];
     
     //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(148, 20, 33, 33)];
+    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(184, 56, 33, 33)];
     dashboardBackground.backgroundColor = [UIColor blackColor];
-    [background addSubview:dashboardBackground];
+    [self.view addSubview:dashboardBackground];
     
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [dashboardButton setFrame:CGRectMake(7, 7, 20, 20)];
@@ -80,6 +88,7 @@
     [dashboardBackground addSubview:dashboardButton];
     
     //NSUserDefaults to check if data has been downloaded.
+    //If data has been downloaded pull from local datastore else fetch data from Parse.com
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"term"] isEqualToString:@"hasData"]) {
         [self fetchDataFromLocalDataStore];
@@ -88,7 +97,6 @@
         [self fetchDataFromParse];
     }
 }
-
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
@@ -99,6 +107,8 @@
 #pragma mark - Parse
 - (void)fetchDataFromParse {
     
+    //Using Reachability check if there is an internet connection
+    //If there is download term data from Parse.com if not query the local datastore for what ever term data exists
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"term"];
         [query whereKey:@"parent" equalTo:@"0"];
@@ -109,6 +119,8 @@
                 [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                     if (!error) {
                         [self buildView:objects];
+                        
+                        //Once data is downloaded reset NSUserDefault for BrandMeetsWorldData to "hasData"
                         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                         [defaults setObject:@"hasData" forKey:@"BrandMeetsWorldData"];
                         [defaults synchronize];
@@ -127,7 +139,8 @@
 }
 
 - (void)fetchDataFromLocalDataStore {
-    // Query the Local Datastore
+    
+    // Query the Local Datastore for term data
     PFQuery *query = [PFQuery queryWithClassName:@"term"];
     [query whereKey:@"parent" equalTo:@"0"];
     [query fromLocalDatastore];
@@ -139,9 +152,58 @@
     }];
 }
 
+- (void)fetchVideoFromLocalDataStore {
+    
+    // Query the Local Datastore for video data
+    PFQuery *vidQuery = [PFQuery queryWithClassName:@"video"];
+    [vidQuery fromLocalDatastore];
+    [vidQuery whereKey:@"field_term_reference" equalTo:@"0"];
+    [vidQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) {
+            if (objects.count > 0) {
+                
+                //Extract the video file name from the rackspace url then build the local path
+                //http://8f2161d9c4589de9f316-5aa980248e6d72557f77fd2618031fcc.r92.cf2.rackcdn.com/videos/BrandMeetsWorld.mp4
+                NSString *videoName = [[objects[0] objectForKey:@"field_video"] componentsSeparatedByString:@"/videos/"][1];
+                NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+                NSString *documentsDirectory = [paths objectAtIndex:0];
+                NSString *fullpath = [documentsDirectory stringByAppendingPathComponent:videoName];
+                NSURL *videoURL =[NSURL fileURLWithPath:fullpath];
+
+                @autoreleasepool {
+                    moviePlayerController = nil;
+                    moviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL:videoURL];
+                    [moviePlayerController.view setFrame: CGRectMake(0, 0, 952, 696)];
+                    moviePlayerController.view.backgroundColor = [UIColor clearColor];
+                    moviePlayerController.view.tag = 22;
+                    [moviePlayerController prepareToPlay];
+                    
+                    moviePlayerController.shouldAutoplay = NO;
+                    [background addSubview:moviePlayerController.view];
+                }
+                
+                UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageTapped:)];
+                tapGesture.numberOfTapsRequired = 1;
+                
+                [background addGestureRecognizer:tapGesture];
+            }
+            
+            //Create the poster image overlay after the video player has been added to background
+            overlay = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 952, 696)];
+            [overlay setBackgroundColor:[UIColor lightGrayColor]];
+            [overlay setImage:[UIImage imageNamed:@"bmwposter.png"]];
+            [overlay setUserInteractionEnabled:YES];
+            overlay.alpha = 1.0;
+            [background addSubview:overlay];
+        }
+    }];
+}
+
 #pragma mark
 #pragma mark - Build View
 - (void)buildView:(NSArray *)objects {
+    
+    //Create the 3 X 2 grid of navigation buttons
     int count = 0;
     int x = 0, y = -185;
     
@@ -181,6 +243,16 @@
     }
 }
 
+- (void)imageTapped:(UITapGestureRecognizer *)sender
+{
+    [moviePlayerController play];
+    [UIView animateWithDuration:2.0f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
+        overlay.alpha = 0.0;
+    }completion:^(BOOL finished) {
+        
+    }];
+}
+
 #pragma mark
 #pragma mark - Reachability
 - (BOOL)connected
@@ -196,7 +268,7 @@
     //the grid of buttons
     UIButton *tempButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [tempButton setFrame:CGRectMake(xpos, ypos, 197, 197)];
-    [tempButton addTarget:self action:@selector(firstLevelNavigationButtons:)forControlEvents:UIControlEventTouchUpInside];
+    [tempButton addTarget:self action:@selector(firstLevelNavigationButtonPressed:)forControlEvents:UIControlEventTouchUpInside];
     tempButton.showsTouchWhenHighlighted = YES;
     [tempButton setBackgroundImage:imgData forState:UIControlStateNormal];
     [tempButton setTitle:buttonTitle forState:normal];
@@ -205,22 +277,28 @@
     return tempButton;
 }
 
-- (void)firstLevelNavigationButtons:(UIButton *)sender {
-    content = [[LCPContent alloc] init];
+- (void)firstLevelNavigationButtonPressed:(UIButton *)sender {
     
+    //Create LCPContent object and assign catagoryId, imgPoster, and imgHeader properties
+    content = [[LCPContent alloc] init];
     content.catagoryId = [NSString stringWithFormat: @"%ld", (long)sender.tag];
     content.imgPoster = [posterDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     content.imgHeader = [headerDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     
+    //Pass LCPContent object to next view UINavigation View Controller
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     CatagoryViewController *cvc = (CatagoryViewController *)[storyboard instantiateViewControllerWithIdentifier:@"catagoryViewController"];
     cvc.content = content;
+    
+    //Stop video and reset poster image alpha to 1.0
+    [moviePlayerController stop];
+    overlay.alpha = 1.0f;
+    
     [self.navigationController pushViewController:cvc animated:YES];
-    [self removeEverything];
 }
 
 - (void)hiddenSection:(UIButton *)sender {
-    [self performSegueWithIdentifier:@"logoTest" sender:sender];
+    // TODO: add hidden slide deck.
 }
 
 // Send the presenter back to the dashboard

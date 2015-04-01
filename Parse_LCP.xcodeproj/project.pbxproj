@@ -129,6 +129,11 @@
 		4FDE361F1A72FCC9000052E9 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDE361E1A72FCC9000052E9 /* SystemConfiguration.framework */; };
 		4FDE36211A72FCD5000052E9 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDE36201A72FCD5000052E9 /* libz.dylib */; };
 		4FDE36231A72FCE1000052E9 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDE36221A72FCE1000052E9 /* libsqlite3.dylib */; };
+		4FE195FB1ACCA0A500922ECE /* mykey.pem in Resources */ = {isa = PBXBuildFile; fileRef = 4FE195F41ACCA0A500922ECE /* mykey.pem */; };
+		4FE195FC1ACCA0A500922ECE /* NSData+Base64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FE195F61ACCA0A500922ECE /* NSData+Base64Additions.m */; };
+		4FE195FD1ACCA0A500922ECE /* public_key.der in Resources */ = {isa = PBXBuildFile; fileRef = 4FE195F71ACCA0A500922ECE /* public_key.der */; };
+		4FE195FE1ACCA0A500922ECE /* SendEmail.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FE195F91ACCA0A500922ECE /* SendEmail.m */; };
+		4FE196011ACCA0B300922ECE /* Base64Transcoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FE196001ACCA0B300922ECE /* Base64Transcoder.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -304,6 +309,14 @@
 		4FDE361E1A72FCC9000052E9 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
 		4FDE36201A72FCD5000052E9 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
 		4FDE36221A72FCE1000052E9 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
+		4FE195F41ACCA0A500922ECE /* mykey.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = mykey.pem; sourceTree = "<group>"; };
+		4FE195F51ACCA0A500922ECE /* NSData+Base64Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Base64Additions.h"; sourceTree = "<group>"; };
+		4FE195F61ACCA0A500922ECE /* NSData+Base64Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Base64Additions.m"; sourceTree = "<group>"; };
+		4FE195F71ACCA0A500922ECE /* public_key.der */ = {isa = PBXFileReference; lastKnownFileType = file; path = public_key.der; sourceTree = "<group>"; };
+		4FE195F81ACCA0A500922ECE /* SendEmail.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SendEmail.h; sourceTree = "<group>"; };
+		4FE195F91ACCA0A500922ECE /* SendEmail.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SendEmail.m; sourceTree = "<group>"; };
+		4FE195FF1ACCA0B300922ECE /* Base64Transcoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Base64Transcoder.h; sourceTree = "<group>"; };
+		4FE196001ACCA0B300922ECE /* Base64Transcoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Base64Transcoder.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -406,6 +419,7 @@
 		4FB854331A97D1C00079866C /* Supporting Classes */ = {
 			isa = PBXGroup;
 			children = (
+				4FE195F21ACCA04200922ECE /* encryption */,
 				2C97CF511AC649A000256BFA /* ParseDownload.h */,
 				2C97CF521AC649A000256BFA /* ParseDownload.m */,
 				4FBA1F351A96810A00364F01 /* LCPContent.h */,
@@ -623,6 +637,21 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		4FE195F21ACCA04200922ECE /* encryption */ = {
+			isa = PBXGroup;
+			children = (
+				4FE195F71ACCA0A500922ECE /* public_key.der */,
+				4FE195F41ACCA0A500922ECE /* mykey.pem */,
+				4FE195FF1ACCA0B300922ECE /* Base64Transcoder.h */,
+				4FE196001ACCA0B300922ECE /* Base64Transcoder.m */,
+				4FE195F51ACCA0A500922ECE /* NSData+Base64Additions.h */,
+				4FE195F61ACCA0A500922ECE /* NSData+Base64Additions.m */,
+				4FE195F81ACCA0A500922ECE /* SendEmail.h */,
+				4FE195F91ACCA0A500922ECE /* SendEmail.m */,
+			);
+			name = encryption;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -746,6 +775,7 @@
 				4F329D751A92A6BF002A5093 /* btn-cms-samples.png in Resources */,
 				4FCC5BEE1A8BC5EC00292D6B /* Icon-Small.png in Resources */,
 				4FCC5BF01A8BC5EC00292D6B /* Icon-Small@3x.png in Resources */,
+				4FE195FB1ACCA0A500922ECE /* mykey.pem in Resources */,
 				4FCC5BF61A8BC79400292D6B /* logo.png in Resources */,
 				4FCC5BF31A8BC5EC00292D6B /* iTunesArtwork@2x.png in Resources */,
 				4FCC5BF91A8BC82000292D6B /* bmwposter.png in Resources */,
@@ -758,6 +788,7 @@
 				4FCC5BEC1A8BC5EC00292D6B /* Icon-Small-50.png in Resources */,
 				4F329D861A92AB3A002A5093 /* btn-customer-video.png in Resources */,
 				4F329D7D1A92AB23002A5093 /* btn-content-samples.png in Resources */,
+				4FE195FD1ACCA0A500922ECE /* public_key.der in Resources */,
 				4FDE35EB1A72FBAE000052E9 /* Images.xcassets in Resources */,
 				4F329D8E1A92AB45002A5093 /* btn-ideation-video.png in Resources */,
 				4FCC5BE31A8BC5EC00292D6B /* Icon-60@2x.png in Resources */,
@@ -821,11 +852,14 @@
 				4FB854261A9788750079866C /* MeetTheTeamViewController.m in Sources */,
 				2C97CF531AC649A000256BFA /* ParseDownload.m in Sources */,
 				4FCC5BCE1A8BC3FD00292D6B /* BrandMeetsWorldViewController.m in Sources */,
+				4FE195FC1ACCA0A500922ECE /* NSData+Base64Additions.m in Sources */,
 				4F79A0401AC99E0200A5C712 /* UIImageView+AFNetworking.m in Sources */,
 				4FDE35E31A72FBAE000052E9 /* AppDelegate.m in Sources */,
 				4F79A0601AC99E3400A5C712 /* AFURLSessionManager.m in Sources */,
 				4F79A03D1AC99E0200A5C712 /* UIActivityIndicatorView+AFNetworking.m in Sources */,
 				4F79A05C1AC99E3400A5C712 /* AFSecurityPolicy.m in Sources */,
+				4FE196011ACCA0B300922ECE /* Base64Transcoder.m in Sources */,
+				4FE195FE1ACCA0A500922ECE /* SendEmail.m in Sources */,
 				4F79A03C1AC99E0200A5C712 /* AFNetworkActivityIndicatorManager.m in Sources */,
 				4F2573271A9E3366003EFAB8 /* ContentSettingsViewController.m in Sources */,
 				4F79A05B1AC99E3400A5C712 /* AFNetworkReachabilityManager.m in Sources */,

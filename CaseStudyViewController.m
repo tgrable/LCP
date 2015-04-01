@@ -126,6 +126,7 @@
     else {
         [self fetchDataFromParse];
     }
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -295,6 +296,9 @@
     caseStudyDots.currentPageIndicatorTintColor = [UIColor whiteColor];
     caseStudyDots.numberOfPages = objects.count;
     [background addSubview:caseStudyDots];
+    
+    //update the button color
+    [self updateFavoriteButtonColor];
 }
 
 //this function updates the dots for the current image the the user is on

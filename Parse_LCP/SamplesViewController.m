@@ -108,9 +108,6 @@
     else {
         [self fetchDataFromParse];
     }
-    
-    //update the button color
-    [self updateFavoriteButtonColor];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -314,6 +311,9 @@
         [pageScroll setContentSize:CGSizeMake((background.bounds.size.width * objects.count), 400)];
         x += background.bounds.size.width;
     }
+    
+    //update the button color
+    [self updateFavoriteButtonColor];
 }
 
 #pragma mark

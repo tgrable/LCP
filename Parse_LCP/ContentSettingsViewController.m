@@ -35,6 +35,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    // TODO: Check all views: logo button to hidden deck. Dont know if this is still happening.
     
     parsedownload = [[ParseDownload alloc] init];
     [parsedownload downloadAndPinPFObjects];
@@ -123,8 +124,8 @@
     
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSArray *parseClasses = @[@"case_study", @"samples", @"testimonials"];
-    NSArray *parseClassReference = @[@"field_case_study_tag_reference", @"field_sample_tag_reference", @"field_testimonials_tag_reference"];
+    NSArray *parseClasses = @[@"case_study", @"samples", @"video", @"testimonials"];
+    NSArray *parseClassReference = @[@"field_case_study_tag_reference", @"field_sample_tag_reference", @"field_term_reference", @"field_testimonials_tag_reference"];
     
     [self buildPresentationView];
     for (int i = 0; i < parseClasses.count; i++) {
@@ -136,7 +137,10 @@
         }
     }
     [self buildEmailView];
-    //[self fetchDataFromParse:@"videos"];
+    
+    if (![[defaults objectForKey:@"videos"] isEqualToString:@"hasData"]) {
+        [parsedownload downloadVideoFile];
+    }
 }
 
 - (void)didReceiveMemoryWarning {
@@ -281,7 +285,7 @@
             [sContent addSubview:titleLabel];
             [sContent addSubview:mySwitch];
         }
-        else if ([contentView isEqualToString:@"videos"]) {
+        else if ([contentView isEqualToString:@"video"]) {
             [vContent addSubview:titleLabel];
             [vContent addSubview:mySwitch];
             

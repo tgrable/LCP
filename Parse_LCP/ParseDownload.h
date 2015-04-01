@@ -16,6 +16,7 @@
 - (void)downloadVideoFile;
 
 - (void)unpinAllPFObjects;
+
 - (void)unpinIndividualParseClass:(NSString *)parseClass;
 
 @end

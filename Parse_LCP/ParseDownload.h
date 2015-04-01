@@ -11,6 +11,11 @@
 @interface ParseDownload : NSObject
 
 - (void)downloadAndPinPFObjects;
+- (void)downloadAndPinIndividualParseClass:(NSString *)parseClass;
+
+- (void)downloadVideoFile;
+
 - (void)unpinAllPFObjects;
+- (void)unpinIndividualParseClass:(NSString *)parseClass;
 
 @end

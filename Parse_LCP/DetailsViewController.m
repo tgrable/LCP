@@ -120,15 +120,17 @@
         [query whereKey:@"field_overview_tag_reference" equalTo:content.termId];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
-                    if (!error) {
-                        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                        [defaults setObject:@"hasData" forKey:@"overview"];
-                        [defaults synchronize];
-                        [self buildSummaryView:objects];
-                        [self buildOverviewView:objects];
-                    }
-                }];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
+                        if (!error) {
+                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            [defaults setObject:@"hasData" forKey:@"overview"];
+                            [defaults synchronize];
+                            [self buildSummaryView:objects];
+                            [self buildOverviewView:objects];
+                        }
+                    }];
+                });
             }
             else {
                 // Log details of the failure
@@ -147,11 +149,13 @@
     PFQuery *query = [PFQuery queryWithClassName:@"overview"];
     [query fromLocalDatastore];
     [query whereKey:@"field_overview_tag_reference" equalTo:content.termId];
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        [self buildSummaryView:objects];
-        [self buildOverviewView:objects];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            [self buildSummaryView:objects];
+            [self buildOverviewView:objects];
 
-    }];
+        }];
+    });
 }
 
 #pragma mark
@@ -160,19 +164,21 @@
     for(PFObject *object in objects) {
         
         PFFile *imageFile = object[@"field_detail_image_img"];
-        [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
-            if (!error) {
-                content.imgIcon = [[UIImage alloc] initWithData:imgData];
-                
-                UIImageView *summaryHeader = [[UIImageView alloc] initWithFrame:CGRectMake(422, 25, 95, 95)];
-                [summaryHeader setImage:content.imgIcon];
-                [summaryView addSubview:summaryHeader];
-                
-                UIImageView *overViewHeader = [[UIImageView alloc] initWithFrame:CGRectMake(443, 56, 65, 65)];
-                [overViewHeader setImage:content.imgIcon];
-                [overviewView addSubview:overViewHeader];
-            }
-        }];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
+                if (!error) {
+                    content.imgIcon = [[UIImage alloc] initWithData:imgData];
+                    
+                    UIImageView *summaryHeader = [[UIImageView alloc] initWithFrame:CGRectMake(422, 25, 95, 95)];
+                    [summaryHeader setImage:content.imgIcon];
+                    [summaryView addSubview:summaryHeader];
+                    
+                    UIImageView *overViewHeader = [[UIImageView alloc] initWithFrame:CGRectMake(443, 56, 65, 65)];
+                    [overViewHeader setImage:content.imgIcon];
+                    [overviewView addSubview:overViewHeader];
+                }
+            }];
+        });
         
         UIView *rule = [[UIView alloc] initWithFrame:CGRectMake(335, 135, 280, 2)];
         rule.backgroundColor = [UIColor whiteColor];

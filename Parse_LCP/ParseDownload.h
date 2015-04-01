@@ -18,4 +18,5 @@
 - (void)unpinAllPFObjects;
 - (BOOL)checkForValidEmail:(NSString *)email;
 - (void)unpinIndividualParseClass:(NSString *)parseClass;
+- (void)addOrRemoveFavoriteNodeID:(NSString *)nid nodeTitle:(NSString *)title nodeType:(NSString *)type withAddOrRemoveFlag:(BOOL)flag;
 @end

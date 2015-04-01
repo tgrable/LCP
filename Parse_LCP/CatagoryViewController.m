@@ -116,7 +116,9 @@
     }
     else {
         // TODO: Look into downloading a single video file instead of all videos again
-        [parsedownload downloadVideoFile];
+        dispatch_async(dispatch_get_main_queue(), ^{
+          [parsedownload downloadVideoFile];
+        });
     }
     
     //Create the poster image overlay and header image after the video player has been added to background

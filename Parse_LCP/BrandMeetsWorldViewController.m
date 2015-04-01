@@ -93,7 +93,9 @@
     }
     else {
         // TODO: Look into downloading a single video file instead of all videos again
-        [parsedownload downloadVideoFile];
+        dispatch_async(dispatch_get_main_queue(), ^{
+          [parsedownload downloadVideoFile];
+        });
     }
 
     //Create the poster image overlay after the video player has been added to background
@@ -153,16 +155,18 @@
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         
             if (!error) {
-                [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
-                    if (!error) {
-                        [self buildView:objects];
-                        
-                        //Once data is downloaded reset NSUserDefault for BrandMeetsWorldData to "hasData"
-                        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                        [defaults setObject:@"hasData" forKey:@"BrandMeetsWorldData"];
-                        [defaults synchronize];
-                    }
-                }];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
+                        if (!error) {
+                            [self buildView:objects];
+                            
+                            //Once data is downloaded reset NSUserDefault for BrandMeetsWorldData to "hasData"
+                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            [defaults setObject:@"hasData" forKey:@"BrandMeetsWorldData"];
+                            [defaults synchronize];
+                        }
+                    }];
+                });
             }
             else {
                 // Log details of the failure
@@ -182,11 +186,13 @@
     [query whereKey:@"parent" equalTo:@"0"];
     [query fromLocalDatastore];
     [query orderByAscending:@"weight"];
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        if (!error) {
-            [self buildView:objects];
-        }
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                [self buildView:objects];
+            }
+        }];
+    });
 }
 
 #pragma mark
@@ -208,28 +214,34 @@
         
         //Button Image
         PFFile *imageFile = object[@"field_button_image_img"];
-        [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
-            if (!error) {
-                UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
-                UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:y andTag:[object objectForKey:@"tid"]];
-                [background addSubview:tempButton];
-            }
-        }];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
+                if (!error) {
+                    UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
+                    UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:y andTag:[object objectForKey:@"tid"]];
+                    [background addSubview:tempButton];
+                }
+            }];
+        });
         count++;
         
         //Poster Image
         PFFile *posterFile = object[@"field_poster_image_img"];
-        [posterFile getDataInBackgroundWithBlock:^(NSData *posterData, NSError *error) {
-            UIImage *posterImg = [[UIImage alloc] initWithData:posterData];
-            [posterDict setObject:posterImg forKey:object[@"tid"]];
-        }];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [posterFile getDataInBackgroundWithBlock:^(NSData *posterData, NSError *error) {
+                UIImage *posterImg = [[UIImage alloc] initWithData:posterData];
+                [posterDict setObject:posterImg forKey:object[@"tid"]];
+            }];
+        });
         
         //Header Image
         PFFile *headerFile = object[@"field_header_image_img"];
-        [headerFile getDataInBackgroundWithBlock:^(NSData *headerData, NSError *error) {
-            UIImage *headerImg = [[UIImage alloc] initWithData:headerData];
-            [headerDict setObject:headerImg forKey:object[@"tid"]];
-        }];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [headerFile getDataInBackgroundWithBlock:^(NSData *headerData, NSError *error) {
+                UIImage *headerImg = [[UIImage alloc] initWithData:headerData];
+                [headerDict setObject:headerImg forKey:object[@"tid"]];
+            }];
+        });
     }
 }
 

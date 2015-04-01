@@ -10,12 +10,16 @@
 #import "DetailsViewController.h"
 #import "Reachability.h"
 #import "NSString+HTML.h"
+#import "ParseDownload.h"
 #import <Parse/Parse.h>
 
 @interface CaseStudyViewController ()
 @property (strong, nonatomic) UIView *background;
 @property (strong, nonatomic) UIScrollView *pageScroll;
 @property (strong, nonatomic) UIPageControl *caseStudyDots;
+@property (strong, nonatomic) ParseDownload *parsedownload;
+@property (strong, nonatomic) UIButton *favoriteContentButton;
+@property NSMutableArray *nids, *nodeTitles;
 @end
 
 @implementation CaseStudyViewController
@@ -23,14 +27,20 @@
 @synthesize background;     //UIView
 @synthesize pageScroll;     //UIScrollView
 @synthesize caseStudyDots;  //UIPageControl
+@synthesize favoriteContentButton;                   //UIButton
+@synthesize nids, nodeTitles;                        //NSMutableArrays
+@synthesize parsedownload;                           //ParseDownload
 
 - (BOOL)prefersStatusBarHidden
 {
     return YES;
 }
+
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
+    
+    parsedownload = [[ParseDownload alloc] init];
     
     //First Page Summary View
     background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, 952, 696)];
@@ -65,7 +75,15 @@
     dashboardButton.showsTouchWhenHighlighted = YES;
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"cog-wheel"] forState:UIControlStateNormal];
     [dashboardBackground addSubview:dashboardButton];
-
+    
+    favoriteContentButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [favoriteContentButton setFrame:CGRectMake(860, 56, 108, 33)];
+    [favoriteContentButton addTarget:self action:@selector(setContentAsFavorite:)forControlEvents:UIControlEventTouchUpInside];
+    favoriteContentButton.showsTouchWhenHighlighted = YES;
+    [favoriteContentButton setTitle:@"Favorite" forState:UIControlStateNormal];
+    favoriteContentButton.backgroundColor = [UIColor whiteColor];
+    [favoriteContentButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [self.view addSubview:favoriteContentButton];
     
     pageScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(56, 250, (background.bounds.size.width - (56 * 2)), 400)];
     pageScroll.showsHorizontalScrollIndicator = NO;
@@ -76,7 +94,9 @@
     pageScroll.backgroundColor = [UIColor clearColor];
     [background addSubview:pageScroll];
 
-    
+    //array used to hold nids for the current index of the case study
+    nids = [NSMutableArray array];
+    nodeTitles = [NSMutableArray array];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -112,6 +132,57 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+#pragma
+#pragma mark - Favorite Functionality
+
+//pick the current nid of the content and save it to the NSUserDefault
+-(void)setContentAsFavorite:(id)sender
+{
+    UIButton *favButton = (UIButton *)sender;
+    
+    NSLog(@"Selected nid %@" , [nids objectAtIndex:caseStudyDots.currentPage]);
+    NSLog(@"Selected title %@" , [nodeTitles objectAtIndex:caseStudyDots.currentPage]);
+    
+    if(favButton.backgroundColor == [UIColor whiteColor]){
+        //add favorite
+        [parsedownload addOrRemoveFavoriteNodeID:[nids objectAtIndex:caseStudyDots.currentPage]
+                                       nodeTitle:[nodeTitles objectAtIndex:caseStudyDots.currentPage]
+                                        nodeType:@"Case Study"
+                             withAddOrRemoveFlag:YES];
+        //update button also
+        favoriteContentButton.backgroundColor = [UIColor lightGrayColor];
+        [favoriteContentButton setTitle:@"Favorited" forState:UIControlStateNormal];
+        
+    }else if(favButton.backgroundColor == [UIColor lightGrayColor]){
+        //remove favorite
+        [parsedownload addOrRemoveFavoriteNodeID:[nids objectAtIndex:caseStudyDots.currentPage]
+                                       nodeTitle:@""
+                                        nodeType:@""
+                             withAddOrRemoveFlag:NO];
+        //update button also
+        favoriteContentButton.backgroundColor = [UIColor whiteColor];
+        [favoriteContentButton setTitle:@"Favorite" forState:UIControlStateNormal];
+    }
+    
+}
+
+
+//this function updates the button background color to reflect if it is stored as a favorite or not
+-(void)updateFavoriteButtonColor
+{
+    if([nids count] > 0){
+        NSString *nid = [NSString stringWithFormat:@"%@", [nids objectAtIndex:caseStudyDots.currentPage]];
+        
+        if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:nid] != nil){
+            favoriteContentButton.backgroundColor = [UIColor lightGrayColor];
+            [favoriteContentButton setTitle:@"Favorited" forState:UIControlStateNormal];
+        }else{
+            favoriteContentButton.backgroundColor = [UIColor whiteColor];
+            [favoriteContentButton setTitle:@"Favorite" forState:UIControlStateNormal];
+        }
+    }
+}
+
 
 #pragma mark
 #pragma mark - Parse
@@ -120,30 +191,32 @@
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
         [query whereKey:@"field_case_study_tag_reference" equalTo:content.termId];
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
-                    if (!error) {
-                        NSUserDefaults *csDefaults = [NSUserDefaults standardUserDefaults];
-                        [csDefaults setObject:@"hasData" forKey:@"case_study"];
-                        [csDefaults synchronize];
-                        
-                        NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-                        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                        for (PFObject *object in objects) {
-                            if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
-                                [selectedObjects addObject:object];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                if (!error) {
+                    [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
+                        if (!error) {
+                            NSUserDefaults *csDefaults = [NSUserDefaults standardUserDefaults];
+                            [csDefaults setObject:@"hasData" forKey:@"case_study"];
+                            [csDefaults synchronize];
+                            
+                            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
+                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            for (PFObject *object in objects) {
+                                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                                    [selectedObjects addObject:object];
+                                }
                             }
+                            [self buildCaseStudyView:selectedObjects];
                         }
-                        [self buildCaseStudyView:selectedObjects];
-                    }
-                }];
-            }
-            else {
-                // Log details of the failure
-                NSLog(@"Error: %@ %@", error, [error userInfo]);
-            }
-        }];
+                    }];
+                }
+                else {
+                    // Log details of the failure
+                    NSLog(@"Error: %@ %@", error, [error userInfo]);
+                }
+            }];
+        });
     }
     else {
         [self fetchDataFromLocalDataStore];
@@ -156,17 +229,19 @@
     PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
     [query fromLocalDatastore];
     [query whereKey:@"field_case_study_tag_reference" equalTo:content.termId];
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        
-        NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        for (PFObject *object in objects) {
-            if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
-                [selectedObjects addObject:object];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            
+            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            for (PFObject *object in objects) {
+                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                    [selectedObjects addObject:object];
+                }
             }
-        }
-        [self buildCaseStudyView:selectedObjects];
-    }];
+            [self buildCaseStudyView:selectedObjects];
+        }];
+    });
 }
 
 #pragma mark
@@ -175,6 +250,12 @@
     int x = 0;
     
     for(PFObject *object in objects) {
+        
+        //add the nid for the object to nid array
+        [nids addObject:object[@"nid"]];
+        
+        //add the node title to be added for
+        [nodeTitles addObject:object[@"title"]];
         
         UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(x, 15, 802, 30)];
         [title setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:22.0]];
@@ -222,6 +303,9 @@
     //display the appropriate dot when scrolled
     NSInteger pageNumber = floor((pageScroll.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
     caseStudyDots.currentPage = pageNumber;
+    
+    //update the button color
+    [self updateFavoriteButtonColor];
 }
 
 #pragma mark

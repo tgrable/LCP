@@ -30,6 +30,15 @@
         // [Optional] Track statistics around application opens.
         [PFAnalytics trackAppOpenedWithLaunchOptions:launchOptions];
     });
+    
+    //register and set the favorite dictionary the user defaults if not present
+    if([[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] == nil){
+        dispatch_queue_t _savingQueue = dispatch_queue_create("savingQueue", NULL);
+        dispatch_async(_savingQueue, ^{
+            NSMutableDictionary *contentFavorites = [[NSMutableDictionary alloc] init];
+            [[NSUserDefaults standardUserDefaults] setObject:contentFavorites forKey:@"contentFavorites"];
+        });
+    }
     return YES;
 }
 

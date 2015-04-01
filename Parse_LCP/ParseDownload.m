@@ -50,6 +50,38 @@
     NSPredicate *emailTest = [NSPredicate predicateWithFormat:@"SELF MATCHES %@", emailRegex];
     return [emailTest evaluateWithObject:email];
 }
+
+//add or remove the favorited node information
+- (void)addOrRemoveFavoriteNodeID:(NSString *)nid nodeTitle:(NSString *)title nodeType:(NSString *)type withAddOrRemoveFlag:(BOOL)flag
+{
+    //get the defaults and pick the content favorites out from this defaults list
+    NSMutableDictionary *favoriteList = [[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] mutableCopy];
+    
+    dispatch_queue_t _savingQueue = dispatch_queue_create("savingQueue", NULL);
+    
+    //if the flag is yes then we add to the dictionary
+    if(flag){
+        //make sure the value is not already in the dictionary
+        if([favoriteList objectForKey:nid] == nil){
+            //create an altered title to display our content type associated with the favorited content
+            NSString *alteredTitle = [NSString stringWithFormat:@"%@ -- %@", title, type];
+            
+            [favoriteList setValue:alteredTitle forKey:nid];
+        }
+        
+        //if the flag is no then we remove from the dictionary
+    }else{
+        if([favoriteList objectForKey:nid] != nil){
+            [favoriteList removeObjectForKey:nid];
+        }
+    }
+    //synchronize the data
+    dispatch_async(_savingQueue, ^{
+        [[NSUserDefaults standardUserDefaults] setObject:favoriteList forKey:@"contentFavorites"];
+        [[NSUserDefaults standardUserDefaults] synchronize];
+    });
+}
+
 - (void)unpinIndividualParseClass:(NSString *)parseClass {
     [self clearLocalDataStore:parseClass];
 }

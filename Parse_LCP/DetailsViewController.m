@@ -10,6 +10,7 @@
 #import "CatagoryViewController.h"
 #import "CaseStudyViewController.h"
 #import "SamplesViewController.h"
+#import "VideoViewController.h"
 #import "Reachability.h"
 #import "NSString+HTML.h"
 #import <Parse/Parse.h>
@@ -240,7 +241,7 @@
             else if ([[NSString stringWithFormat:@"%@", [contentDict objectForKey:@"value"]] isEqualToString:@"Videos"]) {
                 UIButton *videoButton = [UIButton buttonWithType:UIButtonTypeCustom];
                 [videoButton setFrame:CGRectMake(x, 424, 193, 236)];
-                //[videoButton addTarget:self action:@selector(overviewButton:)forControlEvents:UIControlEventTouchUpInside];
+                [videoButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
                 videoButton.showsTouchWhenHighlighted = YES;
                 [videoButton setBackgroundImage:vImg forState:UIControlStateNormal];
                 videoButton.tag = 3;
@@ -363,7 +364,10 @@
         [self.navigationController pushViewController:svc animated:YES];
         [self removeEverything];
     }else if(b.tag == 3){
-        y = 3072;
+        VideoViewController *vvc = (VideoViewController *)[storyboard instantiateViewControllerWithIdentifier:@"videoViewController"];
+        vvc.content = content;
+        [self.navigationController pushViewController:vvc animated:YES];
+        [self removeEverything];
     }
     
     [UIView animateWithDuration:1.2f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{

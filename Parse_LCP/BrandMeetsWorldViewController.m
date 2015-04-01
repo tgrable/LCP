@@ -9,6 +9,7 @@
 #import "BrandMeetsWorldViewController.h"
 #import "CatagoryViewController.h"
 #import "Reachability.h"
+#import "ParseDownload.h"
 #import <Parse/Parse.h>
 
 @interface BrandMeetsWorldViewController ()
@@ -20,6 +21,7 @@
 @property (strong, nonatomic) UIImageView *logo, *overlay;
 @property (strong, nonatomic) NSMutableDictionary *posterDict, *headerDict, *teamDict;
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
+@property (strong, nonatomic) ParseDownload *parsedownload;
 
 @end
 
@@ -32,6 +34,7 @@
 @synthesize logo, overlay;                      //UIImageView
 @synthesize posterDict, headerDict, teamDict;   //NSMutableDictionary
 @synthesize moviePlayerController;              //MPMoviePlayerController
+@synthesize parsedownload;                      //ParseDownload
 
 - (BOOL)prefersStatusBarHidden
 {
@@ -61,11 +64,45 @@
     NSUserDefaults *videoDefaults = [NSUserDefaults standardUserDefaults];
     if ([[videoDefaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
         
-        //We're calling this first to give this query a head start so the video player and poster sit under the navigation buttons.
-        [self fetchVideoFromLocalDataStore];
-        
-        // TODO: Address if video data has not been downloaded
+        //Get video title from NSUserDefaults whos field_term_reference is 0
+        NSArray *videoName = [[videoDefaults objectForKey:@"VideoDataDictionary"] allKeysForObject:@"0"];
+        if (videoName.count > 0) {
+            //Extract the video file name from the rackspace url then build the local path
+            //http://8f2161d9c4589de9f316-5aa980248e6d72557f77fd2618031fcc.r92.cf2.rackcdn.com/videos/BrandMeetsWorld.mp4
+            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+            NSString *documentsDirectory = [paths objectAtIndex:0];
+            NSString *fullpath = [documentsDirectory stringByAppendingPathComponent:videoName[0]];
+            NSURL *videoURL =[NSURL fileURLWithPath:fullpath];
+            
+            @autoreleasepool {
+                moviePlayerController = nil;
+                moviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL:videoURL];
+                [moviePlayerController.view setFrame: CGRectMake(0, 0, 952, 696)];
+                moviePlayerController.view.backgroundColor = [UIColor clearColor];
+                moviePlayerController.view.tag = 22;
+                [moviePlayerController prepareToPlay];
+                moviePlayerController.shouldAutoplay = NO;
+                [background addSubview:moviePlayerController.view];
+            }
+            
+            UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageTapped:)];
+            tapGesture.numberOfTapsRequired = 1;
+            
+            [background addGestureRecognizer:tapGesture];
+        }
     }
+    else {
+        // TODO: Look into downloading a single video file instead of all videos again
+        [parsedownload downloadVideoFile];
+    }
+
+    //Create the poster image overlay after the video player has been added to background
+    overlay = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 952, 696)];
+    [overlay setBackgroundColor:[UIColor lightGrayColor]];
+    [overlay setImage:[UIImage imageNamed:@"bmwposter.png"]];
+    [overlay setUserInteractionEnabled:YES];
+    overlay.alpha = 1.0;
+    [background addSubview:overlay];
     
     //Logo and setting navigation buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -152,53 +189,6 @@
     }];
 }
 
-- (void)fetchVideoFromLocalDataStore {
-    
-    // Query the Local Datastore for video data
-    PFQuery *vidQuery = [PFQuery queryWithClassName:@"video"];
-    [vidQuery fromLocalDatastore];
-    [vidQuery whereKey:@"field_term_reference" equalTo:@"0"];
-    [vidQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        if (!error) {
-            if (objects.count > 0) {
-                
-                //Extract the video file name from the rackspace url then build the local path
-                //http://8f2161d9c4589de9f316-5aa980248e6d72557f77fd2618031fcc.r92.cf2.rackcdn.com/videos/BrandMeetsWorld.mp4
-                NSString *videoName = [[objects[0] objectForKey:@"field_video"] componentsSeparatedByString:@"/videos/"][1];
-                NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-                NSString *documentsDirectory = [paths objectAtIndex:0];
-                NSString *fullpath = [documentsDirectory stringByAppendingPathComponent:videoName];
-                NSURL *videoURL =[NSURL fileURLWithPath:fullpath];
-
-                @autoreleasepool {
-                    moviePlayerController = nil;
-                    moviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL:videoURL];
-                    [moviePlayerController.view setFrame: CGRectMake(0, 0, 952, 696)];
-                    moviePlayerController.view.backgroundColor = [UIColor clearColor];
-                    moviePlayerController.view.tag = 22;
-                    [moviePlayerController prepareToPlay];
-                    
-                    moviePlayerController.shouldAutoplay = NO;
-                    [background addSubview:moviePlayerController.view];
-                }
-                
-                UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageTapped:)];
-                tapGesture.numberOfTapsRequired = 1;
-                
-                [background addGestureRecognizer:tapGesture];
-            }
-            
-            //Create the poster image overlay after the video player has been added to background
-            overlay = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 952, 696)];
-            [overlay setBackgroundColor:[UIColor lightGrayColor]];
-            [overlay setImage:[UIImage imageNamed:@"bmwposter.png"]];
-            [overlay setUserInteractionEnabled:YES];
-            overlay.alpha = 1.0;
-            [background addSubview:overlay];
-        }
-    }];
-}
-
 #pragma mark
 #pragma mark - Build View
 - (void)buildView:(NSArray *)objects {
@@ -277,8 +267,7 @@
     return tempButton;
 }
 
-- (void)firstLevelNavigationButtonPressed:(UIButton *)sender {
-    
+- (void)firstLevelNavigationButtonPressed:(UIButton *)sender {    
     //Create LCPContent object and assign catagoryId, imgPoster, and imgHeader properties
     content = [[LCPContent alloc] init];
     content.catagoryId = [NSString stringWithFormat: @"%ld", (long)sender.tag];

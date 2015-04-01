@@ -84,8 +84,8 @@
                     </view>
                     <connections>
                         <segue destination="sGD-sz-Ape" kind="show" identifier="detailsView" id="gzo-90-ku1"/>
-                        <segue destination="OTd-vG-uW9" kind="show" identifier="meetTheTeam" id="hQz-CZ-Gwy"/>
-                        <segue destination="6E2-Tb-oHI" kind="show" identifier="testimonials" id="tUk-CP-h6H"/>
+                        <segue destination="OTd-vG-uW9" kind="show" identifier="meetTheTeamView" id="hQz-CZ-Gwy"/>
+                        <segue destination="6E2-Tb-oHI" kind="show" identifier="testimonialsView" id="tUk-CP-h6H"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="1TR-8B-E41" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -108,6 +108,7 @@
                     <connections>
                         <segue destination="NKa-wX-sQ1" kind="show" identifier="caseStudyView" id="mS3-eF-QJv"/>
                         <segue destination="1Ok-l8-umU" kind="show" identifier="samplesView" id="BXA-Xw-m6k"/>
+                        <segue destination="meW-TN-Dl4" kind="show" identifier="videoView" id="2bP-5N-oth"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Zhv-N3-kCd" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -135,7 +136,7 @@
         <!--Testimonials View Controller-->
         <scene sceneID="4sB-Fh-w1r">
             <objects>
-                <viewController id="6E2-Tb-oHI" customClass="TestimonialsViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="testimonialsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="6E2-Tb-oHI" customClass="TestimonialsViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="rau-as-Q8b"/>
                         <viewControllerLayoutGuide type="bottom" id="lYa-Vt-CoX"/>
@@ -153,7 +154,7 @@
         <!--Meet The Team View Controller-->
         <scene sceneID="qiu-nY-uDY">
             <objects>
-                <viewController id="OTd-vG-uW9" customClass="MeetTheTeamViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="meetTheTeamViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="OTd-vG-uW9" customClass="MeetTheTeamViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="AMw-yw-0px"/>
                         <viewControllerLayoutGuide type="bottom" id="kfg-cb-BWH"/>
@@ -185,6 +186,24 @@
                 <placeholder placeholderIdentifier="IBFirstResponder" id="efr-DL-Hrw" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="3648" y="46"/>
+        </scene>
+        <!--Video View Controller-->
+        <scene sceneID="tO5-AL-ZIa">
+            <objects>
+                <viewController storyboardIdentifier="videoViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="meW-TN-Dl4" customClass="VideoViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="cRK-yD-jIz"/>
+                        <viewControllerLayoutGuide type="bottom" id="ZD6-Kg-krZ"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="9fG-zb-kLS">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="wz0-ch-IWi" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="3648" y="746"/>
         </scene>
         <!--Navigation Controller-->
         <scene sceneID="kn1-vd-cuR">

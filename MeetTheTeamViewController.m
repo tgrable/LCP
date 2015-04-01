@@ -108,7 +108,7 @@
 - (void)fetchDataFromParse {
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
-        [query whereKey:@"field_team_tag_reference" equalTo:content.catagoryId];
+        [query whereKey:@"field_term_reference" equalTo:content.catagoryId];
         [query orderByAscending:@"createdAt"];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
@@ -137,7 +137,7 @@
     //Query the Local Datastore
     PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
     [query fromLocalDatastore];
-    [query whereKey:@"field_team_tag_reference" equalTo:content.catagoryId];
+    //[query whereKey:@"field_term_reference" equalTo:content.catagoryId];
     [query orderByAscending:@"createdAt"];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         [self buildImgArray:objects];

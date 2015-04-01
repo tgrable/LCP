@@ -14,23 +14,31 @@
 #import <Parse/Parse.h>
 
 @interface ContentSettingsViewController ()
-@property (strong, nonatomic) UIView *background, *favoriteListView, *formSlidView;
+@property (strong, nonatomic) UIView *background, *favoriteListView, *formSlidView, *loadingView;
 @property (strong, nonatomic) UIScrollView *csContent, *sContent, *vContent, *tContent;
 @property (strong, nonatomic) UIScrollView *presentationContent, *emailContent;
 @property (nonatomic) UISegmentedControl *contentSegController;
-@property (strong, nonatomic) ParseDownload *parsedownload;
 @property (strong, nonatomic) UITextField *email, *subject;
 @property (strong, nonatomic) UITextView *message;
+@property (strong, nonatomic) UIButton *submitButton;
+@property NSMutableArray *favoritedNIDs;
+
+@property (strong, nonatomic) SendEmail *emailObject;
+@property (strong, nonatomic) ParseDownload *parsedownload;
 @end
 
 @implementation ContentSettingsViewController
-@synthesize background, favoriteListView, formSlidView;             //UIView
-@synthesize csContent, sContent, vContent, tContent;                //UIScrollView
-@synthesize presentationContent, emailContent;                      //UIScrollView
-@synthesize contentSegController;                                   //UISegmentedControl
-@synthesize parsedownload;
-@synthesize email, subject;                                         //Email textfields
-@synthesize message;                                                //Email textview
+@synthesize background, favoriteListView, formSlidView, loadingView;         //UIView
+@synthesize csContent, sContent, vContent, tContent;                         //UIScrollView
+@synthesize presentationContent, emailContent;                               //UIScrollView
+@synthesize contentSegController;                                            //UISegmentedControl
+@synthesize submitButton;                                                    //UIButons
+@synthesize parsedownload, emailObject;                                      //Custom Classes
+@synthesize email, subject;                                                  //Email textfields
+@synthesize message;                                                         //Email textview
+@synthesize favoritedNIDs;
+
+
 - (BOOL)prefersStatusBarHidden
 {
     return YES;
@@ -39,6 +47,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // TODO: Check all views: logo button to hidden deck. Dont know if this is still happening.
+    
+    emailObject = [[SendEmail alloc] init];
     
     parsedownload = [[ParseDownload alloc] init];
     [parsedownload downloadAndPinPFObjects];
@@ -88,13 +98,20 @@
     [emailContent setUserInteractionEnabled:YES];
     emailContent.showsVerticalScrollIndicator = YES;
     emailContent.hidden = YES;
+    emailContent.tag = 212;
     [background addSubview:emailContent];
     
     /*** Start of email views ***/
     
+    UITapGestureRecognizer *tapAwayFromFormRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapEmailView:)];
+    [tapAwayFromFormRecognizer setNumberOfTapsRequired:1];
+    [tapAwayFromFormRecognizer setNumberOfTouchesRequired:1];
+    [emailContent addGestureRecognizer:tapAwayFromFormRecognizer];
+    
     formSlidView = [[UIView alloc] initWithFrame:CGRectMake(160, 0, 685, 600)];
     formSlidView.backgroundColor = [UIColor clearColor];
     formSlidView.userInteractionEnabled = YES;
+    formSlidView.tag = 213;
     [emailContent addSubview:formSlidView];
     
     UILabel *instructionLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 685, 24)];
@@ -164,12 +181,11 @@
     message.text = @"";
     message.delegate = self;
     message.autocapitalizationType = UITextAutocapitalizationTypeNone;
-    message.spellCheckingType = UITextSpellCheckingTypeNo;
-    message.autocorrectionType = UITextAutocorrectionTypeNo;
+    [message setReturnKeyType:UIReturnKeySend];
     message.textColor = [UIColor blackColor];
     [formSlidView addSubview:message];
     
-    UIButton *submitButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    submitButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     [submitButton setFrame:CGRectMake(0, 370, 108, 33)];
     [submitButton addTarget:self action:@selector(submitEmail:)forControlEvents:UIControlEventTouchUpInside];
     submitButton.showsTouchWhenHighlighted = YES;
@@ -188,13 +204,14 @@
     favoritedContent.numberOfLines = 1;
     favoritedContent.backgroundColor = [UIColor clearColor];
     favoritedContent.textAlignment = NSTextAlignmentLeft;
-    favoritedContent.text = @"FAVORITED CONTENT";
+    favoritedContent.text = @"FAVORITED CONTENT ATTACHED TO THE EMAIL";
     [emailContent addSubview:favoritedContent];
     
     favoriteListView = [[UIView alloc] initWithFrame:CGRectMake(160, 470, 685, 0)];
     [emailContent addSubview:favoriteListView];
     
     /*** /End of email views ***/
+
     
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [logoButton setFrame:CGRectMake(56, 56, 108, 33)];
@@ -218,6 +235,21 @@
     [contentSegController setSelectedSegmentIndex:0];
     [contentSegController setTintColor:[UIColor whiteColor]];
     [self.view addSubview:contentSegController];
+    
+    /* Loading View */
+    loadingView = [[UIView alloc] initWithFrame:CGRectMake(718, 334, 100, 100)];
+    loadingView.alpha = 0.0;
+    loadingView.layer.cornerRadius = 5;
+    loadingView.layer.masksToBounds = YES;
+    loadingView.backgroundColor = [UIColor blackColor];
+    [self.view addSubview:loadingView];
+    
+    UIActivityIndicatorView *activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    activityIndicator.frame = CGRectMake(32.0, 32.0, 35.0, 35.0);
+    [activityIndicator setColor:[UIColor whiteColor]];
+    [loadingView addSubview:activityIndicator];
+    [activityIndicator startAnimating];
+
     
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -264,14 +296,16 @@
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             
             if (!error) {
-                [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
-                    if (!error) {
-                        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                        [defaults setObject:@"hasData" forKey:forParseClassType];
-                        [defaults synchronize];
-                        [self buildOptions:objects forView:forParseClassType withTerm:tagReference];
-                    }
-                }];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
+                        if (!error) {
+                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            [defaults setObject:@"hasData" forKey:forParseClassType];
+                            [defaults synchronize];
+                            [self buildOptions:objects forView:forParseClassType withTerm:tagReference];
+                        }
+                    }];
+                });
             }
             else {
                 // Log details of the failure
@@ -289,11 +323,13 @@
     PFQuery *query = [PFQuery queryWithClassName:forParseClassType];
     [query fromLocalDatastore];
     [query orderByAscending:tagReference];
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        if (!error) {
-            [self buildOptions:objects forView:forParseClassType withTerm:tagReference];
-        }
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                [self buildOptions:objects forView:forParseClassType withTerm:tagReference];
+            }
+        }];
+    });
 }
 
 #pragma mark
@@ -307,6 +343,24 @@
 
 #pragma mark
 #pragma mark - Email Functionality
+
+//this function is in place because often times a scrollview will not let a touch event penetrate down to the subviews
+//this function is specifically being used to close the keyboard on a non-focus touch to the form
+-(void)tapEmailView:(UITapGestureRecognizer *)recognizer {
+    
+    if(recognizer.view.tag == 212 || recognizer.view.tag == 213){
+        //remove the first responder from the message view
+        if(message.isFirstResponder){
+            [message resignFirstResponder];
+        }else if(email.isFirstResponder){
+            [email resignFirstResponder];
+        }else if(subject.isFirstResponder){
+            [subject resignFirstResponder];
+        }
+        [self moveFormFieldBackIntoPosition];
+    }
+}
+
 //utility function to slide the form back into position if it was left slid up
 -(void)moveFormFieldBackIntoPosition
 {
@@ -317,6 +371,7 @@
     }
 }
 
+//deletgate function for UITextViews
 //textview delegate function to slide the form view up when the keyboard is blocking it
 - (BOOL)textViewShouldBeginEditing:(UITextView *)textView
 {
@@ -324,6 +379,16 @@
         [UIView animateWithDuration:0.9f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
             formSlidView.frame = CGRectMake(160, -160, 685, 600);
         }completion:^(BOOL finished) {}];
+    }
+    return YES;
+}
+
+//deletgate function for UITextViews
+//this function is being used to detect the send button on the keyboard
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
+{
+    if ([text isEqualToString:@"\n"] ) {
+        [self submitEmail:submitButton];
     }
     return YES;
 }
@@ -348,11 +413,10 @@
         [self moveFormFieldBackIntoPosition];
     }
     
-    NSLog(@"View %@", [touch view]);
-    
     [super touchesBegan:touches withEvent:event];
 }
 
+//delegate function for UITextFields
 //delegate function passes focus to textfields
 - (BOOL)textFieldShouldReturn:(UITextField *)textField
 {
@@ -362,7 +426,7 @@
     }else if (textField == subject){
         [message becomeFirstResponder];
     }
- 
+    
     return YES;
 }
 //email submission functionality
@@ -374,12 +438,25 @@
         if([subject.text length] > 0){
             if([parsedownload checkForValidEmail:email.text]){
                 if([message.text length] > 0){
-                    
-                    //@TODO Send email with the data to drupal
-                    
-                    [self displayMessage:@"success!!!!"];
-                    //move the form field back into place if needed
-                    [self moveFormFieldBackIntoPosition];
+                    //make sure the sender is connected to the internet
+                    if([self connected]){
+                        loadingView.alpha = 0.8;
+                        [self moveFormFieldBackIntoPosition];
+                        [self.view endEditing:NO];
+                        
+                        NSMutableDictionary *emailValues = [[NSMutableDictionary alloc] init];
+                        [emailValues setValue:email.text forKey:@"email"];
+                        [emailValues setValue:subject.text forKey:@"subject"];
+                        [emailValues setValue:message.text forKey:@"message"];
+                        [emailValues setValue:favoritedNIDs forKey:@"favorites"];
+                        
+                        //go out to the server if the user wants to log in
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [emailObject sendEmail:emailValues];
+                        });
+                    }else{
+                        [self displayMessage:@"Please connect to the internet to send an email"];
+                    }
                     
                 }else{
                     [self displayMessage:@"Please provide a message for your email"];
@@ -414,22 +491,29 @@
         [v removeFromSuperview];
     }
     
-    int yVal = 0;
+    //rebuild the favorited nid array
+    //this is saved for when an email is sent
+    [favoritedNIDs removeAllObjects];
+    
+    int yVal = 25;
     
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSDictionary *favoriteList = [defaults objectForKey:@"contentFavorites"];
+    NSMutableDictionary *favoriteList = [defaults objectForKey:@"contentFavorites"];
     // make sure content is available
     if([favoriteList count] > 0){
         for(id key in favoriteList){
             
-            UILabel *messageLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, yVal, 300, 24)];
+            UILabel *messageLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, yVal, 600, 24)];
             messageLabel.font = [UIFont fontWithName:@"NimbusSanD-Regu" size:19.0];
             messageLabel.textColor = [UIColor whiteColor];
             messageLabel.numberOfLines = 1;
             messageLabel.backgroundColor = [UIColor clearColor];
             messageLabel.textAlignment = NSTextAlignmentLeft;
-            messageLabel.text = [favoriteList objectForKey:key];
+            messageLabel.text = [NSString stringWithFormat:@"- %@", [favoriteList objectForKey:key]];
             [favoriteListView addSubview:messageLabel];
+            
+            //add the nid to be sent in the email
+            [favoritedNIDs addObject:key];
             
             yVal += 40;
         }
@@ -447,7 +531,21 @@
     [emailContent setContentSize:CGSizeMake(background.bounds.size.width, (favoriteListView.frame.size.height + 490))];
 }
 
-#pragma 
+-(void)emailResponse:(NSMutableDictionary *)emailData withFlag:(BOOL)flag
+{
+    loadingView.alpha = 0.0;
+    if(flag){
+        [self displayMessage:@"Your email was sent successfully"];
+        email.text = @"";
+        message.text = @"";
+        subject.text = @"";
+        
+    }else{
+        [self displayMessage:[emailData objectForKey:@"error"]];
+    }
+}
+
+#pragma
 #pragma mark - Display Message
 
 -(void)displayMessage:(NSString *)displayMessage

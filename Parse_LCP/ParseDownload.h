@@ -7,13 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 @interface ParseDownload : NSObject
 
 - (void)downloadAndPinPFObjects;
 - (void)downloadAndPinIndividualParseClass:(NSString *)parseClass;
 
-- (void)downloadVideoFile;
+- (void)downloadVideoFile:(UIView *)view forTerm:(NSString *)termId;
 
 - (void)unpinAllPFObjects;
 - (BOOL)checkForValidEmail:(NSString *)email;

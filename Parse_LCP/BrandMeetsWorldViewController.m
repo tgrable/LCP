@@ -45,7 +45,6 @@
 #pragma mark - ViewController Life Cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
     //This view is independent of any user input and will not change
     //so all data will only need to loaded one time.
     
@@ -63,9 +62,8 @@
     //If data has been downloaded pull from local datastore
     NSUserDefaults *videoDefaults = [NSUserDefaults standardUserDefaults];
     if ([[videoDefaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
-        
         //Get video title from NSUserDefaults whos field_term_reference is 0
-        NSArray *videoName = [[videoDefaults objectForKey:@"VideoDataDictionary"] allKeysForObject:@"0"];
+        NSArray *videoName = [[videoDefaults objectForKey:@"VideoDataDictionary"] allKeysForObject:@"N/A"];
         if (videoName.count > 0) {
             //Extract the video file name from the rackspace url then build the local path
             //http://8f2161d9c4589de9f316-5aa980248e6d72557f77fd2618031fcc.r92.cf2.rackcdn.com/videos/BrandMeetsWorld.mp4
@@ -92,9 +90,8 @@
         }
     }
     else {
-        // TODO: Look into downloading a single video file instead of all videos again
         dispatch_async(dispatch_get_main_queue(), ^{
-          [parsedownload downloadVideoFile];
+            [parsedownload downloadVideoFile:self.view forTerm:@"N/A"];
         });
     }
 
@@ -145,7 +142,6 @@
 #pragma mark
 #pragma mark - Parse
 - (void)fetchDataFromParse {
-    
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not query the local datastore for what ever term data exists
     if ([self connected]) {
@@ -153,7 +149,6 @@
         [query whereKey:@"parent" equalTo:@"0"];
         [query orderByAscending:@"weight"];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        
             if (!error) {
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
@@ -198,7 +193,7 @@
 #pragma mark
 #pragma mark - Build View
 - (void)buildView:(NSArray *)objects {
-    
+    NSLog(@"8");
     //Create the 3 X 2 grid of navigation buttons
     int count = 0;
     int x = 0, y = -185;

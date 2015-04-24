@@ -15,6 +15,7 @@
 
 @interface ContentSettingsViewController ()
 @property (strong, nonatomic) UIView *background, *favoriteListView, *formSlidView, *loadingView;
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 @property (strong, nonatomic) UIScrollView *csContent, *sContent, *vContent, *tContent;
 @property (strong, nonatomic) UIScrollView *presentationContent, *emailContent;
 @property (nonatomic) UISegmentedControl *contentSegController;
@@ -22,13 +23,16 @@
 @property (strong, nonatomic) UITextView *message;
 @property (strong, nonatomic) UIButton *submitButton;
 @property NSMutableArray *favoritedNIDs;
+@property NSMutableArray *termsArray;
 
 @property (strong, nonatomic) SendEmail *emailObject;
 @property (strong, nonatomic) ParseDownload *parsedownload;
+
 @end
 
 @implementation ContentSettingsViewController
 @synthesize background, favoriteListView, formSlidView, loadingView;         //UIView
+@synthesize activityIndicator;
 @synthesize csContent, sContent, vContent, tContent;                         //UIScrollView
 @synthesize presentationContent, emailContent;                               //UIScrollView
 @synthesize contentSegController;                                            //UISegmentedControl
@@ -36,8 +40,7 @@
 @synthesize parsedownload, emailObject;                                      //Custom Classes
 @synthesize email, subject;                                                  //Email textfields
 @synthesize message;                                                         //Email textview
-@synthesize favoritedNIDs;
-
+@synthesize favoritedNIDs, termsArray;
 
 - (BOOL)prefersStatusBarHidden
 {
@@ -46,16 +49,38 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // TODO: Check all views: logo button to hidden deck. Dont know if this is still happening.
-    
+
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(redrawView:) name:@"RefreshParseData" object:nil];
+
+    termsArray = [[NSMutableArray alloc] init];
     emailObject = [[SendEmail alloc] init];
-    
     parsedownload = [[ParseDownload alloc] init];
-    [parsedownload downloadAndPinPFObjects];
+
+    [self drawViews];
     
+    activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    activityIndicator.frame = CGRectMake((background.frame.size.width / 2), (background.frame.size.height / 2), 35.0, 35.0);
+    [activityIndicator setColor:[UIColor whiteColor]];
+    activityIndicator.hidesWhenStopped = YES;
+}
+
+- (void)viewWillAppear:(BOOL)animated
+{
+    [super viewWillAppear:animated];
+    //build email view is executed here so that the list is always refreshed
+    [self refreshEmailList];
+}
+
+- (void)didReceiveMemoryWarning {
+    [super didReceiveMemoryWarning];
+    // Dispose of any resources that can be recreated.
+}
+
+- (void)drawViews {
     //First Page Summary View
-    background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, 952, 696)];
-    [background setBackgroundColor:[UIColor grayColor]];
+    
+    background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, (self.view.bounds.size.width - (36 * 2)), (self.view.bounds.size.height - (36 * 2)))];
+    [background setBackgroundColor:[UIColor colorWithRed:191.0f/255.0f green:191.0f/255.0f blue:191.0f/255.0f alpha:1.0]];
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
     
@@ -65,28 +90,28 @@
     presentationContent.showsVerticalScrollIndicator = YES;
     [background addSubview:presentationContent];
     
-    csContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, (background.bounds.size.height - 115))];
+    csContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 105, background.bounds.size.width, (background.bounds.size.height - 115))];
     [csContent setBackgroundColor:[UIColor clearColor]];
     [csContent setUserInteractionEnabled:YES];
     csContent.showsVerticalScrollIndicator = YES;
     csContent.hidden = YES;
     [background addSubview:csContent];
     
-    sContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, (background.bounds.size.height - 115))];
+    sContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 105, background.bounds.size.width, (background.bounds.size.height - 115))];
     [sContent setBackgroundColor:[UIColor clearColor]];
     [sContent setUserInteractionEnabled:YES];
     sContent.hidden = YES;
     sContent.showsVerticalScrollIndicator = YES;
     [background addSubview:sContent];
     
-    vContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, (background.bounds.size.height - 115))];
+    vContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 105, background.bounds.size.width, (background.bounds.size.height - 115))];
     [vContent setBackgroundColor:[UIColor clearColor]];
     [vContent setUserInteractionEnabled:YES];
     vContent.hidden = YES;
     vContent.showsVerticalScrollIndicator = YES;
     [background addSubview:vContent];
     
-    tContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, (background.bounds.size.height - 115))];
+    tContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 105, background.bounds.size.width, (background.bounds.size.height - 115))];
     [tContent setBackgroundColor:[UIColor clearColor]];
     [tContent setUserInteractionEnabled:YES];
     tContent.hidden = YES;
@@ -211,7 +236,6 @@
     [emailContent addSubview:favoriteListView];
     
     /*** /End of email views ***/
-
     
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [logoButton setFrame:CGRectMake(56, 56, 108, 33)];
@@ -219,6 +243,12 @@
     [logoButton setBackgroundImage:[UIImage imageNamed:@"logo.png"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
+    contentSegController = [[UISegmentedControl alloc]initWithItems:@[@"Presentation", @"Case Studies", @"Samples", @"Videos", @"Testimonials", @"Email"]];
+    contentSegController.frame = CGRectMake(190, 56, 700, 33);
+    [contentSegController addTarget:self action:@selector(segmentedControlValueDidChange:) forControlEvents:UIControlEventValueChanged];
+    [contentSegController setSelectedSegmentIndex:0];
+    [contentSegController setTintColor:[UIColor whiteColor]];
+    [self.view addSubview:contentSegController];
     
     UIButton *startButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
     [startButton setFrame:CGRectMake(56, 108, 108, 33)];
@@ -229,12 +259,14 @@
     [startButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self.view addSubview:startButton];
     
-    contentSegController = [[UISegmentedControl alloc]initWithItems:@[@"Presentation", @"Case Studies", @"Samples", @"Videos", @"Testimonials", @"Email"]];
-    contentSegController.frame = CGRectMake(190, 56, 700, 33);
-    [contentSegController addTarget:self action:@selector(segmentedControlValueDidChange:) forControlEvents:UIControlEventValueChanged];
-    [contentSegController setSelectedSegmentIndex:0];
-    [contentSegController setTintColor:[UIColor whiteColor]];
-    [self.view addSubview:contentSegController];
+    UIButton *clearLocalDataButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [clearLocalDataButton setFrame:CGRectMake(175, 108, 108, 33)];
+    [clearLocalDataButton addTarget:self action:@selector(reloadLocalDataStore:)forControlEvents:UIControlEventTouchUpInside];
+    clearLocalDataButton.showsTouchWhenHighlighted = YES;
+    [clearLocalDataButton setTitle:@"Refresh Data" forState:UIControlStateNormal];
+    clearLocalDataButton.backgroundColor = [UIColor whiteColor];
+    [clearLocalDataButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [self.view addSubview:clearLocalDataButton];
     
     /* Loading View */
     loadingView = [[UIView alloc] initWithFrame:CGRectMake(718, 334, 100, 100)];
@@ -242,74 +274,40 @@
     loadingView.layer.cornerRadius = 5;
     loadingView.layer.masksToBounds = YES;
     loadingView.backgroundColor = [UIColor blackColor];
-    [self.view addSubview:loadingView];
-    
-    UIActivityIndicatorView *activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    activityIndicator.frame = CGRectMake(32.0, 32.0, 35.0, 35.0);
-    [activityIndicator setColor:[UIColor whiteColor]];
-    [loadingView addSubview:activityIndicator];
-    [activityIndicator startAnimating];
-
-    
-    //NSUserDefaults to check if data has been downloaded.
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSArray *parseClasses = @[@"case_study", @"samples", @"video", @"testimonials"];
-    NSArray *parseClassReference = @[@"field_case_study_tag_reference", @"field_sample_tag_reference", @"field_term_reference", @"field_testimonials_tag_reference"];
+    [background addSubview:loadingView];
     
     [self buildPresentationView];
-    
-    for (int i = 0; i < parseClasses.count; i++) {
-        if ([[defaults objectForKey:parseClasses[i]] isEqualToString:@"hasData"]) {
-            [self fetchDataFromLocalDataStore:parseClasses[i] andSortedBy:parseClassReference[i]];
-        }
-        else {
-            [self fetchDataFromParse:parseClasses[i] andSortedBy:parseClassReference[i]];
-        }
-    }
-    //[self fetchDataFromParse:@"videos"];
-    //[self buildEmailView];
-    
-    if (![[defaults objectForKey:@"videos"] isEqualToString:@"hasData"]) {
-        [parsedownload downloadVideoFile];
-    }
-}
-
-
-- (void)viewWillAppear:(BOOL)animated
-{
-    [super viewWillAppear:animated];
-    //build email view is executed here so that the list is always refreshed
-    [self refreshEmailList];
-}
-
-- (void)didReceiveMemoryWarning {
-    [super didReceiveMemoryWarning];
-    // Dispose of any resources that can be recreated.
+    [self fetchTerms];
 }
 
 #pragma mark
 #pragma mark - Parse
+
+//Query parse.com for class and sort on field_term_reference
+//Then pin all objects and call buildOptions:forView:withTerm: to build view
 - (void)fetchDataFromParse:(NSString *)forParseClassType andSortedBy:(NSString *)tagReference {
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:forParseClassType];
-        [query orderByAscending:@"createdAt"];
+        [query orderByAscending:tagReference];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            
             if (!error) {
+                NSLog(@"fetchDataFromParse returned %lu objects.", (unsigned long)objects.count);
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
-                        if (!error) {
+                        if (succeded) {
+                            NSLog(@"Fetch: %@", forParseClassType);
                             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                             [defaults setObject:@"hasData" forKey:forParseClassType];
                             [defaults synchronize];
+                            
                             [self buildOptions:objects forView:forParseClassType withTerm:tagReference];
                         }
                     }];
                 });
             }
             else {
-                // Log details of the failure
-                NSLog(@"Error: %@ %@", error, [error userInfo]);
+                NSString *errorMsg = [NSString stringWithFormat:@"%@", error];
+                [self displayMessage:errorMsg];
             }
         }];
     }
@@ -318,8 +316,9 @@
     }
 }
 
+//Query local data store for class and sort on field_term_reference
+//Then pin all objects and call buildOptions:forView:withTerm: to build view
 - (void)fetchDataFromLocalDataStore:(NSString *)forParseClassType andSortedBy:(NSString *)tagReference {
-    // Query the Local Datastore
     PFQuery *query = [PFQuery queryWithClassName:forParseClassType];
     [query fromLocalDatastore];
     [query orderByAscending:tagReference];
@@ -328,8 +327,100 @@
             if (!error) {
                 [self buildOptions:objects forView:forParseClassType withTerm:tagReference];
             }
+            else {
+                NSString *errorMsg = [NSString stringWithFormat:@"%@", error];
+                [self displayMessage:errorMsg];
+            }
         }];
     });
+}
+
+//This method is called first to get all the parse.com class "terms" before we grab the rest of the classes
+- (void)fetchTerms {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if ([[defaults objectForKey:@"term"] isEqualToString:@"hasData"]) {
+        PFQuery *query = [PFQuery queryWithClassName:@"term"];
+        [query fromLocalDatastore];
+        [query orderByAscending:@"tid"];
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                NSLog(@"fetchTerms - local returned %lu objects.", (unsigned long)objects.count);
+                for (PFObject *object in objects) {
+                    [termsArray addObject:object];
+                }
+                [self fetchRemainingObjectsFromParse];
+            }
+            else {
+                NSString *errorMsg = [NSString stringWithFormat:@"%@", error];
+                [self displayMessage:errorMsg];
+            }
+        }];
+    }
+    else {
+        PFQuery *query = [PFQuery queryWithClassName:@"term"];
+        [query orderByAscending:@"tid"];
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                NSLog(@"fetchTerms - parse returned %lu objects.", (unsigned long)objects.count);
+                [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
+                    if (succeded) {
+                        for (PFObject *object in objects) {
+                            [termsArray addObject:object];
+                        }
+                        [self fetchRemainingObjectsFromParse];
+                    }
+                    else {
+                        NSString *errorMsg = [NSString stringWithFormat:@"%@", error];
+                        [self displayMessage:errorMsg];
+                    }
+                }];
+            }
+            else {
+                NSString *errorMsg = [NSString stringWithFormat:@"%@", error];
+                [self displayMessage:errorMsg];
+            }
+        }];
+    }
+}
+
+- (void)fetchRemainingObjectsFromParse {
+    //NSUserDefaults to check if data has been downloaded.
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSArray *parseClasses = @[@"case_study", @"samples", @"video", @"testimonials"];
+
+    for (NSString *parseClass in parseClasses) {
+        if ([[defaults objectForKey:parseClass] isEqualToString:@"hasData"]) {
+            [self fetchDataFromLocalDataStore:parseClass andSortedBy:@"field_term_reference"];
+        }
+        else {
+            [self fetchDataFromParse:parseClass andSortedBy:@"field_term_reference"];
+        }
+    }
+
+    if (![[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
+        [parsedownload downloadVideoFile:self.view forTerm:@""];
+    }
+    if (![[defaults objectForKey:@"overview"] isEqualToString:@"hasData"]) {
+        [parsedownload downloadAndPinIndividualParseClass:@"overview"];
+    }
+    if (![[defaults objectForKey:@"team_member"] isEqualToString:@"hasData"]) {
+        [parsedownload downloadAndPinIndividualParseClass:@"team_member"];
+    }
+}
+
+//Download all the data from parse and pin it to the local datastore
+- (void)reloadLocalDataStore:(UIButton *)sender {
+    [parsedownload downloadAndPinPFObjects];
+    [self removeEverything];
+    
+    [background addSubview:activityIndicator];
+    [activityIndicator startAnimating];
+}
+
+//Once all data has been downloaded NSNotification is posted and this method is called to redraw the view.
+- (void)redrawView:(NSNotification *)notification {
+    [self drawViews];
+    [activityIndicator stopAnimating];
 }
 
 #pragma mark
@@ -572,22 +663,45 @@
 
 - (void)buildOptions:(NSArray *)objects forView:(NSString *)contentView withTerm:(NSString *)tagReference {
     int y = 0;
-    
+
     NSNumber *refId = 0, *tempId = 0;
-    
+
     for (PFObject *object in objects) {
         refId = [object objectForKey:tagReference];
         
-        UILabel *catagoryLabel = [[UILabel alloc] initWithFrame:CGRectMake(160, y, 550, 40)];
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"tid = %@", refId];
+        NSArray *filteredArray = [termsArray filteredArrayUsingPredicate:predicate];
+        NSString *termName;
+        if (filteredArray.count > 0) {
+            termName = [filteredArray[0] objectForKey:@"name"];
+        }
+        
+        UILabel *catagoryLabel;
+        UIView *lineView, *spaceView;
         if ([refId doubleValue] != [tempId doubleValue]) {
-            [catagoryLabel setFont:[UIFont fontWithName:@"NimbusSanD-Regu" size:20.0]];
+            spaceView = [[UIView alloc] initWithFrame:CGRectMake(160, y, 550, 10)];
+            spaceView.backgroundColor = [UIColor clearColor];
+            
+            y += 10;
+            
+            catagoryLabel = [[UILabel alloc] initWithFrame:CGRectMake(160, y, 550, 40)];
+            [catagoryLabel setFont:[UIFont fontWithName:@"NimbusSanD-Regu" size:25.0]];
             catagoryLabel.textColor = [UIColor whiteColor];
             catagoryLabel.numberOfLines = 1;
             catagoryLabel.backgroundColor = [UIColor clearColor];
             catagoryLabel.textAlignment = NSTextAlignmentLeft;
-            catagoryLabel.text = [NSString stringWithFormat:@"%@", object[tagReference]];
+            
+            if ([refId isEqual:@"N/A"]) {
+                catagoryLabel.text = @"Brand Meets World";
+            }
+            else {
+                catagoryLabel.text = [NSString stringWithFormat:@"%@", termName]; //object[tagReference]];
+            }
             
             y += 35;
+            
+            lineView = [[UIView alloc] initWithFrame:CGRectMake(160, y, 550, 2)];
+            lineView.backgroundColor = [UIColor lightGrayColor];
         }
         
         UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(185, y, 550, 40)];
@@ -620,36 +734,42 @@
         [mySwitch addTarget:self action:@selector(changeSwitch:) forControlEvents:UIControlEventValueChanged];
         
         if ([contentView isEqualToString:@"case_study"]) {
+            [csContent addSubview:spaceView];
             [csContent addSubview:titleLabel];
             [csContent addSubview:mySwitch];
             [csContent addSubview:catagoryLabel];
+            [csContent addSubview:lineView];
+            [csContent setContentSize:CGSizeMake(background.bounds.size.width, (75 * objects.count))];
         }
         else if ([contentView isEqualToString:@"samples"]) {
+            [sContent addSubview:spaceView];
             [sContent addSubview:titleLabel];
             [sContent addSubview:mySwitch];
+            [sContent addSubview:catagoryLabel];
+            [sContent addSubview:lineView];
+            [sContent setContentSize:CGSizeMake(background.bounds.size.width, (75 * objects.count))];
         }
         else if ([contentView isEqualToString:@"video"]) {
+            [vContent addSubview:spaceView];
             [vContent addSubview:titleLabel];
             [vContent addSubview:mySwitch];
-            
+            [vContent addSubview:catagoryLabel];
+            [vContent addSubview:lineView];
+            [vContent setContentSize:CGSizeMake(background.bounds.size.width, (75 * objects.count))];
         }
         else if ([contentView isEqualToString:@"testimonials"]) {
+            [tContent addSubview:spaceView];
             [tContent addSubview:titleLabel];
             [tContent addSubview:mySwitch];
-            
+            [tContent addSubview:catagoryLabel];
+            [tContent addSubview:lineView];
+            [tContent setContentSize:CGSizeMake(background.bounds.size.width, (75 * objects.count))];
         }
 
         y += 35;
-        
         tempId = refId;
     }
-    [csContent setContentSize:CGSizeMake(background.bounds.size.width, (100 * objects.count))];
-    [sContent setContentSize:CGSizeMake(background.bounds.size.width, (100 * objects.count))];
-    [vContent setContentSize:CGSizeMake(background.bounds.size.width, (100 * objects.count))];
-    [tContent setContentSize:CGSizeMake(background.bounds.size.width, (100 * objects.count))];
 }
-
-
 
 - (void)changeSwitch:(UISwitch *)sender {
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -748,16 +868,24 @@
     
     //move the form field back into place if needed
     [self moveFormFieldBackIntoPosition];
-
-
 }
+
 #pragma mark
 #pragma mark - Memory Management
 - (void)removeEverything {
     for (UIView *v in [background subviews]) {
         [v removeFromSuperview];
     }
-    [background removeFromSuperview];
+}
+
+// FIXME: This method is only here for development and testing.
+- (void)resetDefaults {
+    NSUserDefaults * defs = [NSUserDefaults standardUserDefaults];
+    NSDictionary * dict = [defs dictionaryRepresentation];
+    for (id key in dict) {
+        [defs removeObjectForKey:key];
+    }
+    [defs synchronize];
 }
 
 @end

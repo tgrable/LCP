@@ -43,7 +43,7 @@
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
-
+    
     //This view is dependent on user input but these elements will not change
     //so they will only need to loaded one time.
 
@@ -83,10 +83,8 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    
     NSUserDefaults *videoDefaults = [NSUserDefaults standardUserDefaults];
     if ([[videoDefaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
-        
         //Get video title from NSUserDefaults whos field_term_reference is 0
         NSArray *videoName = [[videoDefaults objectForKey:@"VideoDataDictionary"] allKeysForObject:content.catagoryId];
         if (videoName.count > 0) {
@@ -96,11 +94,11 @@
             NSString *documentsDirectory = [paths objectAtIndex:0];
             NSString *fullpath = [documentsDirectory stringByAppendingPathComponent:videoName[0]];
             NSURL *videoURL =[NSURL fileURLWithPath:fullpath];
-            
+
             @autoreleasepool {
                 moviePlayerController = nil;
                 moviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL:videoURL];
-                [moviePlayerController.view setFrame: CGRectMake(0, 0, 952, 696)];
+                [moviePlayerController.view setFrame: CGRectMake(0, 0, background.bounds.size.width, background.bounds.size.height)];
                 moviePlayerController.view.backgroundColor = [UIColor clearColor];
                 moviePlayerController.view.tag = 22;
                 [moviePlayerController prepareToPlay];
@@ -115,9 +113,8 @@
         }
     }
     else {
-        // TODO: Look into downloading a single video file instead of all videos again
         dispatch_async(dispatch_get_main_queue(), ^{
-          [parsedownload downloadVideoFile];
+            [parsedownload downloadVideoFile:self.view forTerm:content.termId];
         });
     }
     

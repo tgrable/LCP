@@ -11,20 +11,26 @@
 #import "AFNetworking.h"
 #import <Parse/Parse.h>
 
-@interface ParseDownload ()
+@interface ParseDownload () {
+    int __block count;
+}
 
+@property (strong, nonatomic) NSArray *parseClassTypes;
 @property (strong, nonatomic) NSMutableDictionary *parseClassDictionary;
 
 @end
 
 @implementation ParseDownload
 
+@synthesize parseClassTypes;
 @synthesize parseClassDictionary;
 
+#pragma mark
+#pragma mark - Public API
 - (void)downloadAndPinPFObjects {
-    NSArray *parseClassTypes = @[@"term", @"overview" ,@"case_study", @"samples", @"video", @"team_member",@"testimonials"];
+    parseClassTypes = @[@"term", @"overview" ,@"case_study", @"samples", @"video", @"team_member",@"testimonials"];
     parseClassDictionary = [[NSMutableDictionary alloc] init];
-    
+    count = 0;
     for (NSString *parseClass in parseClassTypes) {
         [self fetchDataFromParse:parseClass];
     }
@@ -35,8 +41,7 @@
 }
 
 - (void)unpinAllPFObjects {
-    NSArray *parseClassTypes = @[@"term", @"overview" ,@"case_study", @"samples", @"video", @"team_member",@"testimonials"];
-    
+    parseClassTypes = @[@"term", @"overview" ,@"case_study", @"samples", @"video", @"team_member",@"testimonials"];
     for (NSString *parseClass in parseClassTypes) {
         [self clearLocalDataStore:parseClass];
     }
@@ -86,8 +91,22 @@
     [self clearLocalDataStore:parseClass];
 }
 
-- (void)downloadVideoFile {
+#pragma mark
+#pragma mark - AFNetworking
+- (void)downloadVideoFile:(UIView *)view forTerm:(NSString *)termId {
+
+    UIActivityIndicatorView *activityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:
+                                                   UIActivityIndicatorViewStyleWhiteLarge];
+    
+    [activityIndicator setCenter:CGPointMake(view.frame.size.width/2.0, view.frame.size.height/2.0)];
+    activityIndicator.hidesWhenStopped = YES;
+
+    [view addSubview:activityIndicator];
+    
     PFQuery *query = [PFQuery queryWithClassName:@"video"];
+    if (termId.length) {
+       [query whereKey:@"field_term_reference" equalTo:termId];
+    }
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
             NSMutableDictionary *videoDataDict = [[NSMutableDictionary alloc] init];
@@ -110,12 +129,17 @@
                     [defaults setObject:@"hasData" forKey:videoName];
                     [defaults setObject:videoDataDict forKey:@"VideoDataDictionary"];
                     [defaults synchronize];
+                    NSLog(@"%@", videoDataDict);
+                    
+                    [activityIndicator stopAnimating];
                     
                 } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+                    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"There was an error downloading the data." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
+                    [alert show];
                     NSLog(@"Error: %@", error);
                 }];
                 [operation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
-                    
+                    [activityIndicator startAnimating];
                     NSLog(@"Download = %f", (float)totalBytesRead / totalBytesExpectedToRead);
                     
                 }];
@@ -128,27 +152,32 @@
 #pragma mark
 #pragma mark - Parse
 - (void)fetchDataFromParse:(NSString *)forParseClassType {
-    
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:forParseClassType];
         [query orderByAscending:@"createdAt"];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            
             if (!error) {
-                [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
-                    if (!error) {
-                        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                        [defaults setObject:@"hasData" forKey:forParseClassType];
-                        [defaults synchronize];
-                    }
-                }];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
+                        if (!error) {
+                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            [defaults setObject:@"hasData" forKey:forParseClassType];
+                            [defaults synchronize];
+                            NSLog(@"Fetch: %@ and set NSUserDefault to %@", forParseClassType, [defaults objectForKey:forParseClassType]);
+                            count++;
+                            if (count >= parseClassTypes.count) {
+                                NSLog(@"Now when do I run");
+                                [self postNotificationToRefresh];
+                            }
+                        }
+                    }];
+                });
             }
             else {
                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"There was an error downloading the data." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
                 [alert show];
             }
         }];
-        
     }
 }
 
@@ -157,17 +186,22 @@
     [query fromLocalDatastore];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
-            for (PFObject *object in objects) {
-                [object unpinInBackground];
-            }
-            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-            [defaults setObject:@"dataRemoved" forKey:forParseClassType];
-            [defaults synchronize];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                for (PFObject *object in objects) {
+                    NSLog(@"clearLocalData: %@", [object objectForKey:@"title"]);
+                    [object unpinInBackground];
+                }
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                [defaults setObject:@"dataRemoved" forKey:forParseClassType];
+                [defaults synchronize];
+            });
         }
     }];
 }
 
-
+- (void)postNotificationToRefresh {
+    [[NSNotificationCenter defaultCenter] postNotificationName:@"RefreshParseData" object:nil userInfo:nil];
+}
 #pragma mark
 #pragma mark - Reachability
 - (BOOL)connected

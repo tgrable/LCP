@@ -10,7 +10,7 @@
 #import "LCPContent.h"
 #import <MediaPlayer/MediaPlayer.h>
 
-@interface BrandMeetsWorldViewController : UIViewController
+@interface BrandMeetsWorldViewController : UIViewController<UIScrollViewDelegate>
 
 @property (strong, nonatomic) LCPContent *content;
 

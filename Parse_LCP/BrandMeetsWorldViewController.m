@@ -17,7 +17,9 @@
 @property (strong, nonatomic) Reachability *reachable;
 @property (strong, nonatomic) NSString *catagoryId, *catagoryType, *termId;
 @property (strong, nonatomic) UIImage *posterImage, *headerImage;
-@property (strong, nonatomic) UIView *background;
+@property (strong, nonatomic) UIView *background, *pagination;
+@property (strong, nonatomic) UIPageControl *paginationDots;
+@property (strong, nonatomic) UIScrollView *navContainer;
 @property (strong, nonatomic) UIImageView *logo, *overlay;
 @property (strong, nonatomic) NSMutableDictionary *posterDict, *headerDict, *teamDict;
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
@@ -30,7 +32,9 @@
 @synthesize content;                            //LCPContent
 @synthesize catagoryType, catagoryId, termId;   //NSString
 @synthesize posterImage, headerImage;           //UIImage
-@synthesize background;                         //UIView
+@synthesize background, pagination;             //UIView
+@synthesize paginationDots;                     //UIPageControl
+@synthesize navContainer;                       //UIScrollView
 @synthesize logo, overlay;                      //UIImageView
 @synthesize posterDict, headerDict, teamDict;   //NSMutableDictionary
 @synthesize moviePlayerController;              //MPMoviePlayerController
@@ -57,7 +61,7 @@
     [background setBackgroundColor:[UIColor lightGrayColor]];
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
-
+    
     //NSUserDefaults to check if data has been downloaded.
     //If data has been downloaded pull from local datastore
     NSUserDefaults *videoDefaults = [NSUserDefaults standardUserDefaults];
@@ -103,16 +107,40 @@
     overlay.alpha = 1.0;
     [background addSubview:overlay];
     
+    navContainer = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (324 + 36)), 36, 324, (background.bounds.size.height - (36 * 3)))];
+    [navContainer setBackgroundColor:[UIColor clearColor]];
+    navContainer.layer.borderColor = [UIColor whiteColor].CGColor;
+    navContainer.layer.borderWidth = 3.0f;
+    [navContainer setUserInteractionEnabled:YES];
+    navContainer.delegate = self;
+    [background addSubview:navContainer];
+    [navContainer setContentSize:CGSizeMake((324 * 2), (background.bounds.size.height - (36 * 4)))];
+    
+    pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (324 + 36)), ((background.bounds.size.height - (36 * 2)) - 3.0f), 324, 36)];
+    [pagination setBackgroundColor:[UIColor clearColor]];
+    pagination.layer.borderColor = [UIColor whiteColor].CGColor;
+    pagination.layer.borderWidth = 3.0f;
+    [pagination setUserInteractionEnabled:YES];
+    [background addSubview:pagination];
+    
+    paginationDots = [[UIPageControl alloc] initWithFrame:CGRectMake(0, 0, 324, 36)];
+    paginationDots.currentPage = 0;
+    paginationDots.backgroundColor = [UIColor clearColor];
+    paginationDots.pageIndicatorTintColor = [UIColor blackColor];
+    paginationDots.currentPageIndicatorTintColor = [UIColor whiteColor];
+    paginationDots.numberOfPages = 2;
+    [pagination addSubview:paginationDots];
+    
     //Logo and setting navigation buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(56, 56, 108, 33)];
+    [logoButton setFrame:CGRectMake(72, 5, 81, 25)];
     [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
     logoButton.showsTouchWhenHighlighted = YES;
     [logoButton setBackgroundImage:[UIImage imageNamed:@"logo.png"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
     //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(184, 56, 33, 33)];
+    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(189, 5, 25, 25)];
     dashboardBackground.backgroundColor = [UIColor blackColor];
     [self.view addSubview:dashboardBackground];
     
@@ -132,6 +160,14 @@
     else {
         [self fetchDataFromParse];
     }
+}
+
+//this function updates the dots for the current image the the user is on
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    CGFloat pageWidth = navContainer.bounds.size.width;
+    //display the appropriate dot when scrolled
+    NSInteger pageNumber = floor((navContainer.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
+    paginationDots.currentPage = pageNumber;
 }
 
 - (void)didReceiveMemoryWarning {
@@ -193,18 +229,17 @@
 #pragma mark
 #pragma mark - Build View
 - (void)buildView:(NSArray *)objects {
-    NSLog(@"8");
     //Create the 3 X 2 grid of navigation buttons
     int count = 0;
-    int x = 0, y = -185;
+    int x = 0, y = -143;
     
     for (PFObject *object in objects) {
         if (count % 2 == 0) {
-            x = 528;
-            y = y + 205;
+            x = 36;
+            y = y + 178;
         }
         else {
-            x = 735;
+            x = (108 + (36 * 2));
         }
         
         //Button Image
@@ -214,7 +249,18 @@
                 if (!error) {
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
                     UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:y andTag:[object objectForKey:@"tid"]];
-                    [background addSubview:tempButton];
+                    [navContainer addSubview:tempButton];
+                    
+                    UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(x, (y + 118), 108, 50)];
+                    [title setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:18.0]];
+                    title.textColor = [UIColor blackColor];
+                    title.backgroundColor = [UIColor clearColor];
+                    title.textAlignment = NSTextAlignmentCenter;
+                    title.numberOfLines = 0;
+                    title.lineBreakMode = NSLineBreakByWordWrapping;
+                    title.text = [object objectForKey:@"name"];
+                    [navContainer addSubview:title];
+
                 }
             }];
         });
@@ -238,6 +284,44 @@
             }];
         });
     }
+    
+    UIButton *videoLibraryButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [videoLibraryButton setFrame:CGRectMake((324 + 36), 36, 108, 108)];
+    [videoLibraryButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
+    videoLibraryButton.showsTouchWhenHighlighted = YES;
+    [videoLibraryButton setBackgroundColor:[UIColor grayColor]];
+    [videoLibraryButton setTitle:@"Icon Here" forState:UIControlStateNormal];
+    [navContainer addSubview:videoLibraryButton];
+    
+    UILabel *videoLibraryLabel = [[UILabel alloc] initWithFrame:CGRectMake((324 + 36), (36 + 118), 108, 50)];
+    [videoLibraryLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:18.0]];
+    videoLibraryLabel.textColor = [UIColor blackColor];
+    videoLibraryLabel.backgroundColor = [UIColor clearColor];
+    videoLibraryLabel.textAlignment = NSTextAlignmentCenter;
+    videoLibraryLabel.numberOfLines = 0;
+    videoLibraryLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    videoLibraryLabel.text = @"VIDEO LIBRARY";
+    [navContainer addSubview:videoLibraryLabel];
+    
+    UIButton *caseStudiesButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [caseStudiesButton setFrame:CGRectMake((324 + 108 + (36 * 2)), 36, 108, 108)];
+    [caseStudiesButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
+    caseStudiesButton.showsTouchWhenHighlighted = YES;
+    [caseStudiesButton setBackgroundColor:[UIColor grayColor]];
+    [caseStudiesButton setTitle:@"Icon Here" forState:UIControlStateNormal];
+    [navContainer addSubview:caseStudiesButton];
+    
+    UILabel *caseStudiesLabel = [[UILabel alloc] initWithFrame:CGRectMake((324 + 108 + (36 * 2)), (36 + 118), 108, 50)];
+    [caseStudiesLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:18.0]];
+    caseStudiesLabel.textColor = [UIColor blackColor];
+    caseStudiesLabel.backgroundColor = [UIColor clearColor];
+    caseStudiesLabel.textAlignment = NSTextAlignmentCenter;
+    caseStudiesLabel.numberOfLines = 0;
+    caseStudiesLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    caseStudiesLabel.text = @"CASE STUDIES";
+    [navContainer addSubview:caseStudiesLabel];
+
+
 }
 
 - (void)imageTapped:(UITapGestureRecognizer *)sender
@@ -264,7 +348,7 @@
 - (UIButton *)navigationButtons:(UIImage *)imgData andtitle:(NSString *)buttonTitle andXPos:(int)xpos andYPos:(int)ypos andTag:(NSString *)buttonTag {
     //the grid of buttons
     UIButton *tempButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [tempButton setFrame:CGRectMake(xpos, ypos, 197, 197)];
+    [tempButton setFrame:CGRectMake(xpos, ypos, 108, 108)];
     [tempButton addTarget:self action:@selector(firstLevelNavigationButtonPressed:)forControlEvents:UIControlEventTouchUpInside];
     tempButton.showsTouchWhenHighlighted = YES;
     [tempButton setBackgroundImage:imgData forState:UIControlStateNormal];
@@ -274,7 +358,8 @@
     return tempButton;
 }
 
-- (void)firstLevelNavigationButtonPressed:(UIButton *)sender {    
+- (void)firstLevelNavigationButtonPressed:(UIButton *)sender {
+    NSLog(@"firstLevelNavigationButtonPressed");
     //Create LCPContent object and assign catagoryId, imgPoster, and imgHeader properties
     content = [[LCPContent alloc] init];
     content.catagoryId = [NSString stringWithFormat: @"%ld", (long)sender.tag];

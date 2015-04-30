@@ -15,18 +15,20 @@
 
 @interface MeetTheTeamViewController ()
 
-@property (strong, nonatomic) UIView *background, *description;
+@property (strong, nonatomic) UIView *background, *jobDescription, *pagination;
 @property (strong, nonatomic) UIScrollView *teamScroll;
 @property (strong, nonatomic) NSMutableArray *teamMemberArray;
 @property (strong, nonatomic) NSMutableArray *buttons;
+@property (strong, nonatomic) UIPageControl *paginationDots;
 
 @end
 
 @implementation MeetTheTeamViewController
-@synthesize content;                    //LCPContent
-@synthesize background, description;    //UIView
-@synthesize teamScroll;                 //UIScrollView
-@synthesize teamMemberArray, buttons;   //NSMutableArray
+@synthesize content;                                //LCPContent
+@synthesize background, jobDescription, pagination;    //UIView
+@synthesize teamScroll;                             //UIScrollView
+@synthesize teamMemberArray, buttons;               //NSMutableArray
+@synthesize paginationDots;                         //UIPageControl
 
 - (BOOL)prefersStatusBarHidden
 {
@@ -93,17 +95,28 @@
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"cog-wheel"] forState:UIControlStateNormal];
     [dashboardBackground addSubview:dashboardButton];
     
-    teamScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, 250)];
+    teamScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, 252)];
     [teamScroll setBackgroundColor:[UIColor clearColor]];
+    teamScroll.delegate = self;
     [background addSubview:teamScroll];
+    
+    UIView *divider = [[UIView alloc] initWithFrame:CGRectMake(0, 370, background.bounds.size.width, 2)];
+    [divider setBackgroundColor:[UIColor colorWithRed:191.0f/255.0f green:191.0f/255.0f blue:191.0f/255.0f alpha:1.0]];
+    [background addSubview:divider];
+    
+    pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) - 25, 375, 324, 36)];
+    [pagination setBackgroundColor:[UIColor clearColor]];
+    [pagination setUserInteractionEnabled:YES];
+    [background addSubview:pagination];
+
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     
-    description = [[UIView alloc] initWithFrame:CGRectMake(130, 90, 280, 420)];
-    [description setBackgroundColor:[UIColor clearColor]];
-    [description setUserInteractionEnabled:YES];
-    [background addSubview:description];
+    jobDescription = [[UIView alloc] initWithFrame:CGRectMake(36, 425, (background.bounds.size.width - (36 * 2)), 420)];
+    [jobDescription setBackgroundColor:[UIColor clearColor]];
+    [jobDescription setUserInteractionEnabled:YES];
+    [background addSubview:jobDescription];
 
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -113,6 +126,14 @@
     else {
         [self fetchDataFromParse];
     }
+}
+
+//this function updates the dots for the current image the the user is on
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    CGFloat pageWidth = teamScroll.bounds.size.width;
+    //display the appropriate dot when scrolled
+    NSInteger pageNumber = floor((teamScroll.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
+    paginationDots.currentPage = pageNumber;
 }
 
 #pragma mark
@@ -163,11 +184,12 @@
 
 - (void)buildImgArray:(NSArray *)objects {
     teamMemberArray = [[NSMutableArray alloc] init];
+    buttons = [[NSMutableArray alloc] init];
+    int __block count = 1;
     for (PFObject *object in objects) {
         NSArray *gridLocationArray = [object objectForKey:@"field_grid_location"];
         NSDictionary *gridLocationDict = [[NSMutableDictionary alloc] init];
         gridLocationDict = gridLocationArray[0];
-        
         
         //Sample Image
         PFFile *sampleFile = object[@"field_team_member_image_img"];
@@ -190,56 +212,59 @@
             tm.isTeamMember = YES;
             tm.btnTag = [object objectForKey:@"nid"];
             tm.sortOrder = [gridLocationDict objectForKey:@"value"];
-            
             [teamMemberArray addObject:tm];
-            NSLog(@"%@", teamMemberArray);
+            
+            count++;
+            if (count > objects.count) {
+                NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"sortOrder" ascending:YES];
+                NSArray *sortDescriptors = [NSArray arrayWithObject:sortDescriptor];
+                NSArray *sortedArray = [teamMemberArray sortedArrayUsingDescriptors:sortDescriptors];
+                [self buldGrid:sortedArray];
+            }
+
         }];
     }
 }
 
-- (void)buldGrid:(NSMutableArray *)teamMemberObjects {
-    
-    // TODO: Fix grid setup to display team memeber photos in proper position every time.
-    
-    int x = 438, y = 99, count = 0, btnCount = 0;
+- (void)buldGrid:(NSArray *)teamMemberObjects {
+    int x = 36;
     for (LCPTeamMembers *tm in teamMemberObjects) {
-        if (btnCount < 9) {
-            if (tm.isTeamMember) {
-                UIButton *teamMemberButton = [UIButton buttonWithType:UIButtonTypeCustom];
-                [teamMemberButton setFrame:CGRectMake(x, y, 152, 152)];
-                [teamMemberButton addTarget:self action:@selector(teamMemberClicked:)forControlEvents:UIControlEventTouchUpInside];
-                teamMemberButton.showsTouchWhenHighlighted = YES;
-                teamMemberButton.tag = [tm.btnTag intValue];
-                [teamMemberButton setBackgroundImage:tm.teamMemberPhoto forState:UIControlStateNormal];
-                [background addSubview:teamMemberButton];
-                [buttons addObject:teamMemberButton];
+        UIButton *teamMemberButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [teamMemberButton setFrame:CGRectMake(x, 50, 152, 152)];
+        [teamMemberButton addTarget:self action:@selector(teamMemberClicked:)forControlEvents:UIControlEventTouchUpInside];
+        teamMemberButton.showsTouchWhenHighlighted = YES;
+        teamMemberButton.tag = [tm.btnTag intValue];
+        [teamMemberButton setBackgroundImage:tm.teamMemberPhoto forState:UIControlStateNormal];
+        teamMemberButton.layer.cornerRadius = (152/2);
+        teamMemberButton.layer.masksToBounds = YES;
+        [teamScroll addSubview:teamMemberButton];
+        [buttons addObject:teamMemberButton];
+        
+        x += 188;
+    }
+    
+    if (teamMemberObjects.count > 5) {
+        paginationDots = [[UIPageControl alloc] initWithFrame:CGRectMake(0, 0, 50, 36)];
+        paginationDots.currentPage = 0;
+        paginationDots.backgroundColor = [UIColor lightGrayColor];
+        paginationDots.pageIndicatorTintColor = [UIColor blackColor];
+        paginationDots.currentPageIndicatorTintColor = [UIColor whiteColor];
+        paginationDots.numberOfPages = 2;
+        [pagination addSubview:paginationDots];
+        
+        int multiplier = 0;
+        for (int i = 0; i < teamMemberObjects.count; i++) {
+            if(i % 5 == 0)
+            {
+                multiplier++;
             }
-            else {
-                UIButton *teamMemberButton = [UIButton buttonWithType:UIButtonTypeCustom];
-                [teamMemberButton setFrame:CGRectMake(x, y, 152, 152)];
-                [teamMemberButton addTarget:self action:@selector(teamMemberClicked:)forControlEvents:UIControlEventTouchUpInside];
-                teamMemberButton.showsTouchWhenHighlighted = YES;
-                teamMemberButton.tag = [tm.btnTag intValue];
-                [teamMemberButton setBackgroundImage:tm.teamMemberPhoto forState:UIControlStateNormal];
-                teamMemberButton.enabled = NO;
-                [background addSubview:teamMemberButton];
-            }
         }
-        count++;
-        btnCount++;
-        if (count < 3) {
-            x += 171;
-        }
-        else {
-            x = 438;
-            count = 0;
-            y += 181;
-        }
+        [teamScroll setContentSize:CGSizeMake(background.bounds.size.width * multiplier, 252)];
     }
 }
 
--(void)teamMemberClicked:(UIButton *)sender
-{
+-(void)teamMemberClicked:(UIButton *)sender {
+    
     for(UIButton *teamMembers in buttons){
         if(teamMembers.tag != sender.tag){
             teamMembers.alpha = 0.5;
@@ -248,39 +273,37 @@
         }
     }
     
-    for(UIView *v in [description subviews]){
+    for(UIView *v in [jobDescription subviews]){
         [v removeFromSuperview];
     }
-    
     for (LCPTeamMembers *tms in teamMemberArray) {
         if ([tms.btnTag isEqualToString:[NSString stringWithFormat:@"%ld", (long)sender.tag]]) {
-            UILabel *nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 280, 40)];
+            UILabel *nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, jobDescription.bounds.size.width - 600, 40)];
             [nameLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:20.0]];
             nameLabel.textColor = [UIColor blackColor];
             [nameLabel setNumberOfLines:1];
             nameLabel.backgroundColor = [UIColor clearColor];
             nameLabel.textAlignment = NSTextAlignmentLeft;
             nameLabel.text = tms.teamMemberName;
-            [description addSubview:nameLabel];
+            [jobDescription addSubview:nameLabel];
             
-            UILabel *positionLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 36, 280, 20)];
+            UILabel *positionLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 36, jobDescription.bounds.size.width - 600, 20)];
             [positionLabel setFont:[UIFont fontWithName:@"NimbusSanD-Regu" size:16.0]];
             positionLabel.textColor = [UIColor blackColor];
             [positionLabel setNumberOfLines:1];
             positionLabel.backgroundColor = [UIColor clearColor];
             positionLabel.textAlignment = NSTextAlignmentLeft;
             positionLabel.text = tms.teamMemberTitle;
-            [description addSubview:positionLabel];
+            [jobDescription addSubview:positionLabel];
             
             NSString *temp = [NSString stringWithFormat:@"%@", tms.teamMemberBio];
-            UILabel *descLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 60, 280, 320)];
+            UITextView *descLabel = [[UITextView alloc] initWithFrame:CGRectMake(jobDescription.bounds.size.width - 600, 0, jobDescription.bounds.size.width - 280, 320)];
             [descLabel setFont:[UIFont fontWithName:@"NimbusSanD-Regu" size:16.0]];
             descLabel.textColor = [UIColor blackColor];
-            [descLabel setNumberOfLines:30];
             descLabel.backgroundColor = [UIColor clearColor];
             descLabel.textAlignment = NSTextAlignmentLeft;
             descLabel.text = temp.stringByConvertingHTMLToPlainText;
-            [description addSubview:descLabel];
+            [jobDescription addSubview:descLabel];
         }
     }
 }

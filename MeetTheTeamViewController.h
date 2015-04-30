@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "LCPContent.h"
 
-@interface MeetTheTeamViewController : UIViewController
+@interface MeetTheTeamViewController : UIViewController<UIScrollViewDelegate>
 
 @property (strong, nonatomic) LCPContent *content;
 

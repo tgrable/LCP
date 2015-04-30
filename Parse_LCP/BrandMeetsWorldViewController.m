@@ -248,6 +248,7 @@
             [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
                 if (!error) {
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
+                    [headerDict setObject:btnImg forKey:object[@"tid"]];
                     UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:y andTag:[object objectForKey:@"tid"]];
                     [navContainer addSubview:tempButton];
                     
@@ -276,13 +277,14 @@
         });
         
         //Header Image
-        PFFile *headerFile = object[@"field_header_image_img"];
+        /*PFFile *headerFile = object[@"field_header_image_img"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [headerFile getDataInBackgroundWithBlock:^(NSData *headerData, NSError *error) {
                 UIImage *headerImg = [[UIImage alloc] initWithData:headerData];
-                [headerDict setObject:headerImg forKey:object[@"tid"]];
+                
+                NSLog(@"%@", headerDict);
             }];
-        });
+        });*/
     }
     
     UIButton *videoLibraryButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -359,10 +361,10 @@
 }
 
 - (void)firstLevelNavigationButtonPressed:(UIButton *)sender {
-    NSLog(@"firstLevelNavigationButtonPressed");
     //Create LCPContent object and assign catagoryId, imgPoster, and imgHeader properties
     content = [[LCPContent alloc] init];
     content.catagoryId = [NSString stringWithFormat: @"%ld", (long)sender.tag];
+    content.lblMainSectionTitle = sender.titleLabel.text;
     content.imgPoster = [posterDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     content.imgHeader = [headerDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     

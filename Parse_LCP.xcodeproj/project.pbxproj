@@ -67,6 +67,8 @@
 		4F79A05E1AC99E3400A5C712 /* AFURLRequestSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F79A0531AC99E3400A5C712 /* AFURLRequestSerialization.m */; };
 		4F79A05F1AC99E3400A5C712 /* AFURLResponseSerialization.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F79A0551AC99E3400A5C712 /* AFURLResponseSerialization.m */; };
 		4F79A0601AC99E3400A5C712 /* AFURLSessionManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F79A0571AC99E3400A5C712 /* AFURLSessionManager.m */; };
+		4F7C7AB51AF15A6400BB48CD /* cog-wheel.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F7C7AB31AF15A6400BB48CD /* cog-wheel.png */; };
+		4F7C7AB61AF15A6400BB48CD /* cog-wheel@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F7C7AB41AF15A6400BB48CD /* cog-wheel@2x.png */; };
 		4FAC2FFE1A9D18D300CE40C4 /* LogoLoaderViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FAC2FFD1A9D18D300CE40C4 /* LogoLoaderViewController.m */; };
 		4FAC30021A9D194B00CE40C4 /* logo-C@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4FAC2FFF1A9D194B00CE40C4 /* logo-C@2x.png */; };
 		4FAC30031A9D194B00CE40C4 /* logo-L@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4FAC30001A9D194B00CE40C4 /* logo-L@2x.png */; };
@@ -231,6 +233,8 @@
 		4F79A0551AC99E3400A5C712 /* AFURLResponseSerialization.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFURLResponseSerialization.m; sourceTree = "<group>"; };
 		4F79A0561AC99E3400A5C712 /* AFURLSessionManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AFURLSessionManager.h; sourceTree = "<group>"; };
 		4F79A0571AC99E3400A5C712 /* AFURLSessionManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AFURLSessionManager.m; sourceTree = "<group>"; };
+		4F7C7AB31AF15A6400BB48CD /* cog-wheel.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cog-wheel.png"; sourceTree = "<group>"; };
+		4F7C7AB41AF15A6400BB48CD /* cog-wheel@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "cog-wheel@2x.png"; sourceTree = "<group>"; };
 		4FAC2FFC1A9D18D300CE40C4 /* LogoLoaderViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LogoLoaderViewController.h; path = ../LogoLoaderViewController.h; sourceTree = "<group>"; };
 		4FAC2FFD1A9D18D300CE40C4 /* LogoLoaderViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LogoLoaderViewController.m; path = ../LogoLoaderViewController.m; sourceTree = "<group>"; };
 		4FAC2FFF1A9D194B00CE40C4 /* logo-C@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo-C@2x.png"; sourceTree = "<group>"; };
@@ -478,6 +482,8 @@
 		4FCC5BF41A8BC76800292D6B /* images */ = {
 			isa = PBXGroup;
 			children = (
+				4F7C7AB31AF15A6400BB48CD /* cog-wheel.png */,
+				4F7C7AB41AF15A6400BB48CD /* cog-wheel@2x.png */,
 				4FAC2FFF1A9D194B00CE40C4 /* logo-C@2x.png */,
 				4FAC30001A9D194B00CE40C4 /* logo-L@2x.png */,
 				4FAC30011A9D194B00CE40C4 /* logo-P@2x.png */,
@@ -738,6 +744,7 @@
 				4F329D6B1A925CFD002A5093 /* NimbusSanD-ReguItal.ttf in Resources */,
 				4F329D6C1A925CFD002A5093 /* NimbusSanD-Regu.ttf in Resources */,
 				4F329D731A92A6BF002A5093 /* btn-cms-casestudy.png in Resources */,
+				4F7C7AB51AF15A6400BB48CD /* cog-wheel.png in Resources */,
 				4F329D9B1A92AB5C002A5093 /* btn-vision-casestudy.png in Resources */,
 				4F329D6D1A925CFD002A5093 /* NimbusSanD-BoldItal.ttf in Resources */,
 				4FAC30061A9D197900CE40C4 /* logo-tag@2x.png in Resources */,
@@ -781,6 +788,7 @@
 				4FCC5BF91A8BC82000292D6B /* bmwposter.png in Resources */,
 				4FB854321A97A1280079866C /* img-yellow-square.png in Resources */,
 				4FAC30021A9D194B00CE40C4 /* logo-C@2x.png in Resources */,
+				4F7C7AB61AF15A6400BB48CD /* cog-wheel@2x.png in Resources */,
 				4FB854301A97A1280079866C /* img-purple-square.png in Resources */,
 				4F329D9C1A92AB5C002A5093 /* btn-vision-overview.png in Resources */,
 				4FDE35EE1A72FBAE000052E9 /* LaunchScreen.xib in Resources */,

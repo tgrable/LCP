@@ -10,7 +10,7 @@
 #import "LCPContent.h"
 #import <MediaPlayer/MediaPlayer.h>
 
-@interface CatagoryViewController : UIViewController
+@interface CatagoryViewController : UIViewController<UIScrollViewDelegate>
 
 @property (strong, nonatomic) LCPContent *content;
 

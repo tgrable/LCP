@@ -15,12 +15,14 @@
 #import <Parse/Parse.h>
 
 @interface CatagoryViewController () {
-    long int index, y;
+    long int index;
 }
 
 @property (strong, nonatomic) Reachability *reachable;
 @property (strong, nonatomic) ParseDownload *parsedownload;
-@property (strong, nonatomic) UIView *background;
+@property (strong, nonatomic) UIView *background, *pagination;
+@property (strong, nonatomic) UIPageControl *paginationDots;
+@property (strong, nonatomic) UIScrollView *navContainer;
 @property (strong, nonatomic) UIImageView *logo, *overlay;
 @property (strong, nonatomic) NSMutableArray *btnImageArray, *btnTitleArray, *btnTagArray;
 @property (strong, nonatomic) NSTimer *time;
@@ -30,7 +32,9 @@
 @implementation CatagoryViewController
 @synthesize reachable;                                  //Reachability
 @synthesize content;                                    //LCPContent
-@synthesize background;                                 //UIView
+@synthesize background, pagination;                     //UIView
+@synthesize paginationDots;                             //UIPageControl
+@synthesize navContainer;                               //UIScrollView
 @synthesize logo, overlay;                              //UIImageView
 @synthesize btnImageArray, btnTitleArray, btnTagArray;  //NSMutableArray
 @synthesize time;                                       //NSTimer
@@ -43,7 +47,7 @@
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
+
     //This view is dependent on user input but these elements will not change
     //so they will only need to loaded one time.
 
@@ -55,14 +59,14 @@
 
     //Logo, settings, and home buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(56, 56, 108, 33)];
+    [logoButton setFrame:CGRectMake(72, 5, 81, 25)];
     [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
     logoButton.showsTouchWhenHighlighted = YES;
     [logoButton setBackgroundImage:[UIImage imageNamed:@"logo.png"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
     UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [homeButton setFrame:CGRectMake(56, 108, 50, 50)];
+    [homeButton setFrame:CGRectMake((background.bounds.size.width - (36 + 50)), 5, 50, 50)];
     [homeButton addTarget:self action:@selector(backHome:)forControlEvents:UIControlEventTouchUpInside];
     homeButton.showsTouchWhenHighlighted = YES;
     homeButton.tag = 80;
@@ -70,12 +74,12 @@
     [self.view addSubview:homeButton];
     
     //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(184, 56, 33, 33)];
+    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(189, 5, 25, 25)];
     dashboardBackground.backgroundColor = [UIColor blackColor];
     [self.view addSubview:dashboardBackground];
     
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [dashboardButton setFrame:CGRectMake(7, 7, 20, 20)];
+    [dashboardButton setFrame:CGRectMake(3, 3, 20, 20)];
     [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
     dashboardButton.showsTouchWhenHighlighted = YES;
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"cog-wheel"] forState:UIControlStateNormal];
@@ -126,14 +130,21 @@
     overlay.alpha = 1.0;
     [background addSubview:overlay];
     
-    UIImageView *header = [[UIImageView alloc] initWithFrame:CGRectMake((background.bounds.size.width - 428), 20 ,428 ,80)];
-    [header setImage:content.imgHeader];
-    [header setUserInteractionEnabled:YES];
-    header.alpha = 1.0;
-    header.tag = 90;
-    [background addSubview:header];
-
+    navContainer = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (324 + 36)), 36, 324, (background.bounds.size.height - (36 * 3)))];
+    [navContainer setBackgroundColor:[UIColor clearColor]];
+    navContainer.layer.borderColor = [UIColor whiteColor].CGColor;
+    navContainer.layer.borderWidth = 3.0f;
+    [navContainer setUserInteractionEnabled:YES];
+    navContainer.delegate = self;
+    [background addSubview:navContainer];
     
+    pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (324 + 36)), ((background.bounds.size.height - (36 * 2)) - 3.0f), 324, 36)];
+    [pagination setBackgroundColor:[UIColor clearColor]];
+    pagination.layer.borderColor = [UIColor whiteColor].CGColor;
+    pagination.layer.borderWidth = 3.0f;
+    [pagination setUserInteractionEnabled:YES];
+    [background addSubview:pagination];
+
     //NSUserDefaults to check if data has been downloaded.
     //If data has been downloaded pull from local datastore else fetch data from Parse.com
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -196,6 +207,14 @@
     }];
 }
 
+//this function updates the dots for the current image the the user is on
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    CGFloat pageWidth = navContainer.bounds.size.width;
+    //display the appropriate dot when scrolled
+    NSInteger pageNumber = floor((navContainer.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
+    paginationDots.currentPage = pageNumber;
+}
+
 #pragma mark
 #pragma mark - Build View
 - (void)buildView:(NSArray *)objects {
@@ -204,21 +223,27 @@
     int count = 0;
     [self createEmptyButtonArrays:objects.count];
     
+    if (objects.count > 8) {
+        paginationDots = [[UIPageControl alloc] initWithFrame:CGRectMake(0, 0, 324, 36)];
+        paginationDots.currentPage = 0;
+        paginationDots.backgroundColor = [UIColor clearColor];
+        paginationDots.pageIndicatorTintColor = [UIColor blackColor];
+        paginationDots.currentPageIndicatorTintColor = [UIColor whiteColor];
+        paginationDots.numberOfPages = 2;
+        [pagination addSubview:paginationDots];
+        
+        [navContainer setContentSize:CGSizeMake((324 * 2), (background.bounds.size.height - (36 * 3)))];
+    }
+    
     for (PFObject *object in objects) {
-        PFFile *imageFile = object[@"field_button_image_img"];
-        [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
-            int weight = [[object objectForKey:@"weight"] intValue];
-            
-            UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
-            [btnImageArray replaceObjectAtIndex:weight withObject:btnImg];
-            [btnTitleArray replaceObjectAtIndex:weight withObject:[object objectForKey:@"name"]];
-            [btnTagArray replaceObjectAtIndex:weight withObject:[object objectForKey:@"tid"]];
-            
-            if (count == (objects.count - 1)) {
-                y = 75 + (objects.count * 60);
-                [self timerCountdown];
-            }
-        }];
+        int weight = [[object objectForKey:@"weight"] intValue];
+        [btnTitleArray replaceObjectAtIndex:weight withObject:[object objectForKey:@"name"]];
+        [btnTagArray replaceObjectAtIndex:weight withObject:[object objectForKey:@"tid"]];
+        
+        if (count == (objects.count - 1)) {
+            [self timerCountdown];
+        }
+
         count++;
     }
 }
@@ -254,24 +279,54 @@
     time = [NSTimer scheduledTimerWithTimeInterval:0.08 target:self selector:@selector(buildNavigationButtons) userInfo:nil repeats:NO];
 }
 
-- (void)buildNavigationButtons
-{
+- (void)buildNavigationButtons {
+    long xVal = (36 / 2), yVal = index * 55;
+    if (index > 7) {
+        xVal = (324 + (36 / 2));
+        yVal = (index - 8) * 55;
+    }
     if (![[btnImageArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTagArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTitleArray objectAtIndex:index] isKindOfClass:[NSNull class]]) {
         UIButton *customButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [customButton setFrame:CGRectMake(548, -40, 404, 50)];
+        [customButton setFrame:CGRectMake((36 / 2), -40, (324 - 36), 45)];
         [customButton addTarget:self action:@selector(navigationButtonClick:)forControlEvents:UIControlEventTouchUpInside];
         customButton.showsTouchWhenHighlighted = YES;
-        [customButton setBackgroundImage:[btnImageArray objectAtIndex:index] forState:UIControlStateNormal];
+        [customButton setBackgroundColor:[UIColor grayColor]];
+        customButton.layer.borderColor = [UIColor whiteColor].CGColor;
+        customButton.layer.borderWidth = 2.0f;
         customButton.tag = [[btnTagArray objectAtIndex:index] intValue];
-        [customButton setTitle:[btnTitleArray objectAtIndex:index] forState:normal];
-        [customButton setTitleColor:[UIColor clearColor] forState:UIControlStateNormal];
-        [background addSubview:customButton];
+        [customButton setTitle:[[btnTitleArray objectAtIndex:index] uppercaseString] forState:normal];
+        [customButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+        customButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+        customButton.contentEdgeInsets = UIEdgeInsetsMake(0, 10, 0, 0);
+        [navContainer addSubview:customButton];
         
         [UIView animateWithDuration:0.5f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
-            customButton.frame = CGRectMake(548, y, 404, 50);
+            customButton.frame = CGRectMake(xVal, (yVal + 142), (324 - 36), 45);
         }completion:^(BOOL finished) {}];
+        
+        UIView *navHeader = [[UIView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (324 + 36)), 36, 324, 126)];
+        [navHeader setBackgroundColor:[UIColor colorWithRed:191.0f/255.0f green:191.0f/255.0f blue:191.0f/255.0f alpha:1.0]];
+        navHeader.layer.borderWidth = 3.0f;
+        navHeader.layer.borderColor = [UIColor whiteColor].CGColor;
+        [background addSubview:navHeader];
+        
+        UIImageView *header = [[UIImageView alloc] initWithFrame:CGRectMake(18, 18, 90, 90)];
+        [header setImage:content.imgHeader];
+        [header setUserInteractionEnabled:YES];
+        header.alpha = 1.0;
+        header.tag = 90;
+        [navHeader addSubview:header];
+        
+        UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(126, 18, 195, 90)];
+        [headerLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:26.0]];
+        headerLabel.textColor = [UIColor blackColor];
+        headerLabel.backgroundColor = [UIColor clearColor];
+        headerLabel.textAlignment = NSTextAlignmentLeft;
+        headerLabel.numberOfLines = 0;
+        headerLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        headerLabel.text = content.lblMainSectionTitle;
+        [navHeader addSubview:headerLabel];
     }
-    y -= 60;
     index--;
     
     if(index < [btnImageArray count]){

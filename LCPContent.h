@@ -11,6 +11,7 @@
 
 @interface LCPContent : NSObject
 
+@property (strong, nonatomic) NSString *lblMainSectionTitle;
 @property (strong, nonatomic) NSString *lblTitle;
 @property (strong, nonatomic) NSString *catagoryId;
 @property (strong, nonatomic) NSString *termId;

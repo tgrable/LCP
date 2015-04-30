@@ -21,7 +21,7 @@
 @property (strong, nonatomic) UIPageControl *paginationDots;
 @property (strong, nonatomic) UIScrollView *navContainer;
 @property (strong, nonatomic) UIImageView *logo, *overlay;
-@property (strong, nonatomic) NSMutableDictionary *posterDict, *headerDict, *teamDict;
+@property (strong, nonatomic) NSMutableDictionary *posterDict, *headerDict, *teamDict, *iconDict;
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
 @property (strong, nonatomic) ParseDownload *parsedownload;
 
@@ -36,7 +36,7 @@
 @synthesize paginationDots;                     //UIPageControl
 @synthesize navContainer;                       //UIScrollView
 @synthesize logo, overlay;                      //UIImageView
-@synthesize posterDict, headerDict, teamDict;   //NSMutableDictionary
+@synthesize posterDict, headerDict, teamDict, iconDict;   //NSMutableDictionary
 @synthesize moviePlayerController;              //MPMoviePlayerController
 @synthesize parsedownload;                      //ParseDownload
 
@@ -52,6 +52,7 @@
     //This view is independent of any user input and will not change
     //so all data will only need to loaded one time.
     
+    iconDict = [[NSMutableDictionary alloc] init];
     posterDict = [[NSMutableDictionary alloc] init];
     headerDict = [[NSMutableDictionary alloc] init];
     teamDict = [[NSMutableDictionary alloc] init];
@@ -248,7 +249,7 @@
             [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
                 if (!error) {
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
-                    [headerDict setObject:btnImg forKey:object[@"tid"]];
+                    [iconDict setObject:btnImg forKey:object[@"tid"]];
                     UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:y andTag:[object objectForKey:@"tid"]];
                     [navContainer addSubview:tempButton];
                     
@@ -277,14 +278,13 @@
         });
         
         //Header Image
-        /*PFFile *headerFile = object[@"field_header_image_img"];
+        PFFile *headerFile = object[@"field_header_image_img"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [headerFile getDataInBackgroundWithBlock:^(NSData *headerData, NSError *error) {
                 UIImage *headerImg = [[UIImage alloc] initWithData:headerData];
-                
-                NSLog(@"%@", headerDict);
+                [headerDict setObject:headerImg forKey:object[@"tid"]];
             }];
-        });*/
+        });
     }
     
     UIButton *videoLibraryButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -365,6 +365,7 @@
     content = [[LCPContent alloc] init];
     content.catagoryId = [NSString stringWithFormat: @"%ld", (long)sender.tag];
     content.lblMainSectionTitle = sender.titleLabel.text;
+    content.imgIcon =
     content.imgPoster = [posterDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     content.imgHeader = [headerDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     

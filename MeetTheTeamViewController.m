@@ -16,6 +16,7 @@
 @interface MeetTheTeamViewController ()
 
 @property (strong, nonatomic) UIView *background, *description;
+@property (strong, nonatomic) UIScrollView *teamScroll;
 @property (strong, nonatomic) NSMutableArray *teamMemberArray;
 @property (strong, nonatomic) NSMutableArray *buttons;
 
@@ -24,6 +25,7 @@
 @implementation MeetTheTeamViewController
 @synthesize content;                    //LCPContent
 @synthesize background, description;    //UIView
+@synthesize teamScroll;                 //UIScrollView
 @synthesize teamMemberArray, buttons;   //NSMutableArray
 
 - (BOOL)prefersStatusBarHidden
@@ -35,63 +37,73 @@
     // Do any additional setup after loading the view.
     
     //First Page Summary View
-    background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, 952, 696)];
-    [background setBackgroundColor:[UIColor lightGrayColor]];
+    background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, self.view.bounds.size.width - (36 * 2), self.view.bounds.size.height - (36 * 2))];
+    [background setBackgroundColor:[UIColor whiteColor]];
     [background setUserInteractionEnabled:YES];
     //[pageScroll addSubview:background];
     [self.view addSubview:background];
     
+    UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, background.bounds.size.width, 105)];
+    headerImgView.image = content.imgHeader;
+    [background addSubview:headerImgView];
+    
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, headerImgView.bounds.size.width, 105)];
+    [headerLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:40.0]];
+    headerLabel.textColor = [UIColor whiteColor];
+    [headerLabel setNumberOfLines:2];
+    headerLabel.backgroundColor = [UIColor clearColor];
+    headerLabel.textAlignment = NSTextAlignmentCenter;
+    headerLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    headerLabel.text = @"MEET THE TEAM";
+    [background addSubview:headerLabel];
+    
+    //Logo, settings, and home buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(56, 56, 108, 33)];
+    [logoButton setFrame:CGRectMake(72, 5, 81, 25)];
     //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
     logoButton.showsTouchWhenHighlighted = YES;
     [logoButton setBackgroundImage:[UIImage imageNamed:@"logo.png"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
     UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [homeButton setFrame:CGRectMake(56, 108, 50, 50)];
-    [homeButton addTarget:self action:@selector(backHome:)forControlEvents:UIControlEventTouchUpInside];
+    [homeButton setFrame:CGRectMake((self.view.bounds.size.width - ((36 * 4) + 50)), 5, 50, 50)];
+    [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     homeButton.showsTouchWhenHighlighted = YES;
-    homeButton.tag = 80;
-    [homeButton setBackgroundImage:[UIImage imageNamed:@"btn-back.png"] forState:UIControlStateNormal];
+    homeButton.tag = 0;
+    [homeButton setBackgroundImage:[UIImage imageNamed:@"btn-home.png"] forState:UIControlStateNormal];
     [self.view addSubview:homeButton];
     
+    UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [backButton setFrame:CGRectMake((self.view.bounds.size.width - ((36 * 2) + 50)), 5, 50, 50)];
+    [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
+    backButton.showsTouchWhenHighlighted = YES;
+    backButton.tag = 1;
+    [backButton setBackgroundImage:[UIImage imageNamed:@"btn-back.png"] forState:UIControlStateNormal];
+    [self.view addSubview:backButton];
+    
     //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(184, 56, 33, 33)];
+    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(189, 5, 25, 25)];
     dashboardBackground.backgroundColor = [UIColor blackColor];
     [self.view addSubview:dashboardBackground];
     
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [dashboardButton setFrame:CGRectMake(7, 7, 20, 20)];
+    [dashboardButton setFrame:CGRectMake(3, 3, 20, 20)];
     [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
     dashboardButton.showsTouchWhenHighlighted = YES;
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"cog-wheel"] forState:UIControlStateNormal];
     [dashboardBackground addSubview:dashboardButton];
+    
+    teamScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, 250)];
+    [teamScroll setBackgroundColor:[UIColor clearColor]];
+    [background addSubview:teamScroll];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-    
-    UIImageView *header = [[UIImageView alloc] initWithFrame:CGRectMake(438, 20, 514, 60)];
-    [header setImage:content.imgTeam];
-    [header setUserInteractionEnabled:YES];
-    header.alpha = 1.0;
-    header.tag = 90;
-    [background addSubview:header];
     
     description = [[UIView alloc] initWithFrame:CGRectMake(130, 90, 280, 420)];
     [description setBackgroundColor:[UIColor clearColor]];
     [description setUserInteractionEnabled:YES];
     [background addSubview:description];
-    
-    UILabel *fillerNameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 280, 55)];
-    [fillerNameLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:20.0]];
-    fillerNameLabel.textColor = [UIColor blackColor];
-    [fillerNameLabel setNumberOfLines:2];
-    fillerNameLabel.backgroundColor = [UIColor clearColor];
-    fillerNameLabel.textAlignment = NSTextAlignmentLeft;
-    fillerNameLabel.lineBreakMode = NSLineBreakByWordWrapping;
-    fillerNameLabel.text = @"SELECT A TEAM MEMBER TO LEARN MORE";
-    [description addSubview:fillerNameLabel];
 
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -137,7 +149,7 @@
     //Query the Local Datastore
     PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
     [query fromLocalDatastore];
-    //[query whereKey:@"field_term_reference" equalTo:content.catagoryId];
+    [query whereKey:@"field_term_reference" equalTo:content.catagoryId];
     [query orderByAscending:@"createdAt"];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         [self buildImgArray:objects];
@@ -151,30 +163,11 @@
 
 - (void)buildImgArray:(NSArray *)objects {
     teamMemberArray = [[NSMutableArray alloc] init];
-    buttons = [[NSMutableArray alloc] init];
-    NSArray *images = [NSArray arrayWithObjects:[UIImage imageNamed:@"img-blue-square.png"],
-                        [UIImage imageNamed:@"img-green-square.png"],
-                        [UIImage imageNamed:@"img-orange-square.png"],
-                        [UIImage imageNamed:@"img-purple-square.png"],
-                        [UIImage imageNamed:@"img-red-square.png"],
-                        [UIImage imageNamed:@"img-yellow-square.png"],
-                       nil];
-    
-    for (int i = 0; i < images.count; i++) {
-        LCPTeamMembers *tm = [[LCPTeamMembers alloc] init];
-        
-        tm.teamMemberPhoto = images[i];
-        tm.isTeamMember = NO;
-        tm.btnTag = 0;
-        
-        [teamMemberArray addObject:tm];
-    }
-   
-    int __block count = 1;
     for (PFObject *object in objects) {
         NSArray *gridLocationArray = [object objectForKey:@"field_grid_location"];
         NSDictionary *gridLocationDict = [[NSMutableDictionary alloc] init];
         gridLocationDict = gridLocationArray[0];
+        
         
         //Sample Image
         PFFile *sampleFile = object[@"field_team_member_image_img"];
@@ -196,12 +189,10 @@
             tm.teamMemberPhoto = sampleImg;
             tm.isTeamMember = YES;
             tm.btnTag = [object objectForKey:@"nid"];
+            tm.sortOrder = [gridLocationDict objectForKey:@"value"];
             
-            [teamMemberArray insertObject:tm atIndex:([[gridLocationDict objectForKey:@"value"] integerValue] - 1)];
-            count++;
-            if (count > objects.count) {
-                [self buldGrid:teamMemberArray];
-            }
+            [teamMemberArray addObject:tm];
+            NSLog(@"%@", teamMemberArray);
         }];
     }
 }
@@ -296,11 +287,15 @@
 
 #pragma mark
 #pragma mark - Navigation
-// In a storyboard-based application, you will often want to do a little preparation before navigation
--(void)backHome:(id)sender
+-(void)backNav:(UIButton *)sender
 {
-    //[self performSegueWithIdentifier:@"backToCatagory" sender:sender];
-    [self.navigationController popViewControllerAnimated:YES];
+    NSArray *array = [self.navigationController viewControllers];
+    if (sender.tag == 0) {
+        [self.navigationController popToViewController:[array objectAtIndex:2] animated:YES];
+    }
+    else {
+        [self.navigationController popViewControllerAnimated:YES];
+    }
     [self removeEverything];
 }
 

@@ -311,7 +311,7 @@
         [background addSubview:navHeader];
         
         UIImageView *header = [[UIImageView alloc] initWithFrame:CGRectMake(18, 18, 90, 90)];
-        [header setImage:content.imgHeader];
+        [header setImage:content.imgIcon];
         [header setUserInteractionEnabled:YES];
         header.alpha = 1.0;
         header.tag = 90;
@@ -354,7 +354,7 @@
         
         [self.navigationController pushViewController:tvc animated:YES];
     }
-    else if ([sender.titleLabel.text rangeOfString:@"Team"].location != NSNotFound) {
+    else if ([sender.titleLabel.text rangeOfString:@"TEAM"].location != NSNotFound) {
         //Pass LCPContent object to next view UINavigation View Controller
         MeetTheTeamViewController *mvc = (MeetTheTeamViewController *)[storyboard instantiateViewControllerWithIdentifier:@"meetTheTeamViewController"];
         mvc.content = content;
@@ -366,6 +366,7 @@
         [self.navigationController pushViewController:mvc animated:YES];
     }
     else {
+        NSLog(@"%@", sender.titleLabel.text);
         //Pass LCPContent object to next view UINavigation View Controller
         DetailsViewController *dvc = (DetailsViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
         dvc.content = content;

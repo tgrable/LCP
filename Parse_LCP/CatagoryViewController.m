@@ -308,7 +308,7 @@
         
         UIView *navHeader = [[UIView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), 30, 320, 126)];
         [navHeader setBackgroundColor:[UIColor colorWithRed:191.0f/255.0f green:191.0f/255.0f blue:191.0f/255.0f alpha:1.0]];
-        navHeader.layer.borderWidth = 1.0f;
+        navHeader.layer.borderWidth =  1.0f;
         navHeader.layer.borderColor = [UIColor whiteColor].CGColor;
         [background addSubview:navHeader];
         

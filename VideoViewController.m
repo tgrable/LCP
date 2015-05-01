@@ -7,6 +7,7 @@
 //
 
 #import "VideoViewController.h"
+#import "ParseDownload.h"
 #import "Reachability.h"
 #import <Parse/Parse.h>
 
@@ -15,6 +16,9 @@
 @property (strong, nonatomic) UIView *background;
 @property (strong, nonatomic) UIImageView *videoPoster;
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
+@property (strong, nonatomic) ParseDownload *parsedownload;
+@property (strong, nonatomic) UIButton *favoriteContentButton;
+@property NSString *nid, *nodeTitle;
 
 @end
 
@@ -24,10 +28,14 @@
 @synthesize background;
 @synthesize videoPoster;
 @synthesize moviePlayerController;
+@synthesize favoriteContentButton;                   //UIButton
+@synthesize parsedownload;                           //ParseDownload
+@synthesize nid, nodeTitle;                        //NSMutableArrays
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // TODO: Add a UIScrollView for multiple videos
+    
+    parsedownload = [[ParseDownload alloc] init];
 
     //UIView 36 pixels smaller than the device bounds used to hold the rest of the view objects
     background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, (self.view.bounds.size.width - (36 * 2)), (self.view.bounds.size.height - (36 * 2)))];
@@ -35,33 +43,25 @@
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
     
-    //Logo, settings, and home buttons
-    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(56, 56, 108, 33)];
-    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
-    logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo.png"] forState:UIControlStateNormal];
-    [self.view addSubview:logoButton];
-    
+    favoriteContentButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [favoriteContentButton setFrame:CGRectMake(background.bounds.size.width - 272, 72, 100, 33)];
+    [favoriteContentButton addTarget:self action:@selector(setContentAsFavorite:)forControlEvents:UIControlEventTouchUpInside];
+    favoriteContentButton.showsTouchWhenHighlighted = YES;
+    [favoriteContentButton setTitle:@"Favorite" forState:UIControlStateNormal];
+    favoriteContentButton.backgroundColor = [UIColor whiteColor];
+    [favoriteContentButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [self.view addSubview:favoriteContentButton];
+
     UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [homeButton setFrame:CGRectMake(56, 108, 50, 50)];
+    [homeButton setFrame:CGRectMake(background.bounds.size.width - 136, 72, 100, 33)];
     [homeButton addTarget:self action:@selector(backHome:)forControlEvents:UIControlEventTouchUpInside];
     homeButton.showsTouchWhenHighlighted = YES;
     homeButton.tag = 80;
-    [homeButton setBackgroundImage:[UIImage imageNamed:@"btn-back.png"] forState:UIControlStateNormal];
+    homeButton.layer.backgroundColor = [UIColor clearColor].CGColor;
+    homeButton.layer.borderColor = [UIColor whiteColor].CGColor;
+    homeButton.layer.borderWidth = 1.0f;
+    [homeButton setTitle:@"DONE" forState:UIControlStateNormal];
     [self.view addSubview:homeButton];
-    
-    //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(184, 56, 33, 33)];
-    dashboardBackground.backgroundColor = [UIColor blackColor];
-    [self.view addSubview:dashboardBackground];
-    
-    UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [dashboardButton setFrame:CGRectMake(7, 7, 20, 20)];
-    [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
-    dashboardButton.showsTouchWhenHighlighted = YES;
-    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"cog-wheel"] forState:UIControlStateNormal];
-    [dashboardBackground addSubview:dashboardButton];
     
     [self fetchVideoFromLocalDataStore];
 }
@@ -84,6 +84,8 @@
         if (!error) {
             if (objects.count > 0) {
                 //Create Poster image before video plays
+                nid = [objects[0] objectForKey:@"nid"];
+                nodeTitle = [objects[0] objectForKey:@"title"];
                 PFFile *imageFile = objects[0][@"field_poster_image_img"];
                 [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
                     if (!error) {
@@ -130,6 +132,49 @@
             NSLog(@"%@", error);
         }
     }];
+}
+
+//pick the current nid of the content and save it to the NSUserDefault
+-(void)setContentAsFavorite:(id)sender
+{
+    UIButton *favButton = (UIButton *)sender;
+    
+    NSLog(@"Selected nid %@" , nid);
+    NSLog(@"Selected title %@" , nodeTitle);
+    
+    if(favButton.backgroundColor == [UIColor whiteColor]){
+        //add favorite
+        [parsedownload addOrRemoveFavoriteNodeID:nid
+                                       nodeTitle:nodeTitle
+                                        nodeType:@"Video"
+                             withAddOrRemoveFlag:YES];
+        //update button also
+        favoriteContentButton.backgroundColor = [UIColor lightGrayColor];
+        [favoriteContentButton setTitle:@"Favorited" forState:UIControlStateNormal];
+        
+    }else if(favButton.backgroundColor == [UIColor lightGrayColor]){
+        //remove favorite
+        [parsedownload addOrRemoveFavoriteNodeID:nid
+                                       nodeTitle:@""
+                                        nodeType:@""
+                             withAddOrRemoveFlag:NO];
+        //update button also
+        favoriteContentButton.backgroundColor = [UIColor whiteColor];
+        [favoriteContentButton setTitle:@"Favorite" forState:UIControlStateNormal];
+    }
+    
+}
+
+//this function updates the button background color to reflect if it is stored as a favorite or not
+-(void)updateFavoriteButtonColor
+{
+    if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:nid] != nil){
+        favoriteContentButton.backgroundColor = [UIColor lightGrayColor];
+        [favoriteContentButton setTitle:@"Favorited" forState:UIControlStateNormal];
+    }else{
+        favoriteContentButton.backgroundColor = [UIColor whiteColor];
+        [favoriteContentButton setTitle:@"Favorite" forState:UIControlStateNormal];
+    }
 }
 
 #pragma mark

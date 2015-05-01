@@ -46,7 +46,7 @@
     [self.view addSubview:background];
     
     UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, background.bounds.size.width, 105)];
-    headerImgView.image = content.imgHeader;
+    headerImgView.image = [UIImage imageNamed:@"hdr-team.png"];
     [background addSubview:headerImgView];
     
     UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, headerImgView.bounds.size.width, 105)];
@@ -72,7 +72,7 @@
     [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     homeButton.showsTouchWhenHighlighted = YES;
     homeButton.tag = 0;
-    [homeButton setBackgroundImage:[UIImage imageNamed:@"btn-home.png"] forState:UIControlStateNormal];
+    [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home.png"] forState:UIControlStateNormal];
     [self.view addSubview:homeButton];
     
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -80,7 +80,7 @@
     [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     backButton.showsTouchWhenHighlighted = YES;
     backButton.tag = 1;
-    [backButton setBackgroundImage:[UIImage imageNamed:@"btn-back.png"] forState:UIControlStateNormal];
+    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back.png"] forState:UIControlStateNormal];
     [self.view addSubview:backButton];
     
     //the following two views add a button for navigation back to the dashboard

@@ -57,33 +57,35 @@
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
 
-    //Logo, settings, and home buttons
+    //Logo and setting navigation buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(72, 5, 81, 25)];
+    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
     [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
     logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo.png"] forState:UIControlStateNormal];
+    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
-    UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [homeButton setFrame:CGRectMake((background.bounds.size.width - (36 + 50)), 5, 50, 50)];
-    [homeButton addTarget:self action:@selector(backHome:)forControlEvents:UIControlEventTouchUpInside];
-    homeButton.showsTouchWhenHighlighted = YES;
-    homeButton.tag = 80;
-    [homeButton setBackgroundImage:[UIImage imageNamed:@"btn-home.png"] forState:UIControlStateNormal];
-    [self.view addSubview:homeButton];
-    
     //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(189, 5, 25, 25)];
-    dashboardBackground.backgroundColor = [UIColor blackColor];
+    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(160, 0, 45, 45)];
+    dashboardBackground.backgroundColor = [UIColor whiteColor];
+    dashboardBackground.layer.cornerRadius = (45/2);
+    dashboardBackground.layer.masksToBounds = YES;
     [self.view addSubview:dashboardBackground];
     
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [dashboardButton setFrame:CGRectMake(3, 3, 20, 20)];
+    [dashboardButton setFrame:CGRectMake(4.5f, 4.5f, 36, 36)];
     [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
     dashboardButton.showsTouchWhenHighlighted = YES;
-    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"cog-wheel"] forState:UIControlStateNormal];
+    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-gear"] forState:UIControlStateNormal];
     [dashboardBackground addSubview:dashboardButton];
+    
+    UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [backButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
+    [backButton addTarget:self action:@selector(backHome:)forControlEvents:UIControlEventTouchUpInside];
+    backButton.showsTouchWhenHighlighted = YES;
+    backButton.tag = 1;
+    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-home.png"] forState:UIControlStateNormal];
+    [self.view addSubview:backButton];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -130,10 +132,10 @@
     overlay.alpha = 1.0;
     [background addSubview:overlay];
     
-    navContainer = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (324 + 36)), 36, 324, (background.bounds.size.height - (36 * 3)))];
+    navContainer = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), 30, 320, (background.bounds.size.height - (36 * 3)))];
     [navContainer setBackgroundColor:[UIColor clearColor]];
     navContainer.layer.borderColor = [UIColor whiteColor].CGColor;
-    navContainer.layer.borderWidth = 3.0f;
+    navContainer.layer.borderWidth = 1.0f;
     [navContainer setUserInteractionEnabled:YES];
     navContainer.delegate = self;
     [background addSubview:navContainer];
@@ -304,27 +306,27 @@
             customButton.frame = CGRectMake(xVal, (yVal + 142), (324 - 36), 45);
         }completion:^(BOOL finished) {}];
         
-        UIView *navHeader = [[UIView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (324 + 36)), 36, 324, 126)];
+        UIView *navHeader = [[UIView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), 30, 320, 126)];
         [navHeader setBackgroundColor:[UIColor colorWithRed:191.0f/255.0f green:191.0f/255.0f blue:191.0f/255.0f alpha:1.0]];
-        navHeader.layer.borderWidth = 3.0f;
+        navHeader.layer.borderWidth = 1.0f;
         navHeader.layer.borderColor = [UIColor whiteColor].CGColor;
         [background addSubview:navHeader];
         
-        UIImageView *header = [[UIImageView alloc] initWithFrame:CGRectMake(18, 18, 90, 90)];
+        UIImageView *header = [[UIImageView alloc] initWithFrame:CGRectMake(20, 14, 80, 80)];
         [header setImage:content.imgIcon];
         [header setUserInteractionEnabled:YES];
         header.alpha = 1.0;
         header.tag = 90;
         [navHeader addSubview:header];
         
-        UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(126, 18, 195, 90)];
-        [headerLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:26.0]];
+        UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(114, 14, 195, 90)];
+        [headerLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:22.0]];
         headerLabel.textColor = [UIColor blackColor];
         headerLabel.backgroundColor = [UIColor clearColor];
         headerLabel.textAlignment = NSTextAlignmentLeft;
         headerLabel.numberOfLines = 0;
         headerLabel.lineBreakMode = NSLineBreakByWordWrapping;
-        headerLabel.text = content.lblMainSectionTitle;
+        headerLabel.text = [content.lblMainSectionTitle uppercaseString];
         [navHeader addSubview:headerLabel];
     }
     index--;

@@ -9,35 +9,39 @@
 #import "BrandMeetsWorldViewController.h"
 #import "CatagoryViewController.h"
 #import "Reachability.h"
+#import "SMPageControl.h"
 #import "ParseDownload.h"
 #import <Parse/Parse.h>
 
 @interface BrandMeetsWorldViewController ()
 
-@property (strong, nonatomic) Reachability *reachable;
 @property (strong, nonatomic) NSString *catagoryId, *catagoryType, *termId;
 @property (strong, nonatomic) UIImage *posterImage, *headerImage;
 @property (strong, nonatomic) UIView *background, *pagination;
-@property (strong, nonatomic) UIPageControl *paginationDots;
 @property (strong, nonatomic) UIScrollView *navContainer;
 @property (strong, nonatomic) UIImageView *logo, *overlay;
 @property (strong, nonatomic) NSMutableDictionary *posterDict, *headerDict, *teamDict, *iconDict;
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
+
+@property (strong, nonatomic) Reachability *reachable;
+@property (strong, nonatomic) SMPageControl *paginationDots;
 @property (strong, nonatomic) ParseDownload *parsedownload;
 
 @end
 
 @implementation BrandMeetsWorldViewController
-@synthesize reachable;                          //Reachability
+
 @synthesize content;                            //LCPContent
 @synthesize catagoryType, catagoryId, termId;   //NSString
 @synthesize posterImage, headerImage;           //UIImage
 @synthesize background, pagination;             //UIView
-@synthesize paginationDots;                     //UIPageControl
 @synthesize navContainer;                       //UIScrollView
 @synthesize logo, overlay;                      //UIImageView
 @synthesize posterDict, headerDict, teamDict, iconDict;   //NSMutableDictionary
 @synthesize moviePlayerController;              //MPMoviePlayerController
+
+@synthesize reachable;                          //Reachability
+@synthesize paginationDots;                     //SMPageControl
 @synthesize parsedownload;                      //ParseDownload
 
 - (BOOL)prefersStatusBarHidden
@@ -59,7 +63,7 @@
     
     //UIView 36 pixels smaller than the device bounds used to hold the rest of the view objects
     background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, (self.view.bounds.size.width - (36 * 2)), (self.view.bounds.size.height - (36 * 2)))];
-    [background setBackgroundColor:[UIColor lightGrayColor]];
+    [background setBackgroundColor:[UIColor colorWithRed:191.0f/255.0f green:191.0f/255.0f blue:191.0f/255.0f alpha:1.0]];
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
     
@@ -102,54 +106,54 @@
 
     //Create the poster image overlay after the video player has been added to background
     overlay = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 952, 696)];
-    [overlay setBackgroundColor:[UIColor lightGrayColor]];
-    [overlay setImage:[UIImage imageNamed:@"bmwposter.png"]];
+    [overlay setBackgroundColor:[UIColor clearColor]];
+    [overlay setImage:[UIImage imageNamed:@"bmwposter"]];
     [overlay setUserInteractionEnabled:YES];
     overlay.alpha = 1.0;
     [background addSubview:overlay];
     
-    navContainer = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (324 + 36)), 36, 324, (background.bounds.size.height - (36 * 3)))];
+    navContainer = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), 30, 320, (background.bounds.size.height - 130))];
     [navContainer setBackgroundColor:[UIColor clearColor]];
     navContainer.layer.borderColor = [UIColor whiteColor].CGColor;
-    navContainer.layer.borderWidth = 3.0f;
+    navContainer.layer.borderWidth = 1.0f;
     [navContainer setUserInteractionEnabled:YES];
     navContainer.delegate = self;
     [background addSubview:navContainer];
-    [navContainer setContentSize:CGSizeMake((324 * 2), (background.bounds.size.height - (36 * 4)))];
+    [navContainer setContentSize:CGSizeMake((320 * 2), (background.bounds.size.height - (36 * 4)))];
     
-    pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (324 + 36)), ((background.bounds.size.height - (36 * 2)) - 3.0f), 324, 36)];
+    pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), ((background.bounds.size.height - 100) - 1.0f), 320, 36)];
     [pagination setBackgroundColor:[UIColor clearColor]];
     pagination.layer.borderColor = [UIColor whiteColor].CGColor;
-    pagination.layer.borderWidth = 3.0f;
+    pagination.layer.borderWidth = 1.0f;
     [pagination setUserInteractionEnabled:YES];
     [background addSubview:pagination];
     
-    paginationDots = [[UIPageControl alloc] initWithFrame:CGRectMake(0, 0, 324, 36)];
-    paginationDots.currentPage = 0;
-    paginationDots.backgroundColor = [UIColor clearColor];
-    paginationDots.pageIndicatorTintColor = [UIColor blackColor];
-    paginationDots.currentPageIndicatorTintColor = [UIColor whiteColor];
+    paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, 0, 320, 36)];
     paginationDots.numberOfPages = 2;
+    paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-white"];
+    paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-white"];
     [pagination addSubview:paginationDots];
     
     //Logo and setting navigation buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(72, 5, 81, 25)];
+    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
     [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
     logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo.png"] forState:UIControlStateNormal];
+    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
     //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(189, 5, 25, 25)];
-    dashboardBackground.backgroundColor = [UIColor blackColor];
+    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(160, 0, 45, 45)];
+    dashboardBackground.backgroundColor = [UIColor whiteColor];
+    dashboardBackground.layer.cornerRadius = (45/2);
+    dashboardBackground.layer.masksToBounds = YES;
     [self.view addSubview:dashboardBackground];
     
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [dashboardButton setFrame:CGRectMake(7, 7, 20, 20)];
+    [dashboardButton setFrame:CGRectMake(4.5f, 4.5f, 36, 36)];
     [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
     dashboardButton.showsTouchWhenHighlighted = YES;
-    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"cog-wheel"] forState:UIControlStateNormal];
+    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-gear"] forState:UIControlStateNormal];
     [dashboardBackground addSubview:dashboardButton];
     
     //NSUserDefaults to check if data has been downloaded.
@@ -236,11 +240,11 @@
     
     for (PFObject *object in objects) {
         if (count % 2 == 0) {
-            x = 36;
+            x = 30;
             y = y + 178;
         }
         else {
-            x = (108 + (36 * 2));
+            x = (190);
         }
         
         //Button Image
@@ -253,8 +257,8 @@
                     UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:y andTag:[object objectForKey:@"tid"]];
                     [navContainer addSubview:tempButton];
                     
-                    UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(x, (y + 118), 108, 50)];
-                    [title setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:18.0]];
+                    UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(x, (y + 114), 100, 41)];
+                    [title setFont:[UIFont fontWithName:@"Oswald" size:14.0]];
                     title.textColor = [UIColor blackColor];
                     title.backgroundColor = [UIColor clearColor];
                     title.textAlignment = NSTextAlignmentCenter;
@@ -288,15 +292,15 @@
     }
     
     UIButton *videoLibraryButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [videoLibraryButton setFrame:CGRectMake((324 + 36), 36, 108, 108)];
-    [videoLibraryButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
+    [videoLibraryButton setFrame:CGRectMake((320 + 36), 36, 100, 100)];
+    [videoLibraryButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside]; // TODO: Build change the @selector once the view is built out
     videoLibraryButton.showsTouchWhenHighlighted = YES;
-    [videoLibraryButton setBackgroundColor:[UIColor grayColor]];
-    [videoLibraryButton setTitle:@"Icon Here" forState:UIControlStateNormal];
+    [videoLibraryButton setBackgroundColor:[UIColor clearColor]];
+    [videoLibraryButton setBackgroundImage:[UIImage imageNamed:@"ico-video"] forState:UIControlStateNormal];
     [navContainer addSubview:videoLibraryButton];
     
-    UILabel *videoLibraryLabel = [[UILabel alloc] initWithFrame:CGRectMake((324 + 36), (36 + 118), 108, 50)];
-    [videoLibraryLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:18.0]];
+    UILabel *videoLibraryLabel = [[UILabel alloc] initWithFrame:CGRectMake((320 + 36), (36 + 118), 100, 41)];
+    [videoLibraryLabel setFont:[UIFont fontWithName:@"Oswald" size:14.0]];
     videoLibraryLabel.textColor = [UIColor blackColor];
     videoLibraryLabel.backgroundColor = [UIColor clearColor];
     videoLibraryLabel.textAlignment = NSTextAlignmentCenter;
@@ -306,15 +310,15 @@
     [navContainer addSubview:videoLibraryLabel];
     
     UIButton *caseStudiesButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [caseStudiesButton setFrame:CGRectMake((324 + 108 + (36 * 2)), 36, 108, 108)];
-    [caseStudiesButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
+    [caseStudiesButton setFrame:CGRectMake((320 + 108 + (36 * 2)), 36, 100, 100)];
+    [caseStudiesButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside]; // TODO: Build change the @selector once the view is built out
     caseStudiesButton.showsTouchWhenHighlighted = YES;
-    [caseStudiesButton setBackgroundColor:[UIColor grayColor]];
-    [caseStudiesButton setTitle:@"Icon Here" forState:UIControlStateNormal];
+    [caseStudiesButton setBackgroundColor:[UIColor clearColor]];
+    [caseStudiesButton setBackgroundImage:[UIImage imageNamed:@"ico-casestudy"] forState:UIControlStateNormal];
     [navContainer addSubview:caseStudiesButton];
     
-    UILabel *caseStudiesLabel = [[UILabel alloc] initWithFrame:CGRectMake((324 + 108 + (36 * 2)), (36 + 118), 108, 50)];
-    [caseStudiesLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:18.0]];
+    UILabel *caseStudiesLabel = [[UILabel alloc] initWithFrame:CGRectMake((320 + 108 + (36 * 2)), (36 + 118), 100, 41)];
+    [caseStudiesLabel setFont:[UIFont fontWithName:@"Oswald" size:14.0]];
     caseStudiesLabel.textColor = [UIColor blackColor];
     caseStudiesLabel.backgroundColor = [UIColor clearColor];
     caseStudiesLabel.textAlignment = NSTextAlignmentCenter;
@@ -350,7 +354,7 @@
 - (UIButton *)navigationButtons:(UIImage *)imgData andtitle:(NSString *)buttonTitle andXPos:(int)xpos andYPos:(int)ypos andTag:(NSString *)buttonTag {
     //the grid of buttons
     UIButton *tempButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [tempButton setFrame:CGRectMake(xpos, ypos, 108, 108)];
+    [tempButton setFrame:CGRectMake(xpos, ypos, 100, 100)];
     [tempButton addTarget:self action:@selector(firstLevelNavigationButtonPressed:)forControlEvents:UIControlEventTouchUpInside];
     tempButton.showsTouchWhenHighlighted = YES;
     [tempButton setBackgroundImage:imgData forState:UIControlStateNormal];
@@ -365,7 +369,7 @@
     content = [[LCPContent alloc] init];
     content.catagoryId = [NSString stringWithFormat: @"%ld", (long)sender.tag];
     content.lblMainSectionTitle = sender.titleLabel.text;
-    content.imgIcon =
+    content.imgIcon = [iconDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     content.imgPoster = [posterDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     content.imgHeader = [headerDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     

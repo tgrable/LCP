@@ -44,25 +44,31 @@
     [summaryView setUserInteractionEnabled:YES];
     [self.view addSubview:summaryView];
     
-    UIImageView *summaryBackground = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, summaryView.bounds.size.width, summaryView.bounds.size.height - 105)];
+    UIImageView *summaryBackground = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, summaryView.bounds.size.width, summaryView.bounds.size.height - 96)];
     summaryBackground.image = [UIImage imageNamed:@"bkgrd-overview.png"];
     [summaryView addSubview:summaryBackground];
 
-    //Logo, settings, and home buttons
+    //Logo and setting navigation buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(72, 5, 81, 25)];
-    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
+    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
+    [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
     logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo.png"] forState:UIControlStateNormal];
+    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
-    UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [homeButton setFrame:CGRectMake((self.view.bounds.size.width - ((36 * 4) + 50)), 5, 45, 45)]; // TODO: update this placement
-    [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
-    homeButton.showsTouchWhenHighlighted = YES;
-    homeButton.tag = 0;
-    [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home.png"] forState:UIControlStateNormal];
-    [self.view addSubview:homeButton];
+    //the following two views add a button for navigation back to the dashboard
+    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(150, 0, 45, 45)];
+    dashboardBackground.backgroundColor = [UIColor whiteColor];
+    dashboardBackground.layer.cornerRadius = (45/2);
+    dashboardBackground.layer.masksToBounds = YES;
+    [self.view addSubview:dashboardBackground];
+    
+    UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [dashboardButton setFrame:CGRectMake(4.5f, 4.5f, 36, 36)];
+    [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
+    dashboardButton.showsTouchWhenHighlighted = YES;
+    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-gear"] forState:UIControlStateNormal];
+    [dashboardBackground addSubview:dashboardButton];
     
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [backButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 5, 45, 45)];
@@ -72,17 +78,13 @@
     [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back.png"] forState:UIControlStateNormal];
     [self.view addSubview:backButton];
     
-    //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(189, 5, 25, 25)];
-    dashboardBackground.backgroundColor = [UIColor blackColor];
-    [self.view addSubview:dashboardBackground];
-    
-    UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [dashboardButton setFrame:CGRectMake(3, 3, 20, 20)];
-    [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
-    dashboardButton.showsTouchWhenHighlighted = YES;
-    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"cog-wheel"] forState:UIControlStateNormal];
-    [dashboardBackground addSubview:dashboardButton];
+    UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
+    [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
+    homeButton.showsTouchWhenHighlighted = YES;
+    homeButton.tag = 0;
+    [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home.png"] forState:UIControlStateNormal];
+    [self.view addSubview:homeButton];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -157,17 +159,16 @@
     for(PFObject *object in objects) {
         
         content.lblTitle = object[@"title"];
-        UILabel *summaryLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 60, 952, 70)];
-        [summaryLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:70.0]];
+        UILabel *summaryLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 65, summaryView.bounds.size.width - 48, 80)];
+        [summaryLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:80.0f]];
         summaryLabel.textColor = [UIColor whiteColor];
-        summaryLabel.numberOfLines = 1;
         summaryLabel.backgroundColor = [UIColor clearColor];
         summaryLabel.textAlignment = NSTextAlignmentCenter;
-        summaryLabel.text = content.lblTitle;
+        summaryLabel.text = [content.lblTitle uppercaseString];
         [summaryView addSubview:summaryLabel];
         
-        UIScrollView *summaryScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(36, 150, (summaryView.bounds.size.width - (36 * 2)), summaryView.bounds.size.height - 300)];
-        summaryScroll.layer.borderWidth = 3.0f;
+        UIScrollView *summaryScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(24, 210, (summaryView.bounds.size.width - 48), summaryView.bounds.size.height - 354)];
+        summaryScroll.layer.borderWidth = 1.0f;
         summaryScroll.layer.borderColor = [UIColor whiteColor].CGColor;
         [summaryView addSubview:summaryScroll];
         
@@ -176,7 +177,7 @@
         bodyDict = bodyArray[1];
         
         NSString *introText = [NSString stringWithFormat:@"%@",[bodyDict objectForKey:@"value"]];
-        UITextView *introTextView = [[UITextView alloc] initWithFrame:CGRectMake(36, 36, summaryScroll.bounds.size.width - (36 * 2), summaryScroll.bounds.size.height)];
+        UITextView *introTextView = [[UITextView alloc] initWithFrame:CGRectMake(24, 24, summaryScroll.bounds.size.width - (24 * 2), summaryScroll.bounds.size.height - 48)];
         [introTextView setFont:[UIFont fontWithName:@"NimbusSanD-Regu" size:24]];
         introTextView.textColor = [UIColor whiteColor];
         introTextView.textAlignment = NSTextAlignmentCenter;
@@ -187,20 +188,21 @@
 
         [summaryScroll setContentSize:CGSizeMake(summaryScroll.bounds.size.width, (introTextView.font.lineHeight * (introTextView.contentSize.height/introTextView.font.lineHeight)) + 36)];
         
-        UIView *navBar = [[UIView alloc] initWithFrame:CGRectMake(0, (summaryView.bounds.size.height - 105), summaryView.bounds.size.width, 105)];
-        [navBar setBackgroundColor:[UIColor colorWithRed:191.0f/255.0f green:191.0f/255.0f blue:191.0f/255.0f alpha:1.0]];
+        UIView *navBar = [[UIView alloc] initWithFrame:CGRectMake(0, (summaryView.bounds.size.height - 96), summaryView.bounds.size.width, 96)];
+        [navBar setBackgroundColor:[UIColor colorWithRed:230.0f/255.0f green:230.0f/255.0f blue:230.0f/255.0f alpha:1.0]];
         [summaryView addSubview:navBar];
          
         UIButton *overviewButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [overviewButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - 180, 10, 45, 45)];
+        [overviewButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (97.5f + 45), 10, 45, 45)];
         [overviewButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
         overviewButton.showsTouchWhenHighlighted = YES;
         [overviewButton setBackgroundImage:[UIImage imageNamed:@"ico-overview.png"] forState:UIControlStateNormal];
+        [overviewButton setBackgroundColor:[UIColor clearColor]];
         overviewButton.tag = 0;
         [navBar addSubview:overviewButton];
 
-        UILabel *overviewLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 185, 85, 75, 15)];
-        [overviewLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:12.0]];
+        UILabel *overviewLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 160, navBar.bounds.size.height - 32, 80, 32)];
+        [overviewLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
         overviewLabel.textColor = [UIColor blackColor];
         overviewLabel.numberOfLines = 1;
         overviewLabel.backgroundColor = [UIColor clearColor];
@@ -209,15 +211,15 @@
         [navBar addSubview:overviewLabel];
         
         UIButton *caseStudiesButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [caseStudiesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - 75, 10, 45, 45)];
+        [caseStudiesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (17.5f + 45), 10, 45, 45)];
         [caseStudiesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
         caseStudiesButton.showsTouchWhenHighlighted = YES;
         [caseStudiesButton setBackgroundImage:[UIImage imageNamed:@"ico-casestudy2.png"] forState:UIControlStateNormal];
         caseStudiesButton.tag = 1;
         [navBar addSubview:caseStudiesButton];
         
-        UILabel *casestudyLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 90, 85, 75, 15)];
-        [casestudyLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:12.0]];
+        UILabel *casestudyLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 80, navBar.bounds.size.height - 32, 80, 32)];
+        [casestudyLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
         casestudyLabel.textColor = [UIColor blackColor];
         casestudyLabel.numberOfLines = 1;
         casestudyLabel.backgroundColor = [UIColor clearColor];
@@ -226,15 +228,15 @@
         [navBar addSubview:casestudyLabel];
         
         UIButton *samplesButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [samplesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 30, 10, 45, 45)];
+        [samplesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 17.5f, 10, 45, 45)];
         [samplesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
         samplesButton.showsTouchWhenHighlighted = YES;
         [samplesButton setBackgroundImage:[UIImage imageNamed:@"ico-samples.png"] forState:UIControlStateNormal];
         samplesButton.tag = 2;
         [navBar addSubview:samplesButton];
         
-        UILabel *samplesLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) + 5, 85, 75, 15)];
-        [samplesLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:12.0]];
+        UILabel *samplesLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2), navBar.bounds.size.height - 32, 80, 32)];
+        [samplesLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
         samplesLabel.textColor = [UIColor blackColor];
         samplesLabel.numberOfLines = 1;
         samplesLabel.backgroundColor = [UIColor clearColor];
@@ -243,15 +245,15 @@
         [navBar addSubview:samplesLabel];
 
         UIButton *videoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [videoButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 135, 10, 45, 45)];
+        [videoButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 97.5f, 10, 45, 45)];
         [videoButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
         videoButton.showsTouchWhenHighlighted = YES;
         [videoButton setBackgroundImage:[UIImage imageNamed:@"ico-video2.png"] forState:UIControlStateNormal];
         videoButton.tag = 3;
         [navBar addSubview:videoButton];
         
-        UILabel *videosLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) + 100, 85, 75, 15)];
-        [videosLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:12.0]];
+        UILabel *videosLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) + 80, navBar.bounds.size.height - 32, 80, 32)];
+        [videosLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
         videosLabel.textColor = [UIColor blackColor];
         videosLabel.numberOfLines = 1;
         videosLabel.backgroundColor = [UIColor clearColor];
@@ -259,7 +261,7 @@
         videosLabel.text = @"VIDEOS";
         [navBar addSubview:videosLabel];
         
-        UIView *locationIndicator = [[UIView alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 185, 0, 75, 5)];
+        UIView *locationIndicator = [[UIView alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 160, 0, 80, 5)];
         if ([content.catagoryId isEqualToString:@"38"]) {
             [locationIndicator setBackgroundColor:[UIColor yellowColor]];
         }

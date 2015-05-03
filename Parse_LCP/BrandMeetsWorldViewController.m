@@ -143,7 +143,7 @@
     [self.view addSubview:logoButton];
     
     //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(160, 0, 45, 45)];
+    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(150, 0, 45, 45)];
     dashboardBackground.backgroundColor = [UIColor whiteColor];
     dashboardBackground.layer.cornerRadius = (45/2);
     dashboardBackground.layer.masksToBounds = YES;
@@ -257,7 +257,7 @@
                     UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:y andTag:[object objectForKey:@"tid"]];
                     [navContainer addSubview:tempButton];
                     
-                    UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(x, (y + 114), 100, 41)];
+                    UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(x, (y + 114), 100, 42)];
                     [title setFont:[UIFont fontWithName:@"Oswald" size:14.0]];
                     title.textColor = [UIColor blackColor];
                     title.backgroundColor = [UIColor clearColor];

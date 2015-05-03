@@ -39,10 +39,10 @@
 	</array>
 	<key>UIAppFonts</key>
 	<array>
-		<string>NimbusSanD-ReguItal.ttf</string>
 		<string>NimbusSanD-Regu.ttf</string>
-		<string>NimbusSanD-BoldItal.ttf</string>
-		<string>NimbusSanD-Bold.ttf</string>
+		<string>Oswald.ttf</string>
+		<string>Oswald-Light.ttf</string>
+		<string>Oswald-Bold.ttf</string>
 	</array>
 	<key>UISupportedInterfaceOrientations~ipad</key>
 	<array>

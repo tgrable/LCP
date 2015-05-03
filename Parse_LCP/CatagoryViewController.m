@@ -11,6 +11,7 @@
 #import "MeetTheTeamViewController.h"
 #import "TestimonialsViewController.h"
 #import "Reachability.h"
+#import "SMPageControl.h"
 #import "ParseDownload.h"
 #import <Parse/Parse.h>
 
@@ -18,27 +19,30 @@
     long int index;
 }
 
-@property (strong, nonatomic) Reachability *reachable;
-@property (strong, nonatomic) ParseDownload *parsedownload;
 @property (strong, nonatomic) UIView *background, *pagination;
-@property (strong, nonatomic) UIPageControl *paginationDots;
 @property (strong, nonatomic) UIScrollView *navContainer;
 @property (strong, nonatomic) UIImageView *logo, *overlay;
 @property (strong, nonatomic) NSMutableArray *btnImageArray, *btnTitleArray, *btnTagArray;
 @property (strong, nonatomic) NSTimer *time;
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
+
+@property (strong, nonatomic) Reachability *reachable;
+@property (strong, nonatomic) SMPageControl *paginationDots;
+@property (strong, nonatomic) ParseDownload *parsedownload;
 @end
 
 @implementation CatagoryViewController
-@synthesize reachable;                                  //Reachability
+
 @synthesize content;                                    //LCPContent
 @synthesize background, pagination;                     //UIView
-@synthesize paginationDots;                             //UIPageControl
 @synthesize navContainer;                               //UIScrollView
 @synthesize logo, overlay;                              //UIImageView
 @synthesize btnImageArray, btnTitleArray, btnTagArray;  //NSMutableArray
 @synthesize time;                                       //NSTimer
 @synthesize moviePlayerController;                      //MPMoviePlayerController
+
+@synthesize reachable;                                  //Reachability
+@synthesize paginationDots;                             //SMPageControl
 @synthesize parsedownload;                              //ParseDownload
 
 - (BOOL)prefersStatusBarHidden
@@ -47,6 +51,12 @@
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
+    
+    NSArray *fonts = [UIFont fontNamesForFamilyName:@"Oswald"];
+    NSLog(@"%@", fonts);
+    for(NSString *string in fonts){
+        NSLog(@"%@", string);
+    }
 
     //This view is dependent on user input but these elements will not change
     //so they will only need to loaded one time.
@@ -66,7 +76,7 @@
     [self.view addSubview:logoButton];
     
     //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(160, 0, 45, 45)];
+    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(150, 0, 45, 45)];
     dashboardBackground.backgroundColor = [UIColor whiteColor];
     dashboardBackground.layer.cornerRadius = (45/2);
     dashboardBackground.layer.masksToBounds = YES;
@@ -83,7 +93,7 @@
     [backButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
     [backButton addTarget:self action:@selector(backHome:)forControlEvents:UIControlEventTouchUpInside];
     backButton.showsTouchWhenHighlighted = YES;
-    backButton.tag = 1;
+    backButton.tag = 0;
     [backButton setBackgroundImage:[UIImage imageNamed:@"ico-home.png"] forState:UIControlStateNormal];
     [self.view addSubview:backButton];
 }
@@ -132,7 +142,7 @@
     overlay.alpha = 1.0;
     [background addSubview:overlay];
     
-    navContainer = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), 30, 320, (background.bounds.size.height - (36 * 3)))];
+    navContainer = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), 30, 320, background.bounds.size.height - 130)];
     [navContainer setBackgroundColor:[UIColor clearColor]];
     navContainer.layer.borderColor = [UIColor whiteColor].CGColor;
     navContainer.layer.borderWidth = 1.0f;
@@ -140,10 +150,10 @@
     navContainer.delegate = self;
     [background addSubview:navContainer];
     
-    pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (324 + 36)), ((background.bounds.size.height - (36 * 2)) - 3.0f), 324, 36)];
+    pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), ((background.bounds.size.height - 100) - 1.0f), 320, 36)];
     [pagination setBackgroundColor:[UIColor clearColor]];
     pagination.layer.borderColor = [UIColor whiteColor].CGColor;
-    pagination.layer.borderWidth = 3.0f;
+    pagination.layer.borderWidth = 1.0f;
     [pagination setUserInteractionEnabled:YES];
     [background addSubview:pagination];
 
@@ -226,15 +236,12 @@
     [self createEmptyButtonArrays:objects.count];
     
     if (objects.count > 8) {
-        paginationDots = [[UIPageControl alloc] initWithFrame:CGRectMake(0, 0, 324, 36)];
-        paginationDots.currentPage = 0;
-        paginationDots.backgroundColor = [UIColor clearColor];
-        paginationDots.pageIndicatorTintColor = [UIColor blackColor];
-        paginationDots.currentPageIndicatorTintColor = [UIColor whiteColor];
+        paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, 0, 320, 36)];
         paginationDots.numberOfPages = 2;
+        paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-white"];
+        paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-white"];
         [pagination addSubview:paginationDots];
-        
-        [navContainer setContentSize:CGSizeMake((324 * 2), (background.bounds.size.height - (36 * 3)))];
+        [navContainer setContentSize:CGSizeMake((324 * 2), background.bounds.size.height - 130)];
     }
     
     for (PFObject *object in objects) {
@@ -282,31 +289,32 @@
 }
 
 - (void)buildNavigationButtons {
-    long xVal = (36 / 2), yVal = index * 55;
+    long xVal = 20, yVal = index * 54;
     if (index > 7) {
-        xVal = (324 + (36 / 2));
-        yVal = (index - 8) * 55;
+        xVal = (324 + 20);
+        yVal = (index - 8) * 54;
     }
     if (![[btnImageArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTagArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTitleArray objectAtIndex:index] isKindOfClass:[NSNull class]]) {
         UIButton *customButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [customButton setFrame:CGRectMake((36 / 2), -40, (324 - 36), 45)];
+        [customButton setFrame:CGRectMake(20, -40, 280, 44)];
         [customButton addTarget:self action:@selector(navigationButtonClick:)forControlEvents:UIControlEventTouchUpInside];
         customButton.showsTouchWhenHighlighted = YES;
-        [customButton setBackgroundColor:[UIColor grayColor]];
+        [customButton setBackgroundColor:[UIColor colorWithRed:115.0f/255.0f green:115.0f/255.0f blue:115.0f/255.0f alpha:1.0]];
         customButton.layer.borderColor = [UIColor whiteColor].CGColor;
-        customButton.layer.borderWidth = 2.0f;
+        customButton.layer.borderWidth = 1.0f;
         customButton.tag = [[btnTagArray objectAtIndex:index] intValue];
         [customButton setTitle:[[btnTitleArray objectAtIndex:index] uppercaseString] forState:normal];
+        [customButton.titleLabel setFont:[UIFont fontWithName:@"Oswald" size:18.0f]];
         [customButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
         customButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
         customButton.contentEdgeInsets = UIEdgeInsetsMake(0, 10, 0, 0);
         [navContainer addSubview:customButton];
         
         [UIView animateWithDuration:0.5f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
-            customButton.frame = CGRectMake(xVal, (yVal + 142), (324 - 36), 45);
+            customButton.frame = CGRectMake(xVal, (yVal + 120), 280, 44);
         }completion:^(BOOL finished) {}];
         
-        UIView *navHeader = [[UIView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), 30, 320, 126)];
+        UIView *navHeader = [[UIView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), 30, 320, 106)];
         [navHeader setBackgroundColor:[UIColor colorWithRed:191.0f/255.0f green:191.0f/255.0f blue:191.0f/255.0f alpha:1.0]];
         navHeader.layer.borderWidth =  1.0f;
         navHeader.layer.borderColor = [UIColor whiteColor].CGColor;
@@ -319,7 +327,7 @@
         header.tag = 90;
         [navHeader addSubview:header];
         
-        UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(114, 14, 195, 90)];
+        UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(114, 14, 186, 80)];
         [headerLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:22.0]];
         headerLabel.textColor = [UIColor blackColor];
         headerLabel.backgroundColor = [UIColor clearColor];

@@ -7,7 +7,12 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		2C2C32E01AF52AFF00902543 /* Oswald-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4F9BDF421AF40E7900D6C595 /* Oswald-Bold.ttf */; };
+		2C2C32E11AF52B0200902543 /* Oswald-Light.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4F9BDF431AF40E7900D6C595 /* Oswald-Light.ttf */; };
+		2C2C32E21AF52B0500902543 /* Oswald.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4F9BDF441AF40E7900D6C595 /* Oswald.ttf */; };
 		2C97CF531AC649A000256BFA /* ParseDownload.m in Sources */ = {isa = PBXBuildFile; fileRef = 2C97CF521AC649A000256BFA /* ParseDownload.m */; };
+		2CE4FB131AF6810B00982DC9 /* refresh.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE4FB111AF6810B00982DC9 /* refresh.png */; };
+		2CE4FB1A1AF681B800982DC9 /* start.png in Resources */ = {isa = PBXBuildFile; fileRef = 2CE4FB191AF681B800982DC9 /* start.png */; };
 		4F2573271A9E3366003EFAB8 /* ContentSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F2573261A9E3366003EFAB8 /* ContentSettingsViewController.m */; };
 		4F28C2DF1AE5361E00995D67 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F28C2DE1AE5361E00995D67 /* Bolts.framework */; };
 		4F28C2E21AE5362500995D67 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F28C2E01AE5362500995D67 /* Parse.framework */; };
@@ -180,6 +185,8 @@
 /* Begin PBXFileReference section */
 		2C97CF511AC649A000256BFA /* ParseDownload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ParseDownload.h; path = Parse_LCP/ParseDownload.h; sourceTree = "<group>"; };
 		2C97CF521AC649A000256BFA /* ParseDownload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ParseDownload.m; path = Parse_LCP/ParseDownload.m; sourceTree = "<group>"; };
+		2CE4FB111AF6810B00982DC9 /* refresh.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = refresh.png; sourceTree = "<group>"; };
+		2CE4FB191AF681B800982DC9 /* start.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = start.png; sourceTree = "<group>"; };
 		4F2573251A9E3366003EFAB8 /* ContentSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContentSettingsViewController.h; sourceTree = "<group>"; };
 		4F2573261A9E3366003EFAB8 /* ContentSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ContentSettingsViewController.m; sourceTree = "<group>"; };
 		4F28C2DE1AE5361E00995D67 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Bolts.framework; sourceTree = "<group>"; };
@@ -556,6 +563,8 @@
 		4FCC5BF41A8BC76800292D6B /* images */ = {
 			isa = PBXGroup;
 			children = (
+				2CE4FB111AF6810B00982DC9 /* refresh.png */,
+				2CE4FB191AF681B800982DC9 /* start.png */,
 				4F9BDF591AF41BAE00D6C595 /* ico-video.png */,
 				4F9BDF5A1AF41BAE00D6C595 /* ico-video@2x.png */,
 				4F9BDF551AF41B4500D6C595 /* ico-casestudy.png */,
@@ -843,6 +852,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				2C2C32E01AF52AFF00902543 /* Oswald-Bold.ttf in Resources */,
+				2C2C32E11AF52B0200902543 /* Oswald-Light.ttf in Resources */,
+				2C2C32E21AF52B0500902543 /* Oswald.ttf in Resources */,
 				4FAC30031A9D194B00CE40C4 /* logo-L@2x.png in Resources */,
 				4F9BDF1F1AF3D39000D6C595 /* ico-casestudy2@2x.png in Resources */,
 				4F329D6B1A925CFD002A5093 /* NimbusSanD-ReguItal.ttf in Resources */,
@@ -853,6 +865,7 @@
 				4F7C7AB51AF15A6400BB48CD /* cog-wheel.png in Resources */,
 				4F9BDF321AF3D61E00D6C595 /* hdr-caseVideo@2x.png in Resources */,
 				4F9BDF351AF3D61E00D6C595 /* hdr-team.png in Resources */,
+				2CE4FB131AF6810B00982DC9 /* refresh.png in Resources */,
 				4F329D9B1A92AB5C002A5093 /* btn-vision-casestudy.png in Resources */,
 				4F329D6D1A925CFD002A5093 /* NimbusSanD-BoldItal.ttf in Resources */,
 				4FAC30061A9D197900CE40C4 /* logo-tag@2x.png in Resources */,
@@ -936,6 +949,7 @@
 				4FCC5BE51A8BC5EC00292D6B /* Icon-72.png in Resources */,
 				4F9BDF161AF3D37400D6C595 /* ico-video2.png in Resources */,
 				4F3E71131A9F6E690095C1DE /* logo-L.png in Resources */,
+				2CE4FB1A1AF681B800982DC9 /* start.png in Resources */,
 				4F329D8C1A92AB45002A5093 /* btn-ideation-overview.png in Resources */,
 				4F9BDF2A1AF3D5F800D6C595 /* logo.png in Resources */,
 				4F329D741A92A6BF002A5093 /* btn-cms-overview.png in Resources */,

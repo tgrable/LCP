@@ -10,6 +10,7 @@
 #import "CatagoryViewController.h"
 #import "Reachability.h"
 #import "LCPTeamMembers.h"
+#import "SMPageControl.h"
 #import "NSString+HTML.h"
 #import <Parse/Parse.h>
 
@@ -19,7 +20,7 @@
 @property (strong, nonatomic) UIScrollView *teamScroll;
 @property (strong, nonatomic) NSMutableArray *teamMemberArray;
 @property (strong, nonatomic) NSMutableArray *buttons;
-@property (strong, nonatomic) UIPageControl *paginationDots;
+@property (strong, nonatomic) SMPageControl *paginationDots;
 
 @end
 
@@ -45,12 +46,12 @@
     //[pageScroll addSubview:background];
     [self.view addSubview:background];
     
-    UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, background.bounds.size.width, 105)];
+    UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, background.bounds.size.width, 110)];
     headerImgView.image = [UIImage imageNamed:@"hdr-team.png"];
     [background addSubview:headerImgView];
     
-    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, headerImgView.bounds.size.width, 105)];
-    [headerLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:40.0]];
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, headerImgView.bounds.size.width, 110)];
+    [headerLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:80.0f]];
     headerLabel.textColor = [UIColor whiteColor];
     [headerLabel setNumberOfLines:2];
     headerLabel.backgroundColor = [UIColor clearColor];
@@ -59,41 +60,43 @@
     headerLabel.text = @"MEET THE TEAM";
     [background addSubview:headerLabel];
     
-    //Logo, settings, and home buttons
+    //Logo and setting navigation buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(72, 5, 81, 25)];
-    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
+    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
+    [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
     logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo.png"] forState:UIControlStateNormal];
+    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
-    UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [homeButton setFrame:CGRectMake((self.view.bounds.size.width - ((36 * 4) + 50)), 5, 50, 50)];
-    [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
-    homeButton.showsTouchWhenHighlighted = YES;
-    homeButton.tag = 0;
-    [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home.png"] forState:UIControlStateNormal];
-    [self.view addSubview:homeButton];
+    //the following two views add a button for navigation back to the dashboard
+    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(150, 0, 45, 45)];
+    dashboardBackground.backgroundColor = [UIColor whiteColor];
+    dashboardBackground.layer.cornerRadius = (45/2);
+    dashboardBackground.layer.masksToBounds = YES;
+    [self.view addSubview:dashboardBackground];
+    
+    UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [dashboardButton setFrame:CGRectMake(4.5f, 4.5f, 36, 36)];
+    [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
+    dashboardButton.showsTouchWhenHighlighted = YES;
+    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-gear"] forState:UIControlStateNormal];
+    [dashboardBackground addSubview:dashboardButton];
     
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [backButton setFrame:CGRectMake((self.view.bounds.size.width - ((36 * 2) + 50)), 5, 50, 50)];
+    [backButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 5, 45, 45)];
     [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     backButton.showsTouchWhenHighlighted = YES;
     backButton.tag = 1;
     [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back.png"] forState:UIControlStateNormal];
     [self.view addSubview:backButton];
     
-    //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(189, 5, 25, 25)];
-    dashboardBackground.backgroundColor = [UIColor blackColor];
-    [self.view addSubview:dashboardBackground];
-    
-    UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [dashboardButton setFrame:CGRectMake(3, 3, 20, 20)];
-    [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
-    dashboardButton.showsTouchWhenHighlighted = YES;
-    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"cog-wheel"] forState:UIControlStateNormal];
-    [dashboardBackground addSubview:dashboardButton];
+    UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
+    [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
+    homeButton.showsTouchWhenHighlighted = YES;
+    homeButton.tag = 0;
+    [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home.png"] forState:UIControlStateNormal];
+    [self.view addSubview:homeButton];
     
     teamScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, 252)];
     [teamScroll setBackgroundColor:[UIColor clearColor]];
@@ -104,7 +107,7 @@
     [divider setBackgroundColor:[UIColor colorWithRed:191.0f/255.0f green:191.0f/255.0f blue:191.0f/255.0f alpha:1.0]];
     [background addSubview:divider];
     
-    pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) - 25, 375, 324, 36)];
+    pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) - 150, 375, 300, 36)];
     [pagination setBackgroundColor:[UIColor clearColor]];
     [pagination setUserInteractionEnabled:YES];
     [background addSubview:pagination];
@@ -230,7 +233,7 @@
     int x = 36;
     for (LCPTeamMembers *tm in teamMemberObjects) {
         UIButton *teamMemberButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [teamMemberButton setFrame:CGRectMake(x, 50, 152, 152)];
+        [teamMemberButton setFrame:CGRectMake(x, 60, 152, 152)];
         [teamMemberButton addTarget:self action:@selector(teamMemberClicked:)forControlEvents:UIControlEventTouchUpInside];
         teamMemberButton.showsTouchWhenHighlighted = YES;
         teamMemberButton.tag = [tm.btnTag intValue];
@@ -244,14 +247,6 @@
     }
     
     if (teamMemberObjects.count > 5) {
-        paginationDots = [[UIPageControl alloc] initWithFrame:CGRectMake(0, 0, 50, 36)];
-        paginationDots.currentPage = 0;
-        paginationDots.backgroundColor = [UIColor lightGrayColor];
-        paginationDots.pageIndicatorTintColor = [UIColor blackColor];
-        paginationDots.currentPageIndicatorTintColor = [UIColor whiteColor];
-        paginationDots.numberOfPages = 2;
-        [pagination addSubview:paginationDots];
-        
         int multiplier = 0;
         for (int i = 0; i < teamMemberObjects.count; i++) {
             if(i % 5 == 0)
@@ -259,6 +254,15 @@
                 multiplier++;
             }
         }
+
+        // TODO: Update the dot images and remove background color
+        paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, 0, 300, 36)];
+        paginationDots.numberOfPages = multiplier;
+        paginationDots.backgroundColor = [UIColor lightGrayColor];
+        paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-white"];
+        paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-white"];
+        [pagination addSubview:paginationDots];
+
         [teamScroll setContentSize:CGSizeMake(background.bounds.size.width * multiplier, 252)];
     }
 }
@@ -279,7 +283,7 @@
     for (LCPTeamMembers *tms in teamMemberArray) {
         if ([tms.btnTag isEqualToString:[NSString stringWithFormat:@"%ld", (long)sender.tag]]) {
             UILabel *nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, jobDescription.bounds.size.width - 600, 40)];
-            [nameLabel setFont:[UIFont fontWithName:@"NimbusSanD-Bold" size:20.0]];
+            [nameLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:20.0]];
             nameLabel.textColor = [UIColor blackColor];
             [nameLabel setNumberOfLines:1];
             nameLabel.backgroundColor = [UIColor clearColor];
@@ -288,7 +292,7 @@
             [jobDescription addSubview:nameLabel];
             
             UILabel *positionLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 36, jobDescription.bounds.size.width - 600, 20)];
-            [positionLabel setFont:[UIFont fontWithName:@"NimbusSanD-Regu" size:16.0]];
+            [positionLabel setFont:[UIFont fontWithName:@"Oswald" size:16.0]];
             positionLabel.textColor = [UIColor blackColor];
             [positionLabel setNumberOfLines:1];
             positionLabel.backgroundColor = [UIColor clearColor];

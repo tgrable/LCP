@@ -49,6 +49,7 @@
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    [self.navigationController setNavigationBarHidden:YES animated:NO];
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(redrawView:) name:@"RefreshParseData" object:nil];
 
@@ -238,9 +239,9 @@
     /*** /End of email views ***/
     
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(56, 56, 108, 33)];
+    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
     logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo.png"] forState:UIControlStateNormal];
+    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
     contentSegController = [[UISegmentedControl alloc]initWithItems:@[@"Presentation", @"Case Studies", @"Samples", @"Videos", @"Testimonials", @"Email"]];
@@ -251,20 +252,24 @@
     [self.view addSubview:contentSegController];
     
     UIButton *startButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    [startButton setFrame:CGRectMake(56, 108, 108, 33)];
+    [startButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
     [startButton addTarget:self action:@selector(startPresentation:)forControlEvents:UIControlEventTouchUpInside];
     startButton.showsTouchWhenHighlighted = YES;
-    [startButton setTitle:@"Start" forState:UIControlStateNormal];
-    startButton.backgroundColor = [UIColor whiteColor];
+    [startButton setBackgroundImage:[UIImage imageNamed:@"start"] forState:UIControlStateNormal];
+    startButton.layer.cornerRadius = (45/2);
+    startButton.layer.masksToBounds = YES;
+    //[startButton setTitle:@"Start" forState:UIControlStateNormal];
+    startButton.backgroundColor = [UIColor clearColor];
     [startButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self.view addSubview:startButton];
     
     UIButton *clearLocalDataButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    [clearLocalDataButton setFrame:CGRectMake(175, 108, 108, 33)];
+    [clearLocalDataButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 5, 45, 45)];
     [clearLocalDataButton addTarget:self action:@selector(reloadLocalDataStore:)forControlEvents:UIControlEventTouchUpInside];
     clearLocalDataButton.showsTouchWhenHighlighted = YES;
-    [clearLocalDataButton setTitle:@"Refresh Data" forState:UIControlStateNormal];
-    clearLocalDataButton.backgroundColor = [UIColor whiteColor];
+    //[clearLocalDataButton setTitle:@"Refresh Data" forState:UIControlStateNormal];
+    [clearLocalDataButton setBackgroundImage:[UIImage imageNamed:@"refresh"] forState:UIControlStateNormal];
+    clearLocalDataButton.backgroundColor = [UIColor clearColor];
     [clearLocalDataButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self.view addSubview:clearLocalDataButton];
     

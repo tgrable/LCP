@@ -50,6 +50,10 @@
 		4F394F8E1AF7B4B300F2BB8F /* ico-dot-inactive-black@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F394F8C1AF7B4B300F2BB8F /* ico-dot-inactive-black@2x.png */; };
 		4F394F901AF7B4BB00F2BB8F /* ico-dot-active-black.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F394F8F1AF7B4BB00F2BB8F /* ico-dot-active-black.png */; };
 		4F394F921AF7B4C200F2BB8F /* ico-dot-active-black@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F394F911AF7B4C200F2BB8F /* ico-dot-active-black@2x.png */; };
+		4F394F961AF7D8E800F2BB8F /* ico-fav-active.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F394F931AF7D8E800F2BB8F /* ico-fav-active.png */; };
+		4F394F971AF7D8E800F2BB8F /* ico-fav-inactive.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F394F941AF7D8E800F2BB8F /* ico-fav-inactive.png */; };
+		4F394F981AF7D8E800F2BB8F /* ico-fav-inactive@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F394F951AF7D8E800F2BB8F /* ico-fav-inactive@2x.png */; };
+		4F394F9A1AF7D8EF00F2BB8F /* ico-fav-active@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F394F991AF7D8EF00F2BB8F /* ico-fav-active@2x.png */; };
 		4F3E71121A9F6E690095C1DE /* logo-C.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F3E710F1A9F6E690095C1DE /* logo-C.png */; };
 		4F3E71131A9F6E690095C1DE /* logo-L.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F3E71101A9F6E690095C1DE /* logo-L.png */; };
 		4F3E71141A9F6E690095C1DE /* logo-P.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F3E71111A9F6E690095C1DE /* logo-P.png */; };
@@ -227,6 +231,10 @@
 		4F394F8C1AF7B4B300F2BB8F /* ico-dot-inactive-black@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-dot-inactive-black@2x.png"; sourceTree = "<group>"; };
 		4F394F8F1AF7B4BB00F2BB8F /* ico-dot-active-black.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-dot-active-black.png"; sourceTree = "<group>"; };
 		4F394F911AF7B4C200F2BB8F /* ico-dot-active-black@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-dot-active-black@2x.png"; sourceTree = "<group>"; };
+		4F394F931AF7D8E800F2BB8F /* ico-fav-active.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-fav-active.png"; sourceTree = "<group>"; };
+		4F394F941AF7D8E800F2BB8F /* ico-fav-inactive.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-fav-inactive.png"; sourceTree = "<group>"; };
+		4F394F951AF7D8E800F2BB8F /* ico-fav-inactive@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-fav-inactive@2x.png"; sourceTree = "<group>"; };
+		4F394F991AF7D8EF00F2BB8F /* ico-fav-active@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-fav-active@2x.png"; sourceTree = "<group>"; };
 		4F3E710F1A9F6E690095C1DE /* logo-C.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo-C.png"; sourceTree = "<group>"; };
 		4F3E71101A9F6E690095C1DE /* logo-L.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo-L.png"; sourceTree = "<group>"; };
 		4F3E71111A9F6E690095C1DE /* logo-P.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "logo-P.png"; sourceTree = "<group>"; };
@@ -645,6 +653,10 @@
 				4F329D781A92AB23002A5093 /* btn-content-overview.png */,
 				4F329D791A92AB23002A5093 /* btn-content-samples.png */,
 				4F329D7A1A92AB23002A5093 /* btn-content-video.png */,
+				4F394F991AF7D8EF00F2BB8F /* ico-fav-active@2x.png */,
+				4F394F931AF7D8E800F2BB8F /* ico-fav-active.png */,
+				4F394F941AF7D8E800F2BB8F /* ico-fav-inactive.png */,
+				4F394F951AF7D8E800F2BB8F /* ico-fav-inactive@2x.png */,
 			);
 			name = images;
 			sourceTree = "<group>";
@@ -861,6 +873,7 @@
 				4F394F891AF7B12C00F2BB8F /* AktivGrotesk-Bold.ttf in Resources */,
 				4F394F8A1AF7B12C00F2BB8F /* AktivGrotesk-Regular.ttf in Resources */,
 				2C2C32E01AF52AFF00902543 /* Oswald-Bold.ttf in Resources */,
+				4F394F961AF7D8E800F2BB8F /* ico-fav-active.png in Resources */,
 				2C2C32E11AF52B0200902543 /* Oswald-Light.ttf in Resources */,
 				2C2C32E21AF52B0500902543 /* Oswald.ttf in Resources */,
 				4FAC30031A9D194B00CE40C4 /* logo-L@2x.png in Resources */,
@@ -876,8 +889,10 @@
 				4FAC30061A9D197900CE40C4 /* logo-tag@2x.png in Resources */,
 				4F394F921AF7B4C200F2BB8F /* ico-dot-active-black@2x.png in Resources */,
 				4FCC5BF11A8BC5EC00292D6B /* Icon.png in Resources */,
+				4F394F981AF7D8E800F2BB8F /* ico-fav-inactive@2x.png in Resources */,
 				4F329D941A92AB4E002A5093 /* btn-printed-overview.png in Resources */,
 				4FCC5BE61A8BC5EC00292D6B /* Icon-72@2x.png in Resources */,
+				4F394F9A1AF7D8EF00F2BB8F /* ico-fav-active@2x.png in Resources */,
 				4F329D8D1A92AB45002A5093 /* btn-ideation-samples.png in Resources */,
 				4F329D761A92A6BF002A5093 /* btn-cms-video.png in Resources */,
 				4F394F901AF7B4BB00F2BB8F /* ico-dot-active-black.png in Resources */,
@@ -885,6 +900,7 @@
 				4F394F8D1AF7B4B300F2BB8F /* ico-dot-inactive-black.png in Resources */,
 				4F329D8B1A92AB45002A5093 /* btn-ideation-casestudy.png in Resources */,
 				4F329D7B1A92AB23002A5093 /* btn-content-casestudy.png in Resources */,
+				4F394F971AF7D8E800F2BB8F /* ico-fav-inactive.png in Resources */,
 				4F9BDF4C1AF4165900D6C595 /* ico-dot-active-white@2x.png in Resources */,
 				4F329D961A92AB4E002A5093 /* btn-printed-video.png in Resources */,
 				4FB8542E1A97A1280079866C /* img-green-square.png in Resources */,

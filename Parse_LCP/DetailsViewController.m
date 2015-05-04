@@ -45,7 +45,7 @@
     [self.view addSubview:summaryView];
     
     UIImageView *summaryBackground = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, summaryView.bounds.size.width, summaryView.bounds.size.height - 96)];
-    summaryBackground.image = [UIImage imageNamed:@"bkgrd-overview.png"];
+    summaryBackground.image = [UIImage imageNamed:@"bkgrd-overview"];
     [summaryView addSubview:summaryBackground];
 
     //Logo and setting navigation buttons
@@ -75,7 +75,7 @@
     [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     backButton.showsTouchWhenHighlighted = YES;
     backButton.tag = 1;
-    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back.png"] forState:UIControlStateNormal];
+    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back"] forState:UIControlStateNormal];
     [self.view addSubview:backButton];
     
     UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -83,7 +83,7 @@
     [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     homeButton.showsTouchWhenHighlighted = YES;
     homeButton.tag = 0;
-    [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home.png"] forState:UIControlStateNormal];
+    [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home"] forState:UIControlStateNormal];
     [self.view addSubview:homeButton];
 }
 
@@ -196,7 +196,7 @@
         [overviewButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (97.5f + 45), 10, 45, 45)];
         [overviewButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
         overviewButton.showsTouchWhenHighlighted = YES;
-        [overviewButton setBackgroundImage:[UIImage imageNamed:@"ico-overview.png"] forState:UIControlStateNormal];
+        [overviewButton setBackgroundImage:[UIImage imageNamed:@"ico-overview"] forState:UIControlStateNormal];
         [overviewButton setBackgroundColor:[UIColor clearColor]];
         overviewButton.tag = 0;
         [navBar addSubview:overviewButton];
@@ -214,7 +214,7 @@
         [caseStudiesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (17.5f + 45), 10, 45, 45)];
         [caseStudiesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
         caseStudiesButton.showsTouchWhenHighlighted = YES;
-        [caseStudiesButton setBackgroundImage:[UIImage imageNamed:@"ico-casestudy2.png"] forState:UIControlStateNormal];
+        [caseStudiesButton setBackgroundImage:[UIImage imageNamed:@"ico-casestudy2"] forState:UIControlStateNormal];
         caseStudiesButton.tag = 1;
         [navBar addSubview:caseStudiesButton];
         
@@ -224,14 +224,14 @@
         casestudyLabel.numberOfLines = 1;
         casestudyLabel.backgroundColor = [UIColor clearColor];
         casestudyLabel.textAlignment = NSTextAlignmentCenter;
-        casestudyLabel.text = @"CASE STUDY";
+        casestudyLabel.text = @"CASE STUDIES";
         [navBar addSubview:casestudyLabel];
         
         UIButton *samplesButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [samplesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 17.5f, 10, 45, 45)];
         [samplesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
         samplesButton.showsTouchWhenHighlighted = YES;
-        [samplesButton setBackgroundImage:[UIImage imageNamed:@"ico-samples.png"] forState:UIControlStateNormal];
+        [samplesButton setBackgroundImage:[UIImage imageNamed:@"ico-samples"] forState:UIControlStateNormal];
         samplesButton.tag = 2;
         [navBar addSubview:samplesButton];
         
@@ -248,7 +248,7 @@
         [videoButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 97.5f, 10, 45, 45)];
         [videoButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
         videoButton.showsTouchWhenHighlighted = YES;
-        [videoButton setBackgroundImage:[UIImage imageNamed:@"ico-video2.png"] forState:UIControlStateNormal];
+        [videoButton setBackgroundImage:[UIImage imageNamed:@"ico-video2"] forState:UIControlStateNormal];
         videoButton.tag = 3;
         [navBar addSubview:videoButton];
         

@@ -47,7 +47,7 @@
     [self.view addSubview:background];
     
     UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, background.bounds.size.width, 110)];
-    headerImgView.image = [UIImage imageNamed:@"hdr-team.png"];
+    headerImgView.image = [UIImage imageNamed:@"hdr-team"];
     [background addSubview:headerImgView];
     
     UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, headerImgView.bounds.size.width, 110)];
@@ -87,7 +87,7 @@
     [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     backButton.showsTouchWhenHighlighted = YES;
     backButton.tag = 1;
-    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back.png"] forState:UIControlStateNormal];
+    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back"] forState:UIControlStateNormal];
     [self.view addSubview:backButton];
     
     UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -95,7 +95,7 @@
     [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     homeButton.showsTouchWhenHighlighted = YES;
     homeButton.tag = 0;
-    [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home.png"] forState:UIControlStateNormal];
+    [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home"] forState:UIControlStateNormal];
     [self.view addSubview:homeButton];
     
     teamScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, 252)];

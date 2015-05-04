@@ -51,12 +51,6 @@
 }
 - (void)viewDidLoad {
     [super viewDidLoad];
-    
-    NSArray *fonts = [UIFont fontNamesForFamilyName:@"Oswald"];
-    NSLog(@"%@", fonts);
-    for(NSString *string in fonts){
-        NSLog(@"%@", string);
-    }
 
     //This view is dependent on user input but these elements will not change
     //so they will only need to loaded one time.

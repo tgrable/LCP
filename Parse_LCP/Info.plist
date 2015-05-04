@@ -39,7 +39,8 @@
 	</array>
 	<key>UIAppFonts</key>
 	<array>
-		<string>NimbusSanD-Regu.ttf</string>
+		<string>AktivGrotesk-Regular.ttf</string>
+		<string>AktivGrotesk-Bold.ttf</string>
 		<string>Oswald.ttf</string>
 		<string>Oswald-Light.ttf</string>
 		<string>Oswald-Bold.ttf</string>

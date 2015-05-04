@@ -178,7 +178,7 @@
         
         NSString *introText = [NSString stringWithFormat:@"%@",[bodyDict objectForKey:@"value"]];
         UITextView *introTextView = [[UITextView alloc] initWithFrame:CGRectMake(24, 24, summaryScroll.bounds.size.width - (24 * 2), summaryScroll.bounds.size.height - 48)];
-        [introTextView setFont:[UIFont fontWithName:@"NimbusSanD-Regu" size:24]];
+        [introTextView setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:26.0f]];
         introTextView.textColor = [UIColor whiteColor];
         introTextView.textAlignment = NSTextAlignmentCenter;
         introTextView.backgroundColor = [UIColor clearColor];
@@ -266,16 +266,16 @@
             [locationIndicator setBackgroundColor:[UIColor yellowColor]];
         }
         else if ([content.catagoryId isEqualToString:@"40"]) {
-            [locationIndicator setBackgroundColor:[UIColor greenColor]];
+            [locationIndicator setBackgroundColor:[UIColor blueColor]];
         }
         else if ([content.catagoryId isEqualToString:@"41"]) {
             [locationIndicator setBackgroundColor:[UIColor purpleColor]];
         }
         else if ([content.catagoryId isEqualToString:@"42"]) {
-            [locationIndicator setBackgroundColor:[UIColor orangeColor]];
+            [locationIndicator setBackgroundColor:[UIColor greenColor]];
         }
         else if ([content.catagoryId isEqualToString:@"43"]) {
-            [locationIndicator setBackgroundColor:[UIColor blueColor]];
+            [locationIndicator setBackgroundColor:[UIColor orangeColor]];
         }
         else if ([content.catagoryId isEqualToString:@"44"]) {
             [locationIndicator setBackgroundColor:[UIColor redColor]];

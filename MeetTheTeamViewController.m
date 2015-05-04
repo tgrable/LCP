@@ -255,12 +255,11 @@
             }
         }
 
-        // TODO: Update the dot images and remove background color
         paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, 0, 300, 36)];
         paginationDots.numberOfPages = multiplier;
-        paginationDots.backgroundColor = [UIColor lightGrayColor];
-        paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-white"];
-        paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-white"];
+        paginationDots.backgroundColor = [UIColor clearColor];
+        paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-black"];
+        paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
         [pagination addSubview:paginationDots];
 
         [teamScroll setContentSize:CGSizeMake(background.bounds.size.width * multiplier, 252)];
@@ -282,8 +281,8 @@
     }
     for (LCPTeamMembers *tms in teamMemberArray) {
         if ([tms.btnTag isEqualToString:[NSString stringWithFormat:@"%ld", (long)sender.tag]]) {
-            UILabel *nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, jobDescription.bounds.size.width - 600, 40)];
-            [nameLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:20.0]];
+            UILabel *nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 400, 40)];
+            [nameLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Bold" size:24.0]];
             nameLabel.textColor = [UIColor blackColor];
             [nameLabel setNumberOfLines:1];
             nameLabel.backgroundColor = [UIColor clearColor];
@@ -291,9 +290,9 @@
             nameLabel.text = tms.teamMemberName;
             [jobDescription addSubview:nameLabel];
             
-            UILabel *positionLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 36, jobDescription.bounds.size.width - 600, 20)];
-            [positionLabel setFont:[UIFont fontWithName:@"Oswald" size:16.0]];
-            positionLabel.textColor = [UIColor blackColor];
+            UILabel *positionLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 36, 400, 30)];
+            [positionLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:22.0]];
+            positionLabel.textColor = [UIColor darkGrayColor];
             [positionLabel setNumberOfLines:1];
             positionLabel.backgroundColor = [UIColor clearColor];
             positionLabel.textAlignment = NSTextAlignmentLeft;
@@ -301,8 +300,8 @@
             [jobDescription addSubview:positionLabel];
             
             NSString *temp = [NSString stringWithFormat:@"%@", tms.teamMemberBio];
-            UITextView *descLabel = [[UITextView alloc] initWithFrame:CGRectMake(jobDescription.bounds.size.width - 600, 0, jobDescription.bounds.size.width - 280, 320)];
-            [descLabel setFont:[UIFont fontWithName:@"NimbusSanD-Regu" size:16.0]];
+            UITextView *descLabel = [[UITextView alloc] initWithFrame:CGRectMake(425, 0, jobDescription.bounds.size.width / 2, 320)];
+            [descLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:20.0]];
             descLabel.textColor = [UIColor blackColor];
             descLabel.backgroundColor = [UIColor clearColor];
             descLabel.textAlignment = NSTextAlignmentLeft;

@@ -56,22 +56,15 @@
     [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
-    //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(150, 0, 45, 45)];
-    dashboardBackground.backgroundColor = [UIColor whiteColor];
-    dashboardBackground.layer.cornerRadius = (45/2);
-    dashboardBackground.layer.masksToBounds = YES;
-    [self.view addSubview:dashboardBackground];
-    
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [dashboardButton setFrame:CGRectMake(4.5f, 4.5f, 36, 36)];
+    [dashboardButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
     [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
     dashboardButton.showsTouchWhenHighlighted = YES;
-    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-gear"] forState:UIControlStateNormal];
-    [dashboardBackground addSubview:dashboardButton];
+    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
+    [self.view addSubview:dashboardButton];
     
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [backButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 5, 45, 45)];
+    [backButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
     [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     backButton.showsTouchWhenHighlighted = YES;
     backButton.tag = 1;
@@ -79,7 +72,7 @@
     [self.view addSubview:backButton];
     
     UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
+    [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 235), 0, 45, 45)];
     [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     homeButton.showsTouchWhenHighlighted = YES;
     homeButton.tag = 0;

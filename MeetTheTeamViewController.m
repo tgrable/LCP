@@ -68,22 +68,15 @@
     [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
-    //the following two views add a button for navigation back to the dashboard
-    UIView *dashboardBackground = [[UIView alloc] initWithFrame:CGRectMake(150, 0, 45, 45)];
-    dashboardBackground.backgroundColor = [UIColor whiteColor];
-    dashboardBackground.layer.cornerRadius = (45/2);
-    dashboardBackground.layer.masksToBounds = YES;
-    [self.view addSubview:dashboardBackground];
-    
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [dashboardButton setFrame:CGRectMake(4.5f, 4.5f, 36, 36)];
+    [dashboardButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
     [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
     dashboardButton.showsTouchWhenHighlighted = YES;
-    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-gear"] forState:UIControlStateNormal];
-    [dashboardBackground addSubview:dashboardButton];
+    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
+    [self.view addSubview:dashboardButton];
     
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [backButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 5, 45, 45)];
+    [backButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
     [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     backButton.showsTouchWhenHighlighted = YES;
     backButton.tag = 1;
@@ -91,32 +84,31 @@
     [self.view addSubview:backButton];
     
     UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
+    [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 235), 0, 45, 45)];
     [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     homeButton.showsTouchWhenHighlighted = YES;
     homeButton.tag = 0;
     [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home"] forState:UIControlStateNormal];
     [self.view addSubview:homeButton];
     
-    teamScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, 252)];
+    teamScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, 234)];
     [teamScroll setBackgroundColor:[UIColor clearColor]];
     teamScroll.delegate = self;
     [background addSubview:teamScroll];
     
-    UIView *divider = [[UIView alloc] initWithFrame:CGRectMake(0, 370, background.bounds.size.width, 2)];
+    UIView *divider = [[UIView alloc] initWithFrame:CGRectMake(0, 343, background.bounds.size.width, 2)];
     [divider setBackgroundColor:[UIColor colorWithRed:191.0f/255.0f green:191.0f/255.0f blue:191.0f/255.0f alpha:1.0]];
     [background addSubview:divider];
     
-    pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) - 150, 375, 300, 36)];
+    pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) - 150, 354, 300, 50)];
     [pagination setBackgroundColor:[UIColor clearColor]];
     [pagination setUserInteractionEnabled:YES];
     [background addSubview:pagination];
-
 }
 
 - (void)viewWillAppear:(BOOL)animated {
     
-    jobDescription = [[UIView alloc] initWithFrame:CGRectMake(36, 425, (background.bounds.size.width - (36 * 2)), 420)];
+    jobDescription = [[UIView alloc] initWithFrame:CGRectMake(36, 410, (background.bounds.size.width - (36 * 2)), 250)];
     [jobDescription setBackgroundColor:[UIColor clearColor]];
     [jobDescription setUserInteractionEnabled:YES];
     [background addSubview:jobDescription];
@@ -230,10 +222,10 @@
 }
 
 - (void)buldGrid:(NSArray *)teamMemberObjects {
-    int x = 36;
+    int x = 24;
     for (LCPTeamMembers *tm in teamMemberObjects) {
         UIButton *teamMemberButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [teamMemberButton setFrame:CGRectMake(x, 60, 152, 152)];
+        [teamMemberButton setFrame:CGRectMake(x, 48, 155, 155)];
         [teamMemberButton addTarget:self action:@selector(teamMemberClicked:)forControlEvents:UIControlEventTouchUpInside];
         teamMemberButton.showsTouchWhenHighlighted = YES;
         teamMemberButton.tag = [tm.btnTag intValue];
@@ -243,7 +235,7 @@
         [teamScroll addSubview:teamMemberButton];
         [buttons addObject:teamMemberButton];
         
-        x += 188;
+        x += 186;
     }
     
     if (teamMemberObjects.count > 5) {
@@ -281,8 +273,8 @@
     }
     for (LCPTeamMembers *tms in teamMemberArray) {
         if ([tms.btnTag isEqualToString:[NSString stringWithFormat:@"%ld", (long)sender.tag]]) {
-            UILabel *nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 400, 40)];
-            [nameLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Bold" size:24.0]];
+            UILabel *nameLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, (jobDescription.bounds.size.width / 2) - 128, 40)];
+            [nameLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Bold" size:20.0f]];
             nameLabel.textColor = [UIColor blackColor];
             [nameLabel setNumberOfLines:1];
             nameLabel.backgroundColor = [UIColor clearColor];
@@ -291,8 +283,8 @@
             [jobDescription addSubview:nameLabel];
             
             UILabel *positionLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 36, 400, 30)];
-            [positionLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:22.0]];
-            positionLabel.textColor = [UIColor darkGrayColor];
+            [positionLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:16.0]];
+            positionLabel.textColor = [UIColor colorWithRed:51.0f/255.0f green:51.0f/255.0f blue:51.0f/255.0f alpha:1.0];
             [positionLabel setNumberOfLines:1];
             positionLabel.backgroundColor = [UIColor clearColor];
             positionLabel.textAlignment = NSTextAlignmentLeft;
@@ -300,8 +292,8 @@
             [jobDescription addSubview:positionLabel];
             
             NSString *temp = [NSString stringWithFormat:@"%@", tms.teamMemberBio];
-            UITextView *descLabel = [[UITextView alloc] initWithFrame:CGRectMake(425, 0, jobDescription.bounds.size.width / 2, 320)];
-            [descLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:20.0]];
+            UITextView *descLabel = [[UITextView alloc] initWithFrame:CGRectMake((jobDescription.bounds.size.width / 2) - 100, 0, (jobDescription.bounds.size.width / 2) + 100, 320)];
+            [descLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:16.0]];
             descLabel.textColor = [UIColor blackColor];
             descLabel.backgroundColor = [UIColor clearColor];
             descLabel.textAlignment = NSTextAlignmentLeft;

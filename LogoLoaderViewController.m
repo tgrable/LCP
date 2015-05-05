@@ -16,6 +16,7 @@
 
 @implementation LogoLoaderViewController
 @synthesize logoView;                //UIView
+@synthesize companyName;
 
 - (BOOL)prefersStatusBarHidden
 {
@@ -44,75 +45,31 @@
 }
 
 - (void)buldLogoLoader {
-    UIImageView *l = [[UIImageView alloc] initWithFrame:CGRectMake(302, 250, 140, 140)];
-    [l setImage:[UIImage imageNamed:@"logo-L.png"]];
-    l.alpha = 0.0;
-    [logoView addSubview:l];
+    // TODO: This needs to be loaded dynamically
+    UIImageView *splashImg = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, logoView.bounds.size.width, logoView.bounds.size.height)];
+    [splashImg setImage:[UIImage imageNamed:@"img-splash"]];
+    [logoView addSubview:splashImg];
     
-    UIImageView *c = [[UIImageView alloc] initWithFrame:CGRectMake(442, 250, 140, 140)];
-    [c setImage:[UIImage imageNamed:@"logo-C.png"]];
-    c.alpha = 0.0;
-    [logoView addSubview:c];
+    NSString *name = (companyName == (id)[NSNull null] || companyName.length == 0 ) ? @"<COMPANY NAME HERE>" : companyName;
+    UILabel *presentedTo = [[UILabel alloc] initWithFrame:CGRectMake(0, 520, logoView.bounds.size.width, 30)];
+    [presentedTo setFont:[UIFont fontWithName:@"Oswald-light" size:24.0]];
+    presentedTo.textColor = [UIColor whiteColor];
+    presentedTo.numberOfLines = 1;
+    presentedTo.backgroundColor = [UIColor clearColor];
+    presentedTo.textAlignment = NSTextAlignmentCenter;
+    presentedTo.text = [NSString stringWithFormat:@"PRESENTED TO %@", name];
+    [logoView addSubview:presentedTo];
     
-    UIImageView *p = [[UIImageView alloc] initWithFrame:CGRectMake(582, 250, 140, 140)];
-    [p setImage:[UIImage imageNamed:@"logo-P.png"]];
-    p.alpha = 0.0;
-    [logoView addSubview:p];
-    
-    UIButton *title = [UIButton buttonWithType:UIButtonTypeCustom];
-    [title setFrame:CGRectMake(302, 410, 420, 33)];
-    [title addTarget:self action:@selector(goToSettings:)forControlEvents:UIControlEventTouchUpInside];
-    title.showsTouchWhenHighlighted = YES;
-    title.tag = 80;
-    title.alpha = 0;
-    [title setBackgroundImage:[UIImage imageNamed:@"logo-tag.png"] forState:UIControlStateNormal];
-    [logoView addSubview:title];
-
-    
-    [UIView animateWithDuration:0.6f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
-        //l animation
-        l.alpha = 1.0;
-    }completion:^(BOOL finished) {
-        [UIView animateWithDuration:0.6f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
-            //c animation
-            c.alpha = 1.0;
-        }completion:^(BOOL finished) {
-            [UIView animateWithDuration:0.6f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
-                //p animation
-                p.alpha = 1.0;
-            }completion:^(BOOL finished) {
-                [UIView animateWithDuration:0.9f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
-                    //title animation
-                    title.alpha = 1.0;
-                }completion:^(BOOL finished) {
-                    //timer function
-                    //[self timerCountdown];
-                    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewTapped:)];
-                    tapGesture.numberOfTapsRequired = 1;
-                    [self.view addGestureRecognizer:tapGesture];
-                }];
-            }];
-        }];
-    }];
+    UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewTapped:)];
+    tapGesture.numberOfTapsRequired = 1;
+    [logoView addGestureRecognizer:tapGesture];
 }
 
-/*
-#pragma mark - Navigation
-
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
-- (void)goToSettings:(UIButton *)sender {
-    //[self performSegueWithIdentifier:@"showSettings" sender:sender];
-    //[self removeEverything];
-}
 - (void)viewTapped:(id)sender {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     BrandMeetsWorldViewController *bmwvc = (BrandMeetsWorldViewController *)[storyboard instantiateViewControllerWithIdentifier:@"brandMeetsWorldViewController"];
-    [self.navigationController pushViewController:bmwvc animated:YES];    
+    [self.navigationController pushViewController:bmwvc animated:YES];
+    [self removeEverything];
 }
 
 #pragma mark

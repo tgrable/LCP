@@ -19,7 +19,7 @@
 @property (strong, nonatomic) UIScrollView *csContent, *sContent, *vContent, *tContent;
 @property (strong, nonatomic) UIScrollView *presentationContent, *emailContent;
 @property (nonatomic) UISegmentedControl *contentSegController;
-@property (strong, nonatomic) UITextField *email, *subject;
+@property (strong, nonatomic) UITextField *email, *subject, *companyNameTextField;
 @property (strong, nonatomic) UITextView *message;
 @property (strong, nonatomic) UIButton *submitButton;
 @property NSMutableArray *favoritedNIDs;
@@ -38,7 +38,7 @@
 @synthesize contentSegController;                                            //UISegmentedControl
 @synthesize submitButton;                                                    //UIButons
 @synthesize parsedownload, emailObject;                                      //Custom Classes
-@synthesize email, subject;                                                  //Email textfields
+@synthesize email, subject, companyNameTextField;                            //Email textfields
 @synthesize message;                                                         //Email textview
 @synthesize favoritedNIDs, termsArray;
 
@@ -255,7 +255,7 @@
     [startButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
     [startButton addTarget:self action:@selector(startPresentation:)forControlEvents:UIControlEventTouchUpInside];
     startButton.showsTouchWhenHighlighted = YES;
-    [startButton setBackgroundImage:[UIImage imageNamed:@"start"] forState:UIControlStateNormal];
+    [startButton setBackgroundImage:[UIImage imageNamed:@"ico-play"] forState:UIControlStateNormal];
     startButton.layer.cornerRadius = (45/2);
     startButton.layer.masksToBounds = YES;
     //[startButton setTitle:@"Start" forState:UIControlStateNormal];
@@ -264,11 +264,11 @@
     [self.view addSubview:startButton];
     
     UIButton *clearLocalDataButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    [clearLocalDataButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 5, 45, 45)];
+    [clearLocalDataButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
     [clearLocalDataButton addTarget:self action:@selector(reloadLocalDataStore:)forControlEvents:UIControlEventTouchUpInside];
     clearLocalDataButton.showsTouchWhenHighlighted = YES;
     //[clearLocalDataButton setTitle:@"Refresh Data" forState:UIControlStateNormal];
-    [clearLocalDataButton setBackgroundImage:[UIImage imageNamed:@"refresh"] forState:UIControlStateNormal];
+    [clearLocalDataButton setBackgroundImage:[UIImage imageNamed:@"ico-refresh"] forState:UIControlStateNormal];
     clearLocalDataButton.backgroundColor = [UIColor clearColor];
     [clearLocalDataButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
     [self.view addSubview:clearLocalDataButton];
@@ -656,14 +656,32 @@
 
 -(void)buildPresentationView
 {
-    //TODO add presentation layout
+    // TODO: add presentation layout
+    UILabel *companyNameLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 0, 200, 40)];
+    companyNameLabel.textColor = [UIColor whiteColor];
+    companyNameLabel.numberOfLines = 1;
+    companyNameLabel.backgroundColor = [UIColor clearColor];
+    companyNameLabel.textAlignment = NSTextAlignmentLeft;
+    companyNameLabel.text = @"Enter Company Name:";
+    [presentationContent addSubview:companyNameLabel];
+    
+    companyNameTextField = [[UITextField alloc] initWithFrame:CGRectMake(24, 50, 400, 40)];
+    companyNameTextField.textColor = [UIColor blackColor];
+    companyNameTextField.font = [UIFont fontWithName:@"Helvetica" size:15];
+    companyNameTextField.backgroundColor = [UIColor whiteColor];
+    [companyNameTextField setBorderStyle:UITextBorderStyleRoundedRect];
+    [companyNameTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
+    [presentationContent addSubview:companyNameTextField];
+    
+    /*
     UILabel *descLabel = [[UILabel alloc] initWithFrame:CGRectMake(160, 130, 200, 40)];
     descLabel.textColor = [UIColor whiteColor];
     descLabel.numberOfLines = 1;
-    descLabel.backgroundColor = [UIColor clearColor];
+    descLabel.backgroundColor = [UIColor yellowColor];
     descLabel.textAlignment = NSTextAlignmentLeft;
     descLabel.text = @"PRESENTATION VIEW";
     [presentationContent addSubview:descLabel];
+     */
 }
 
 - (void)buildOptions:(NSArray *)objects forView:(NSString *)contentView withTerm:(NSString *)tagReference {
@@ -810,6 +828,7 @@
 {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     LogoLoaderViewController *lvc = (LogoLoaderViewController *)[storyboard instantiateViewControllerWithIdentifier:@"logoLoaderViewController"];
+    lvc.companyName = [companyNameTextField.text uppercaseString];
     [self.navigationController pushViewController:lvc animated:YES];
     //[self performSegueWithIdentifier:@"logoLoaderView" sender:sender];
 }

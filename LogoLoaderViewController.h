@@ -10,4 +10,6 @@
 
 @interface LogoLoaderViewController : UIViewController
 
+@property (strong, nonatomic) NSString *companyName;
+
 @end

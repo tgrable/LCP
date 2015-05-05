@@ -43,25 +43,13 @@
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
     
-    favoriteContentButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    [favoriteContentButton setFrame:CGRectMake(background.bounds.size.width - 272, 72, 100, 33)];
-    [favoriteContentButton addTarget:self action:@selector(setContentAsFavorite:)forControlEvents:UIControlEventTouchUpInside];
-    favoriteContentButton.showsTouchWhenHighlighted = YES;
-    [favoriteContentButton setTitle:@"Favorite" forState:UIControlStateNormal];
-    favoriteContentButton.backgroundColor = [UIColor whiteColor];
-    [favoriteContentButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [self.view addSubview:favoriteContentButton];
-
-    UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [homeButton setFrame:CGRectMake(background.bounds.size.width - 136, 72, 100, 33)];
-    [homeButton addTarget:self action:@selector(backHome:)forControlEvents:UIControlEventTouchUpInside];
-    homeButton.showsTouchWhenHighlighted = YES;
-    homeButton.tag = 80;
-    homeButton.layer.backgroundColor = [UIColor clearColor].CGColor;
-    homeButton.layer.borderColor = [UIColor whiteColor].CGColor;
-    homeButton.layer.borderWidth = 1.0f;
-    [homeButton setTitle:@"DONE" forState:UIControlStateNormal];
-    [self.view addSubview:homeButton];
+    UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [doneButton setFrame:CGRectMake(self.view.bounds.size.width - 116, 56, 60, 30)];
+    [doneButton addTarget:self action:@selector(backHome:)forControlEvents:UIControlEventTouchUpInside];
+    doneButton.showsTouchWhenHighlighted = YES;
+    doneButton.tag = 1;
+    [doneButton setBackgroundImage:[UIImage imageNamed:@"btn-done-white"] forState:UIControlStateNormal];
+    [self.view addSubview:doneButton];
     
     [self fetchVideoFromLocalDataStore];
 }
@@ -116,6 +104,18 @@
                         videoPoster.alpha = 1.0f;
                         videoPoster.tag = 50;
                         [background addSubview:videoPoster];
+                        
+                        favoriteContentButton = [UIButton buttonWithType:UIButtonTypeCustom];
+                        [favoriteContentButton setFrame:CGRectMake((background.bounds.size.width - 124), 20, 24, 24)];
+                        [favoriteContentButton addTarget:self action:@selector(setContentAsFavorite:)forControlEvents:UIControlEventTouchUpInside];
+                        favoriteContentButton.showsTouchWhenHighlighted = YES;
+                        favoriteContentButton.tag = [nid integerValue];
+                        if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[objects[0] objectForKey:@"nid"]] != nil){
+                            [favoriteContentButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-active"] forState:UIControlStateNormal];
+                        }else{
+                            [favoriteContentButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-inactive"] forState:UIControlStateNormal];
+                        }
+                        [background addSubview:favoriteContentButton];
                     }
                     
                     //Start video and fade out poster
@@ -135,45 +135,36 @@
 }
 
 //pick the current nid of the content and save it to the NSUserDefault
--(void)setContentAsFavorite:(id)sender
+-(void)setContentAsFavorite:(UIButton *)sender
 {
-    UIButton *favButton = (UIButton *)sender;
-    
-    NSLog(@"Selected nid %@" , nid);
-    NSLog(@"Selected title %@" , nodeTitle);
-    
-    if(favButton.backgroundColor == [UIColor whiteColor]){
-        //add favorite
+    if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[NSString stringWithFormat:@"%ld", (long)sender.tag]] == nil){
+        NSLog(@"YES");
         [parsedownload addOrRemoveFavoriteNodeID:nid
                                        nodeTitle:nodeTitle
                                         nodeType:@"Video"
                              withAddOrRemoveFlag:YES];
-        //update button also
-        favoriteContentButton.backgroundColor = [UIColor lightGrayColor];
-        [favoriteContentButton setTitle:@"Favorited" forState:UIControlStateNormal];
-        
-    }else if(favButton.backgroundColor == [UIColor lightGrayColor]){
-        //remove favorite
+        [sender setBackgroundImage:[UIImage imageNamed:@"ico-fav-active"] forState:UIControlStateNormal];
+    }else{
+        NSLog(@"NO");
         [parsedownload addOrRemoveFavoriteNodeID:nid
                                        nodeTitle:@""
                                         nodeType:@""
                              withAddOrRemoveFlag:NO];
-        //update button also
-        favoriteContentButton.backgroundColor = [UIColor whiteColor];
-        [favoriteContentButton setTitle:@"Favorite" forState:UIControlStateNormal];
+        [sender setBackgroundImage:[UIImage imageNamed:@"ico-fav-inactive"] forState:UIControlStateNormal];
     }
-    
 }
 
 //this function updates the button background color to reflect if it is stored as a favorite or not
 -(void)updateFavoriteButtonColor
 {
-    if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:nid] != nil){
-        favoriteContentButton.backgroundColor = [UIColor lightGrayColor];
-        [favoriteContentButton setTitle:@"Favorited" forState:UIControlStateNormal];
-    }else{
-        favoriteContentButton.backgroundColor = [UIColor whiteColor];
-        [favoriteContentButton setTitle:@"Favorite" forState:UIControlStateNormal];
+    if(nid){
+        UIButton *favbutton = (UIButton *)[self.view viewWithTag:[nid integerValue]];
+        
+        if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:nid] != nil){
+            [favbutton setBackgroundImage:[UIImage imageNamed:@"ico-fav-active"] forState:UIControlStateNormal];
+        }else{
+            [favbutton setBackgroundImage:[UIImage imageNamed:@"ico-fav-inactive"] forState:UIControlStateNormal];
+        }
     }
 }
 

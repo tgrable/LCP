@@ -59,7 +59,7 @@
     //Logo and setting navigation buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
-    [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
+    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
     logoButton.showsTouchWhenHighlighted = YES;
     [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
@@ -466,32 +466,26 @@
     [self removeEverything];
 }
 
-- (void)navigateViewButton:(id)sender
-{
+- (void)navigateViewButton:(UIButton *)sender {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
-    UIButton *b = (UIButton *)sender;
     
-    int y = 0;
-    if(b.tag == 0) {
-        [self.navigationController popViewControllerAnimated:YES];
+    if(sender.tag == 0){
+        DetailsViewController *dvc = (DetailsViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
+        dvc.content = content;
+        [self.navigationController pushViewController:dvc animated:YES];
         [self removeEverything];
-    } else if(b.tag == 2) {
+    }else if(sender.tag == 2){
         SamplesViewController *svc = (SamplesViewController *)[storyboard instantiateViewControllerWithIdentifier:@"samplesViewController"];
         svc.content = content;
         [self.navigationController pushViewController:svc animated:YES];
         [self removeEverything];
-    } else if(b.tag == 3) {
+    }else if(sender.tag == 3){
         VideoViewController *vvc = (VideoViewController *)[storyboard instantiateViewControllerWithIdentifier:@"videoViewController"];
         vvc.content = content;
         [self.navigationController pushViewController:vvc animated:YES];
         [self removeEverything];
     }
-    
-    [UIView animateWithDuration:1.2f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
-        [pageScroll setContentOffset:CGPointMake(0, y) animated:NO];
-    }completion:^(BOOL finished) {}];
 }
-
 
 // Send the presenter back to the dashboard
 -(void)backToDashboard:(id)sender

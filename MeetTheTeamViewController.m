@@ -63,7 +63,7 @@
     //Logo and setting navigation buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
-    [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
+    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
     logoButton.showsTouchWhenHighlighted = YES;
     [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];

@@ -26,6 +26,24 @@
             </objects>
             <point key="canvasLocation" x="1382" y="315"/>
         </scene>
+        <!--Sample Details View Controller-->
+        <scene sceneID="uf9-aT-mfi">
+            <objects>
+                <viewController storyboardIdentifier="sampleDetailsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="fr8-Mq-Xud" customClass="SampleDetailsViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="LvT-FL-tD7"/>
+                        <viewControllerLayoutGuide type="bottom" id="dVS-Kx-XCO"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="c5A-Cl-FXL">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="EUd-2K-6v9" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="4412" y="46"/>
+        </scene>
         <!--Logo Loader View Controller-->
         <scene sceneID="wma-o5-PQ7">
             <objects>
@@ -183,6 +201,9 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
+                    <connections>
+                        <segue destination="fr8-Mq-Xud" kind="show" identifier="sampleDetailsView" id="nbG-Xs-vNg"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="efr-DL-Hrw" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>

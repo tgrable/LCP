@@ -9,7 +9,7 @@
 #import <UIKit/UIKit.h>
 #import "LCPContent.h"
 
-@interface DetailsViewController : UIViewController<UIScrollViewDelegate>
+@interface OverviewViewController : UIViewController<UIScrollViewDelegate>
 
 @property (strong, nonatomic) LCPContent *content;
 

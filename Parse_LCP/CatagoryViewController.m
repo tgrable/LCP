@@ -7,7 +7,7 @@
 //
 
 #import "CatagoryViewController.h"
-#import "DetailsViewController.h"
+#import "OverviewViewController.h"
 #import "MeetTheTeamViewController.h"
 #import "TestimonialsViewController.h"
 #import "Reachability.h"
@@ -365,7 +365,7 @@
     else {
         NSLog(@"%@", sender.titleLabel.text);
         //Pass LCPContent object to next view UINavigation View Controller
-        DetailsViewController *dvc = (DetailsViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
+        OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"overviewViewController"];
         dvc.content = content;
         
         //Stop video and reset poster image alpha to 1.0

@@ -10,10 +10,11 @@
 #import <Parse/Parse.h>
 #import "LCPContent.h"
 
-@interface SampleDetailsViewController : UIViewController
+@interface DetailsViewController : UIViewController
 
 @property (strong, nonatomic) LCPContent *content;
-@property (strong, nonatomic) PFObject *sampleObject;
-@property (strong, nonatomic) NSString *sampleID;
+@property (strong, nonatomic) PFObject *contentObject;
+@property (strong, nonatomic) NSString *contentID;
+@property (strong, nonatomic) NSString *contentType;
 
 @end

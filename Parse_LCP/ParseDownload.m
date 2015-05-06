@@ -28,7 +28,7 @@
 #pragma mark
 #pragma mark - Public API
 - (void)downloadAndPinPFObjects {
-    parseClassTypes = @[@"term", @"overview" ,@"case_study", @"samples", @"video", @"team_member",@"testimonials"];
+    parseClassTypes = @[@"term", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member",@"testimonials"];
     parseClassDictionary = [[NSMutableDictionary alloc] init];
     count = 0;
     for (NSString *parseClass in parseClassTypes) {
@@ -41,7 +41,7 @@
 }
 
 - (void)unpinAllPFObjects {
-    parseClassTypes = @[@"term", @"overview" ,@"case_study", @"samples", @"video", @"team_member",@"testimonials"];
+    parseClassTypes = @[@"term", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member",@"testimonials"];
     for (NSString *parseClass in parseClassTypes) {
         [self clearLocalDataStore:parseClass];
     }
@@ -166,7 +166,6 @@
                             NSLog(@"Fetch: %@ and set NSUserDefault to %@", forParseClassType, [defaults objectForKey:forParseClassType]);
                             count++;
                             if (count >= parseClassTypes.count) {
-                                NSLog(@"Now when do I run");
                                 [self postNotificationToRefresh];
                             }
                         }

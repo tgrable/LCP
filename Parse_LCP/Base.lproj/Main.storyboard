@@ -20,16 +20,17 @@
                     </view>
                     <connections>
                         <segue destination="UAd-N5-4aF" kind="show" identifier="catagoryView" id="Vmw-Ip-wRT"/>
+                        <segue destination="J0d-66-XM8" kind="show" id="2Mv-OU-xja"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
             <point key="canvasLocation" x="1382" y="315"/>
         </scene>
-        <!--Sample Details View Controller-->
+        <!--Details View Controller-->
         <scene sceneID="uf9-aT-mfi">
             <objects>
-                <viewController storyboardIdentifier="sampleDetailsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="fr8-Mq-Xud" customClass="SampleDetailsViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="detailsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="fr8-Mq-Xud" customClass="DetailsViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="LvT-FL-tD7"/>
                         <viewControllerLayoutGuide type="bottom" id="dVS-Kx-XCO"/>
@@ -42,7 +43,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="EUd-2K-6v9" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="4412" y="46"/>
+            <point key="canvasLocation" x="4412" y="16"/>
         </scene>
         <!--Logo Loader View Controller-->
         <scene sceneID="wma-o5-PQ7">
@@ -111,10 +112,32 @@
             </objects>
             <point key="canvasLocation" x="2212" y="315"/>
         </scene>
-        <!--Details View Controller-->
+        <!--Library View Controller-->
+        <scene sceneID="ZcT-5i-a3U">
+            <objects>
+                <viewController storyboardIdentifier="libraryViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="J0d-66-XM8" customClass="LibraryViewController" sceneMemberID="viewController">
+                    <layoutGuides>
+                        <viewControllerLayoutGuide type="top" id="GaK-wD-wn4"/>
+                        <viewControllerLayoutGuide type="bottom" id="mVC-Lk-5ho"/>
+                    </layoutGuides>
+                    <view key="view" contentMode="scaleToFill" id="tgJ-0U-K30">
+                        <rect key="frame" x="0.0" y="0.0" width="600" height="600"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <connections>
+                        <segue destination="meW-TN-Dl4" kind="show" id="ja9-Xl-yqa"/>
+                        <segue destination="NKa-wX-sQ1" kind="show" id="KbU-cs-vkN"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="7v0-KL-pvS" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="2212" y="1088"/>
+        </scene>
+        <!--Overview View Controller-->
         <scene sceneID="6X4-s5-pt1">
             <objects>
-                <viewController storyboardIdentifier="detailsViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="sGD-sz-Ape" customClass="DetailsViewController" sceneMemberID="viewController">
+                <viewController storyboardIdentifier="overviewViewController" useStoryboardIdentifierAsRestorationIdentifier="YES" id="sGD-sz-Ape" customClass="OverviewViewController" sceneMemberID="viewController">
                     <layoutGuides>
                         <viewControllerLayoutGuide type="top" id="TrN-Z1-YhK"/>
                         <viewControllerLayoutGuide type="bottom" id="NYf-LN-OCF"/>
@@ -147,10 +170,13 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
+                    <connections>
+                        <segue destination="fr8-Mq-Xud" kind="show" id="m1w-ff-DfW"/>
+                    </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rh4-2q-jRR" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3648" y="-706"/>
+            <point key="canvasLocation" x="3648" y="-742"/>
         </scene>
         <!--Testimonials View Controller-->
         <scene sceneID="4sB-Fh-w1r">
@@ -207,7 +233,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="efr-DL-Hrw" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="3648" y="46"/>
+            <point key="canvasLocation" x="3648" y="16"/>
         </scene>
         <!--Video View Controller-->
         <scene sceneID="tO5-AL-ZIa">
@@ -246,4 +272,9 @@
             <point key="canvasLocation" x="-1366" y="315"/>
         </scene>
     </scenes>
+    <inferredMetricsTieBreakers>
+        <segue reference="2bP-5N-oth"/>
+        <segue reference="mS3-eF-QJv"/>
+        <segue reference="m1w-ff-DfW"/>
+    </inferredMetricsTieBreakers>
 </document>

@@ -13,5 +13,7 @@
 @interface VideoViewController : UIViewController<UIScrollViewDelegate>
 
 @property (strong, nonatomic) LCPContent *content;
+@property (strong, nonatomic) NSString *videoNid;
+@property BOOL isFromVideoLibrary;
 
 @end

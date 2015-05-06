@@ -8,6 +8,7 @@
 
 #import "BrandMeetsWorldViewController.h"
 #import "CatagoryViewController.h"
+#import "LibraryViewController.h"
 #import "Reachability.h"
 #import "SMPageControl.h"
 #import "ParseDownload.h"
@@ -60,6 +61,7 @@
     posterDict = [[NSMutableDictionary alloc] init];
     headerDict = [[NSMutableDictionary alloc] init];
     teamDict = [[NSMutableDictionary alloc] init];
+    content = [[LCPContent alloc] init];
     
     //UIView 36 pixels smaller than the device bounds used to hold the rest of the view objects
     background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, (self.view.bounds.size.width - (36 * 2)), (self.view.bounds.size.height - (36 * 2)))];
@@ -259,7 +261,6 @@
                     title.lineBreakMode = NSLineBreakByWordWrapping;
                     title.text = [object objectForKey:@"name"];
                     [navContainer addSubview:title];
-
                 }
             }];
         });
@@ -286,8 +287,9 @@
     
     UIButton *videoLibraryButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [videoLibraryButton setFrame:CGRectMake((320 + 36), 36, 100, 100)];
-    [videoLibraryButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside]; // TODO: Build change the @selector once the view is built out
+    [videoLibraryButton addTarget:self action:@selector(libraryNavigationButtonPressed:)forControlEvents:UIControlEventTouchUpInside];
     videoLibraryButton.showsTouchWhenHighlighted = YES;
+    [videoLibraryButton setTag:0];
     [videoLibraryButton setBackgroundColor:[UIColor clearColor]];
     [videoLibraryButton setBackgroundImage:[UIImage imageNamed:@"ico-video"] forState:UIControlStateNormal];
     [navContainer addSubview:videoLibraryButton];
@@ -304,8 +306,9 @@
     
     UIButton *caseStudiesButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [caseStudiesButton setFrame:CGRectMake((320 + 108 + (36 * 2)), 36, 100, 100)];
-    [caseStudiesButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside]; // TODO: Build change the @selector once the view is built out
+    [caseStudiesButton addTarget:self action:@selector(libraryNavigationButtonPressed:)forControlEvents:UIControlEventTouchUpInside];
     caseStudiesButton.showsTouchWhenHighlighted = YES;
+    [caseStudiesButton setTag:1];
     [caseStudiesButton setBackgroundColor:[UIColor clearColor]];
     [caseStudiesButton setBackgroundImage:[UIImage imageNamed:@"ico-casestudy"] forState:UIControlStateNormal];
     [navContainer addSubview:caseStudiesButton];
@@ -319,8 +322,6 @@
     caseStudiesLabel.lineBreakMode = NSLineBreakByWordWrapping;
     caseStudiesLabel.text = @"CASE STUDIES";
     [navContainer addSubview:caseStudiesLabel];
-
-
 }
 
 - (void)imageTapped:(UITapGestureRecognizer *)sender
@@ -354,12 +355,13 @@
     [tempButton setTitle:buttonTitle forState:normal];
     [tempButton setTag:[buttonTag integerValue]];
     [tempButton setTitleColor:[UIColor clearColor] forState:UIControlStateNormal];
+    
     return tempButton;
 }
 
 - (void)firstLevelNavigationButtonPressed:(UIButton *)sender {
     //Create LCPContent object and assign catagoryId, imgPoster, and imgHeader properties
-    content = [[LCPContent alloc] init];
+    
     content.catagoryId = [NSString stringWithFormat: @"%ld", (long)sender.tag];
     content.lblMainSectionTitle = sender.titleLabel.text;
     content.imgIcon = [iconDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
@@ -376,6 +378,24 @@
     overlay.alpha = 1.0f;
     
     [self.navigationController pushViewController:cvc animated:YES];
+}
+
+- (void)libraryNavigationButtonPressed:(UIButton *)sender {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    LibraryViewController *vvc = (LibraryViewController *)[storyboard instantiateViewControllerWithIdentifier:@"libraryViewController"];
+    if (sender.tag == 0) {
+        vvc.contentType = @"video";
+    }
+    else {
+        vvc.contentType = @"case_study";
+    }
+    vvc.content = content;
+
+    //Stop video and reset poster image alpha to 1.0
+    [moviePlayerController stop];
+    overlay.alpha = 1.0f;
+    
+    [self.navigationController pushViewController:vvc animated:YES];
 }
 
 - (void)hiddenSection:(UIButton *)sender {

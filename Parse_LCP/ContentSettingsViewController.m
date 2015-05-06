@@ -349,7 +349,6 @@
         [query orderByAscending:@"tid"];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                NSLog(@"fetchTerms - local returned %lu objects.", (unsigned long)objects.count);
                 for (PFObject *object in objects) {
                     [termsArray addObject:object];
                 }
@@ -366,7 +365,6 @@
         [query orderByAscending:@"tid"];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                NSLog(@"fetchTerms - parse returned %lu objects.", (unsigned long)objects.count);
                 [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                     if (succeded) {
                         for (PFObject *object in objects) {

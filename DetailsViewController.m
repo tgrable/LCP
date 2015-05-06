@@ -6,39 +6,45 @@
 //  Copyright (c) 2015 Trekk Design. All rights reserved.
 //
 
-#import "SampleDetailsViewController.h"
+#import "DetailsViewController.h"
 #import "ParseDownload.h"
 #import "NSString+HTML.h"
 
-@interface SampleDetailsViewController ()
+@interface DetailsViewController ()
 
 @property (strong, nonatomic) ParseDownload *parsedownload;
 
 @end
 
-@implementation SampleDetailsViewController
+@implementation DetailsViewController
 
 @synthesize content;
-@synthesize sampleID;
-@synthesize sampleObject;
+@synthesize contentID;
+@synthesize contentObject;
+@synthesize contentType;
 @synthesize parsedownload;                           //ParseDownload
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     parsedownload = [[ParseDownload alloc] init];
     
-    //Sample Image
-    PFFile *sampleFile = sampleObject[@"field_sample_image_img"];
-    [sampleFile getDataInBackgroundWithBlock:^(NSData *sampleData, NSError *error) {
-        
-        UIImage *sampleImg = [[UIImage alloc] initWithData:sampleData];
-        UIImageView *sample = [[UIImageView alloc] initWithFrame:CGRectMake(36, 36, self.view.bounds.size.width - (36 * 2), 560)];
-        [sample setImage:sampleImg];
-        [sample setUserInteractionEnabled:YES];
-        sample.alpha = 1.0;
-        [self.view addSubview:sample];
+    PFFile *file;
+    if ([contentType isEqualToString:@"samples"]) {
+       file = contentObject[@"field_sample_image_img"];
+    }
+    else {
+        file = contentObject[@"field_image_img"];
+    }
+    [file getDataInBackgroundWithBlock:^(NSData *data, NSError *error) {
+        UIImage *img = [[UIImage alloc] initWithData:data];
+        UIImageView *imgView = [[UIImageView alloc] initWithFrame:CGRectMake(36, 36, self.view.bounds.size.width - (36 * 2), 560)];
+        [imgView setImage:img];
+        [imgView setUserInteractionEnabled:YES];
+        imgView.alpha = 1.0;
+        [self.view addSubview:imgView];
     }];
 
+    
     UIView *infoBar = [[UIView alloc] initWithFrame:CGRectMake(36, 616, self.view.bounds.size.width - (36 *2), self.view.bounds.size.height - 652)];
     [infoBar setBackgroundColor:[UIColor clearColor]];
     [self.view addSubview:infoBar];
@@ -50,10 +56,11 @@
     title.scrollEnabled = NO;
     title.textColor = [UIColor blackColor];
     title.backgroundColor = [UIColor clearColor];
-    title.text = [[sampleObject objectForKey:@"title"] uppercaseString];
+    title.text = [[contentObject objectForKey:@"title"] uppercaseString];
     [infoBar addSubview:title];
     
-    NSArray *bodyArray = [sampleObject objectForKey:@"body"];
+    NSArray *bodyArray = [contentObject objectForKey:@"body"];
+    NSLog(@"%@", bodyArray);
     NSMutableDictionary *bodyDict = [[NSMutableDictionary alloc] init];
     bodyDict = bodyArray[1];
     
@@ -72,8 +79,8 @@
     [favButton setFrame:CGRectMake((infoBar.bounds.size.width - 124), 20, 24, 24)];
     [favButton addTarget:self action:@selector(setContentAsFavorite:)forControlEvents:UIControlEventTouchUpInside];
     favButton.showsTouchWhenHighlighted = YES;
-    favButton.tag = [[sampleObject objectForKey:@"objectId"] integerValue];
-    if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[sampleObject objectForKey:@"nid"]] != nil){
+    favButton.tag = [[contentObject objectForKey:@"objectId"] integerValue];
+    if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[contentObject objectForKey:@"nid"]] != nil){
         [favButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-active"] forState:UIControlStateNormal];
     }else{
         [favButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-inactive"] forState:UIControlStateNormal];
@@ -102,14 +109,14 @@
 //pick the current nid of the content and save it to the NSUserDefault
 -(void)setContentAsFavorite:(UIButton *)sender
 {
-    if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[sampleObject objectForKey:@"nid"]] == nil){
-        [parsedownload addOrRemoveFavoriteNodeID:[sampleObject objectForKey:@"nid"]
-                                       nodeTitle:[sampleObject objectForKey:@"title"]
+    if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[contentObject objectForKey:@"nid"]] == nil){
+        [parsedownload addOrRemoveFavoriteNodeID:[contentObject objectForKey:@"nid"]
+                                       nodeTitle:[contentObject objectForKey:@"title"]
                                         nodeType:@"Samples"
                              withAddOrRemoveFlag:YES];
         [sender setBackgroundImage:[UIImage imageNamed:@"ico-fav-active"] forState:UIControlStateNormal];
     }else{
-        [parsedownload addOrRemoveFavoriteNodeID:[sampleObject objectForKey:@"nid"]
+        [parsedownload addOrRemoveFavoriteNodeID:[contentObject objectForKey:@"nid"]
                                        nodeTitle:@""
                                         nodeType:@""
                              withAddOrRemoveFlag:NO];

@@ -7,11 +7,12 @@
 //
 
 #import "CaseStudyViewController.h"
-#import "DetailsViewController.h"
+#import "OverviewViewController.h"
 #import "BrandMeetsWorldViewController.h"
 #import "CatagoryViewController.h"
 #import "SamplesViewController.h"
 #import "VideoViewController.h"
+#import "DetailsViewController.h"
 
 #import "Reachability.h"
 #import "NSString+HTML.h"
@@ -23,7 +24,7 @@
 @property (strong, nonatomic) UIView *background;
 @property (strong, nonatomic) UIScrollView *pageScroll;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
-@property NSMutableArray *nids, *nodeTitles;
+@property NSMutableArray *nids, *nodeTitles, *casestudyObjects;
 
 @property (strong, nonatomic) SMPageControl *paginationDots;
 @property (strong, nonatomic) ParseDownload *parsedownload;
@@ -31,10 +32,12 @@
 
 @implementation CaseStudyViewController
 @synthesize content;        //LCPContent
+@synthesize nodeId;
+@synthesize isIndividualCaseStudy;
 @synthesize background;     //UIView
 @synthesize pageScroll;     //UIScrollView
 @synthesize favoriteContentButton;                   //UIButton
-@synthesize nids, nodeTitles;                        //NSMutableArrays
+@synthesize nids, nodeTitles, casestudyObjects;                        //NSMutableArrays
 
 @synthesize paginationDots;                           //SMPageControll
 @synthesize parsedownload;                           //ParseDownload
@@ -113,6 +116,7 @@
     //array used to hold nids for the current index of the case study
     nids = [NSMutableArray array];
     nodeTitles = [NSMutableArray array];
+    casestudyObjects = [NSMutableArray array];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -176,7 +180,12 @@
     
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
-        [query whereKey:@"field_case_study_tag_reference" equalTo:content.termId];
+        if (isIndividualCaseStudy) {
+            [query whereKey:@"nid" equalTo:nodeId];
+        }
+        else {
+            [query whereKey:@"field_term_reference" equalTo:content.termId];
+        }
         dispatch_async(dispatch_get_main_queue(), ^{
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 if (!error) {
@@ -214,7 +223,12 @@
     //Query the Local Datastore
     PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
     [query fromLocalDatastore];
-    [query whereKey:@"field_case_study_tag_reference" equalTo:content.termId];
+    if (isIndividualCaseStudy) {
+        [query whereKey:@"nid" equalTo:nodeId];
+    }
+    else {
+        [query whereKey:@"field_term_reference" equalTo:content.termId];
+    }
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             
@@ -242,6 +256,9 @@
         
         //add the node title to be added for
         [nodeTitles addObject:object[@"title"]];
+        
+        //add the sample objects to SampleObjects Array
+        [casestudyObjects addObject:object];
         
         UIView *caseStudy = [[UIView alloc] initWithFrame:CGRectMake(x, 0, background.bounds.size.width - 48, background.bounds.size.height - 254)];
         [caseStudy setBackgroundColor:[UIColor clearColor]];
@@ -294,22 +311,26 @@
         [mediaColumnScroll setBackgroundColor:[UIColor clearColor]];
         [caseStudy addSubview:mediaColumnScroll];
         
+        // FIXME: this is total BS!
+        NSArray *btnNames = @[@"abercrombie1-thumb.jpg", @"abercrombie2-thumb.jpg", @"aurora1-thumb.jpg"];
+        NSArray *btnTags = @[@"196", @"197", @"198"];
         int y = 0;
-        for (int i = 0; i  < 3; i++) {
+        for (int i = 0; i  < btnNames.count; i++) {
             UIButton *csMediaButton = [UIButton buttonWithType:UIButtonTypeCustom];
             [csMediaButton setFrame:CGRectMake(0, y, 137, 80)];
-            [csMediaButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside]; //TODO: Update this @selector method
+            [csMediaButton addTarget:self action:@selector(showDetails:)forControlEvents:UIControlEventTouchUpInside];
             csMediaButton.showsTouchWhenHighlighted = YES;
-            [csMediaButton setBackgroundColor:[UIColor lightGrayColor]];
-            [csMediaButton setTitle:[NSString stringWithFormat:@"Media Item %d", i + 1] forState:UIControlStateNormal];
+            [csMediaButton setBackgroundColor:[UIColor clearColor]];
+            [csMediaButton setTag:[btnTags[i] integerValue]];
+            [csMediaButton setBackgroundImage:[UIImage imageNamed:btnNames[i]] forState:UIControlStateNormal];
             [mediaColumnScroll addSubview:csMediaButton];
             
             y += 100;
         }
-        
+        // End fixme section
         x += background.bounds.size.width;
         
-        [mediaColumnScroll setContentSize:CGSizeMake(137, 100 * 3)]; //TODO: "3" needs to be set to the number of Scas Study Media items.
+        [mediaColumnScroll setContentSize:CGSizeMake(137, 100 * 3)]; //TODO: "3" needs to be set to the number of Case Study Media items.
         [pageScroll setContentSize:CGSizeMake(background.bounds.size.width * objects.count, 355)];
     }
     
@@ -317,13 +338,15 @@
     [hDivider setBackgroundColor:[UIColor colorWithRed:218.0f/255.0f green:218.0f/255.0f blue:218.0f/255.0f alpha:1.0]];
     [background addSubview:hDivider];
     
-    paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 145, background.bounds.size.width, 48)];
-    paginationDots.numberOfPages = objects.count;
-    paginationDots.backgroundColor = [UIColor clearColor];
-    paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-black"];
-    paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
-    [background addSubview:paginationDots];
-    
+    if (objects.count > 1) {
+        paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 145, background.bounds.size.width, 48)];
+        paginationDots.numberOfPages = objects.count;
+        paginationDots.backgroundColor = [UIColor clearColor];
+        paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-black"];
+        paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
+        [background addSubview:paginationDots];
+    }
+
     UIView *navBar = [[UIView alloc] initWithFrame:CGRectMake(0, (background.bounds.size.height - 96), background.bounds.size.width, 96)];
     [navBar setBackgroundColor:[UIColor colorWithRed:230.0f/255.0f green:230.0f/255.0f blue:230.0f/255.0f alpha:1.0]];
     [background addSubview:navBar];
@@ -463,7 +486,7 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     
     if(sender.tag == 0){
-        DetailsViewController *dvc = (DetailsViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
+        OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
         dvc.content = content;
         [self.navigationController pushViewController:dvc animated:YES];
         [self removeEverything];
@@ -485,6 +508,21 @@
 {
     [self.navigationController popToRootViewControllerAnimated:YES];
     [self removeEverything];
+}
+
+- (void)showDetails:(UIButton *)sender {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    DetailsViewController *dvc = (DetailsViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
+    
+    // FIXME: this is also total BS
+    PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
+    [query fromLocalDatastore];
+    [query whereKey:@"nid" equalTo:[NSString stringWithFormat:@"%d", sender.tag]];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        dvc.contentObject = objects[0];
+        [self.navigationController pushViewController:dvc animated:YES];
+        //[self removeEverything];
+    }];
 }
 
 #pragma mark

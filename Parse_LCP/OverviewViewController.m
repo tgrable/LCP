@@ -6,7 +6,7 @@
 //  Copyright (c) 2015 Trekk Design. All rights reserved.
 //
 
-#import "DetailsViewController.h"
+#import "OverviewViewController.h"
 #import "BrandMeetsWorldViewController.h"
 #import "CatagoryViewController.h"
 #import "CaseStudyViewController.h"
@@ -16,7 +16,7 @@
 #import "NSString+HTML.h"
 #import <Parse/Parse.h>
 
-@interface DetailsViewController ()
+@interface OverviewViewController ()
 
 @property (strong, nonatomic) UIImage *ovImg, *csImg, *sImg, *vImg;
 @property (strong, nonatomic) UIView *background, *summaryView;
@@ -24,7 +24,7 @@
 
 @end
 
-@implementation DetailsViewController
+@implementation OverviewViewController
 
 @synthesize content;                    //LCPContent
 @synthesize ovImg, csImg, sImg, vImg;   //UIImage

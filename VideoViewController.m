@@ -31,6 +31,8 @@
 @synthesize favoriteContentButton;                   //UIButton
 @synthesize parsedownload;                           //ParseDownload
 @synthesize nid, nodeTitle;                        //NSMutableArrays
+@synthesize videoNid;
+@synthesize isFromVideoLibrary;
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -63,11 +65,12 @@
 #pragma mark - Parse
 - (void)fetchVideoFromLocalDataStore {
     
+    NSString *videoId = isFromVideoLibrary ? videoNid : content.termId;
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not query the local datastore for what ever term data exists
     PFQuery *vidQuery = [PFQuery queryWithClassName:@"video"];
     [vidQuery fromLocalDatastore];
-    [vidQuery whereKey:@"field_term_reference" equalTo:content.termId];
+    [vidQuery whereKey:@"field_term_reference" equalTo:videoId];
     [vidQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
             if (objects.count > 0) {

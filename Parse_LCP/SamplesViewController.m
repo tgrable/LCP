@@ -529,7 +529,7 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     
     if(sender.tag == 0){
-        OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
+        OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"overviewViewController"];
         dvc.content = content;
         [self.navigationController pushViewController:dvc animated:YES];
         [self removeEverything];

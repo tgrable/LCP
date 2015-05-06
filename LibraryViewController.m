@@ -145,7 +145,8 @@
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"samples"] isEqualToString:@"hasData"]) {
-        [self fetchDataFromLocalDataStore:@""];
+        NSArray *termArray = [NSArray array];
+        [self fetchDataFromLocalDataStore:termArray];
         
     }
     else {
@@ -244,16 +245,19 @@
         });
     }
     else {
-        [self fetchDataFromLocalDataStore:@""];
+        NSArray *termArray = [NSArray array];
+        [self fetchDataFromLocalDataStore:termArray];
     }
 }
 
 //Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore:(NSString *)key {
+//- (void)fetchDataFromLocalDataStore:(NSString *)key {
+- (void)fetchDataFromLocalDataStore:(NSArray *)termArray {
     //Query the Local Datastore
     PFQuery *query = [PFQuery queryWithClassName:contentType];
-    if (key.length > 0) {
-        [query whereKey:@"field_term_reference" equalTo:key];
+    if (termArray.count > 0) {
+        //[query whereKey:@"field_term_reference" equalTo:key];
+        [query whereKey:@"field_term_reference" containedIn:termArray];
     }
     [query fromLocalDatastore];
     [query orderByAscending:@"createdAt"];
@@ -546,10 +550,27 @@
 
 -(void)firstLevelNavigationButtonPressed:(UIButton *)sender {
     if (sender.tag == 99) {
-        [self fetchDataFromLocalDataStore:@""];
+        NSArray *termArray = [NSArray array];
+        [self fetchDataFromLocalDataStore:termArray];
     }
     else {
-        [self fetchDataFromLocalDataStore:[NSString stringWithFormat:@"%d", sender.tag]];
+        // TODO: find a better way to do this.
+        PFQuery *query = [PFQuery queryWithClassName:@"term"];
+        [query whereKey:@"parent" equalTo:[NSString stringWithFormat:@"%d", sender.tag]];
+        [query fromLocalDatastore];
+        [query orderByAscending:@"weight"];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                if (!error) {
+                    NSMutableArray *tempArray = [[NSMutableArray alloc] init];
+                    [tempArray addObject:[NSString stringWithFormat:@"%d", sender.tag]];
+                    for (PFObject *obj in objects) {
+                        [tempArray addObject:[obj objectForKey:@"tid"]];
+                    }
+                    [self fetchDataFromLocalDataStore:tempArray];
+                }
+            }];
+        });
     }
     [self removeEverything];
     

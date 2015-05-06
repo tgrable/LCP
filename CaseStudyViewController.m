@@ -486,7 +486,7 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     
     if(sender.tag == 0){
-        OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
+        OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"overviewViewController"];
         dvc.content = content;
         [self.navigationController pushViewController:dvc animated:YES];
         [self removeEverything];
@@ -519,9 +519,10 @@
     [query fromLocalDatastore];
     [query whereKey:@"nid" equalTo:[NSString stringWithFormat:@"%d", sender.tag]];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        NSLog(@"%@", objects[0]);
         dvc.contentObject = objects[0];
         [self.navigationController pushViewController:dvc animated:YES];
-        //[self removeEverything];
+        [self removeEverything];
     }];
 }
 

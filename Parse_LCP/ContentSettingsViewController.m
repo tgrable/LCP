@@ -15,7 +15,7 @@
 
 @interface ContentSettingsViewController ()
 @property (strong, nonatomic) UIView *background, *favoriteListView, *formSlidView, *loadingView;
-@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
+@property (strong, nonatomic) UIActivityIndicatorView *contentActivityIndicator;
 @property (strong, nonatomic) UIScrollView *csContent, *sContent, *vContent, *tContent;
 @property (strong, nonatomic) UIScrollView *presentationContent, *emailContent;
 @property (nonatomic) UISegmentedControl *contentSegController;
@@ -32,7 +32,7 @@
 
 @implementation ContentSettingsViewController
 @synthesize background, favoriteListView, formSlidView, loadingView;         //UIView
-@synthesize activityIndicator;
+@synthesize contentActivityIndicator;
 @synthesize csContent, sContent, vContent, tContent;                         //UIScrollView
 @synthesize presentationContent, emailContent;                               //UIScrollView
 @synthesize contentSegController;                                            //UISegmentedControl
@@ -59,10 +59,10 @@
 
     [self drawViews];
     
-    activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    activityIndicator.frame = CGRectMake((background.frame.size.width / 2), (background.frame.size.height / 2), 35.0, 35.0);
-    [activityIndicator setColor:[UIColor whiteColor]];
-    activityIndicator.hidesWhenStopped = YES;
+    contentActivityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    contentActivityIndicator.frame = CGRectMake((background.frame.size.width / 2) + 50, (background.frame.size.height / 2), 35.0, 35.0);
+    [contentActivityIndicator setColor:[UIColor whiteColor]];
+    contentActivityIndicator.hidesWhenStopped = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated
@@ -401,7 +401,7 @@
     }
 
     if (![[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
-        [parsedownload downloadVideoFile:self.view forTerm:@""];
+        [parsedownload downloadVideoFile:background forTerm:@""];
     }
     if (![[defaults objectForKey:@"overview"] isEqualToString:@"hasData"]) {
         [parsedownload downloadAndPinIndividualParseClass:@"overview"];
@@ -416,14 +416,14 @@
     [parsedownload downloadAndPinPFObjects];
     [self removeEverything];
     
-    [background addSubview:activityIndicator];
-    [activityIndicator startAnimating];
+    [background addSubview:contentActivityIndicator];
+    [contentActivityIndicator startAnimating];
 }
 
 //Once all data has been downloaded NSNotification is posted and this method is called to redraw the view.
 - (void)redrawView:(NSNotification *)notification {
     [self drawViews];
-    [activityIndicator stopAnimating];
+    [contentActivityIndicator stopAnimating];
 }
 
 #pragma mark

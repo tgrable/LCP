@@ -95,13 +95,13 @@
 #pragma mark - AFNetworking
 - (void)downloadVideoFile:(UIView *)view forTerm:(NSString *)termId {
 
-    UIActivityIndicatorView *activityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:
+    UIActivityIndicatorView *videoActivityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:
                                                    UIActivityIndicatorViewStyleWhiteLarge];
     
-    [activityIndicator setCenter:CGPointMake(view.frame.size.width/2.0, view.frame.size.height/2.0)];
-    activityIndicator.hidesWhenStopped = YES;
+    [videoActivityIndicator setCenter:CGPointMake(view.frame.size.width/2.0, view.frame.size.height/2.0)];
+    videoActivityIndicator.hidesWhenStopped = NO;
 
-    [view addSubview:activityIndicator];
+    [view addSubview:videoActivityIndicator];
     
     PFQuery *query = [PFQuery queryWithClassName:@"video"];
     if (termId.length) {
@@ -110,6 +110,7 @@
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
             NSMutableDictionary *videoDataDict = [[NSMutableDictionary alloc] init];
+            int __block vidCount = 0;
             for (PFObject *object in objects) {
                 NSLog(@"%@", [object objectForKey:@"field_video"]);
                 NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@",[object objectForKey:@"field_video"]]]];
@@ -129,9 +130,13 @@
                     [defaults setObject:@"hasData" forKey:videoName];
                     [defaults setObject:videoDataDict forKey:@"VideoDataDictionary"];
                     [defaults synchronize];
+                    vidCount++;
                     NSLog(@"%@", videoDataDict);
                     
-                    [activityIndicator stopAnimating];
+                    if (vidCount == objects.count) {
+                        [videoActivityIndicator stopAnimating];
+                        NSLog(@"All vidoes have been downloaded.");
+                    }
                     
                 } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
                     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"There was an error downloading the data." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
@@ -139,7 +144,7 @@
                     NSLog(@"Error: %@", error);
                 }];
                 [operation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
-                    [activityIndicator startAnimating];
+                    [videoActivityIndicator startAnimating];
                     NSLog(@"Download = %f", (float)totalBytesRead / totalBytesExpectedToRead);
                     
                 }];

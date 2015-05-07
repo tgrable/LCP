@@ -32,18 +32,18 @@
 
 @implementation BrandMeetsWorldViewController
 
-@synthesize content;                            //LCPContent
-@synthesize catagoryType, catagoryId, termId;   //NSString
-@synthesize posterImage, headerImage;           //UIImage
-@synthesize background, pagination;             //UIView
-@synthesize navContainer;                       //UIScrollView
-@synthesize logo, overlay;                      //UIImageView
-@synthesize posterDict, headerDict, teamDict, iconDict;   //NSMutableDictionary
-@synthesize moviePlayerController;              //MPMoviePlayerController
+@synthesize catagoryType, catagoryId, termId;               //NSString
+@synthesize posterImage, headerImage;                       //UIImage
+@synthesize background, pagination;                         //UIView
+@synthesize navContainer;                                   //UIScrollView
+@synthesize logo, overlay;                                  //UIImageView
+@synthesize posterDict, headerDict, teamDict, iconDict;     //NSMutableDictionary
+@synthesize moviePlayerController;                          //MPMoviePlayerController
 
-@synthesize reachable;                          //Reachability
-@synthesize paginationDots;                     //SMPageControl
-@synthesize parsedownload;                      //ParseDownload
+@synthesize content;                                        //LCPContent
+@synthesize reachable;                                      //Reachability
+@synthesize paginationDots;                                 //SMPageControl
+@synthesize parsedownload;                                  //ParseDownload
 
 - (BOOL)prefersStatusBarHidden
 {

@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <document type="com.apple.InterfaceBuilder3.CocoaTouch.Storyboard.XIB" version="3.0" toolsVersion="7531" systemVersion="14D136" targetRuntime="iOS.CocoaTouch" propertyAccessControl="none" useAutolayout="YES" useTraitCollections="YES" initialViewController="htT-k6-s5Y">
     <dependencies>
-        <deployment identifier="iOS"/>
         <plugIn identifier="com.apple.InterfaceBuilder.IBCocoaTouchPlugin" version="7520"/>
     </dependencies>
     <scenes>
@@ -20,12 +19,12 @@
                     </view>
                     <connections>
                         <segue destination="UAd-N5-4aF" kind="show" identifier="catagoryView" id="Vmw-Ip-wRT"/>
-                        <segue destination="J0d-66-XM8" kind="show" id="2Mv-OU-xja"/>
+                        <segue destination="J0d-66-XM8" kind="show" identifier="libraryView" id="2Mv-OU-xja"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="dkx-z0-nzr" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="1382" y="315"/>
+            <point key="canvasLocation" x="1116" y="315"/>
         </scene>
         <!--Details View Controller-->
         <scene sceneID="uf9-aT-mfi">
@@ -65,7 +64,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="zv6-cd-5rR" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="530" y="315"/>
+            <point key="canvasLocation" x="354" y="315"/>
         </scene>
         <!--Content Settings View Controller-->
         <scene sceneID="fw1-66-kl2">
@@ -126,8 +125,8 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <connections>
-                        <segue destination="meW-TN-Dl4" kind="show" id="ja9-Xl-yqa"/>
-                        <segue destination="NKa-wX-sQ1" kind="show" id="KbU-cs-vkN"/>
+                        <segue destination="meW-TN-Dl4" kind="show" identifier="videoView" id="ja9-Xl-yqa"/>
+                        <segue destination="NKa-wX-sQ1" kind="show" identifier="casestudyView" id="KbU-cs-vkN"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="7v0-KL-pvS" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -155,7 +154,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="Zhv-N3-kCd" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="2921" y="-57"/>
+            <point key="canvasLocation" x="2921" y="-39"/>
         </scene>
         <!--Case Study View Controller-->
         <scene sceneID="BWR-Pp-JIZ">
@@ -171,7 +170,7 @@
                         <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                     </view>
                     <connections>
-                        <segue destination="fr8-Mq-Xud" kind="show" id="m1w-ff-DfW"/>
+                        <segue destination="fr8-Mq-Xud" kind="show" identifier="detailsView" id="m1w-ff-DfW"/>
                     </connections>
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="rh4-2q-jRR" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -273,8 +272,8 @@
         </scene>
     </scenes>
     <inferredMetricsTieBreakers>
-        <segue reference="2bP-5N-oth"/>
         <segue reference="mS3-eF-QJv"/>
+        <segue reference="2bP-5N-oth"/>
         <segue reference="m1w-ff-DfW"/>
     </inferredMetricsTieBreakers>
 </document>

@@ -8,6 +8,7 @@
 
 #import "LogoLoaderViewController.h"
 #import "BrandMeetsWorldViewController.h"
+#import "Reachability.h"
 #import <Parse/Parse.h>
 
 @interface LogoLoaderViewController ()
@@ -23,10 +24,10 @@
     return YES;
 }
 
+#pragma mark -
+#pragma mark - View Life Cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
-    //Everything is going to be done in view did load to conserve memory
-    //after view did load completes the memory will be released
     
     logoView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
     logoView.backgroundColor = [UIColor clearColor];
@@ -36,7 +37,17 @@
 - (void) viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     [self.navigationController setNavigationBarHidden:YES animated:animated];
-    [self buldLogoLoader];
+    
+    //NSUserDefaults to check if data has been downloaded.
+    //If data has been downloaded pull from local datastore else fetch data from Parse.com
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if ([[defaults objectForKey:@"splash_screen"] isEqualToString:@"hasData"]) {
+        [self fetchDataFromLocalDataStore];
+    }
+    else {
+        [self fetchDataFromParse];
+    }
+
 }
 
 - (void)didReceiveMemoryWarning {
@@ -44,10 +55,75 @@
     // Dispose of any resources that can be recreated.
 }
 
-- (void)buldLogoLoader {
-    // TODO: This needs to be loaded dynamically
+#pragma mark
+#pragma mark - Parse
+- (void)fetchDataFromParse {
+    //Using Reachability check if there is an internet connection
+    //If there is download term data from Parse.com if not query the local datastore for what ever term data exists
+    if ([self connected]) {
+        PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
+        query.limit = 1;
+        [query orderByAscending:@"updatedAt"];
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
+                        if (!error) {
+                            dispatch_async(dispatch_get_main_queue(), ^{
+                                PFFile *imageFile = [objects[0] objectForKey:@"field_background_image_img"];
+                                [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
+                                    if (!error) {
+                                        UIImage *backgroundImg = [[UIImage alloc] initWithData:imgData];
+                                        [self buldLogoLoader:backgroundImg];
+                                    }
+                                }];
+                            });
+                            
+                            //Once data is downloaded reset NSUserDefault for BrandMeetsWorldData to "hasData"
+                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            [defaults setObject:@"hasData" forKey:@"splash_screen"];
+                            [defaults synchronize];
+                        }
+                    }];
+                });
+            }
+            else {
+                // Log details of the failure
+                NSLog(@"Error: %@ %@", error, [error userInfo]);
+            }
+        }];
+    }
+    else {
+        [self fetchDataFromLocalDataStore];
+    }
+}
+- (void)fetchDataFromLocalDataStore {
+    PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
+    query.limit = 1;
+    [query fromLocalDatastore];
+    [query orderByAscending:@"updatedAt"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    PFFile *imageFile = [objects[0] objectForKey:@"field_background_image_img"];
+                    [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
+                        if (!error) {
+                            UIImage *backgroundImg = [[UIImage alloc] initWithData:imgData];
+                            [self buldLogoLoader:backgroundImg];
+                        }
+                    }];
+                });
+            }
+        }];
+    });
+}
+
+#pragma mark -
+#pragma mark - Build View
+- (void)buldLogoLoader:(UIImage *)image {
     UIImageView *splashImg = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, logoView.bounds.size.width, logoView.bounds.size.height)];
-    [splashImg setImage:[UIImage imageNamed:@"img-splash"]];
+    [splashImg setImage:image];
     [logoView addSubview:splashImg];
     
     NSString *name = (companyName == (id)[NSNull null] || companyName.length == 0 ) ? @"<COMPANY NAME HERE>" : companyName;
@@ -72,7 +148,16 @@
     [self removeEverything];
 }
 
-#pragma mark
+#pragma mark -
+#pragma mark - Reachability
+- (BOOL)connected
+{
+    Reachability *reachability = [Reachability reachabilityForInternetConnection];
+    NetworkStatus networkStatus = [reachability currentReachabilityStatus];
+    return networkStatus != NotReachable;
+}
+
+#pragma mark -
 #pragma mark - Memory Management
 - (void)removeEverything {
     for (UIView *v in [logoView subviews]) {

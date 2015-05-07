@@ -181,6 +181,9 @@
 		4FCC5BF31A8BC5EC00292D6B /* iTunesArtwork@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4FCC5BE21A8BC5EC00292D6B /* iTunesArtwork@2x.png */; };
 		4FCC5BF91A8BC82000292D6B /* bmwposter.png in Resources */ = {isa = PBXBuildFile; fileRef = 4FCC5BF71A8BC82000292D6B /* bmwposter.png */; };
 		4FCC5BFD1A8BCA3600292D6B /* CatagoryViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FCC5BFC1A8BCA3600292D6B /* CatagoryViewController.m */; };
+		4FD82B211AFBA0C200F102BE /* UIImage+Alpha.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FD82B1C1AFBA0C200F102BE /* UIImage+Alpha.m */; };
+		4FD82B221AFBA0C200F102BE /* UIImage+Resize.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FD82B1E1AFBA0C200F102BE /* UIImage+Resize.m */; };
+		4FD82B231AFBA0C200F102BE /* UIImage+RoundedCorner.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FD82B201AFBA0C200F102BE /* UIImage+RoundedCorner.m */; };
 		4FDE35E01A72FBAE000052E9 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FDE35DF1A72FBAE000052E9 /* main.m */; };
 		4FDE35E31A72FBAE000052E9 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FDE35E21A72FBAE000052E9 /* AppDelegate.m */; };
 		4FDE35E91A72FBAE000052E9 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 4FDE35E71A72FBAE000052E9 /* Main.storyboard */; };
@@ -428,6 +431,12 @@
 		4FCC5BF71A8BC82000292D6B /* bmwposter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bmwposter.png; sourceTree = "<group>"; };
 		4FCC5BFB1A8BCA3600292D6B /* CatagoryViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CatagoryViewController.h; sourceTree = "<group>"; };
 		4FCC5BFC1A8BCA3600292D6B /* CatagoryViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CatagoryViewController.m; sourceTree = "<group>"; };
+		4FD82B1B1AFBA0C200F102BE /* UIImage+Alpha.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Alpha.h"; sourceTree = "<group>"; };
+		4FD82B1C1AFBA0C200F102BE /* UIImage+Alpha.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Alpha.m"; sourceTree = "<group>"; };
+		4FD82B1D1AFBA0C200F102BE /* UIImage+Resize.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+Resize.h"; sourceTree = "<group>"; };
+		4FD82B1E1AFBA0C200F102BE /* UIImage+Resize.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+Resize.m"; sourceTree = "<group>"; };
+		4FD82B1F1AFBA0C200F102BE /* UIImage+RoundedCorner.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "UIImage+RoundedCorner.h"; sourceTree = "<group>"; };
+		4FD82B201AFBA0C200F102BE /* UIImage+RoundedCorner.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "UIImage+RoundedCorner.m"; sourceTree = "<group>"; };
 		4FDE35DA1A72FBAE000052E9 /* Parse_LCP.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Parse_LCP.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4FDE35DE1A72FBAE000052E9 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		4FDE35DF1A72FBAE000052E9 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
@@ -742,6 +751,19 @@
 			name = images;
 			sourceTree = "<group>";
 		};
+		4FD82B1A1AFBA0C200F102BE /* UIImage+Resize */ = {
+			isa = PBXGroup;
+			children = (
+				4FD82B1B1AFBA0C200F102BE /* UIImage+Alpha.h */,
+				4FD82B1C1AFBA0C200F102BE /* UIImage+Alpha.m */,
+				4FD82B1D1AFBA0C200F102BE /* UIImage+Resize.h */,
+				4FD82B1E1AFBA0C200F102BE /* UIImage+Resize.m */,
+				4FD82B1F1AFBA0C200F102BE /* UIImage+RoundedCorner.h */,
+				4FD82B201AFBA0C200F102BE /* UIImage+RoundedCorner.m */,
+			);
+			path = "UIImage+Resize";
+			sourceTree = "<group>";
+		};
 		4FDE35D11A72FBAE000052E9 = {
 			isa = PBXGroup;
 			children = (
@@ -758,6 +780,7 @@
 				4F79A0441AC99E3400A5C712 /* AFNetworking */,
 				4F79A02A1AC99E0200A5C712 /* UIKit+AFNetworking */,
 				4FBA1F2E1A966E1000364F01 /* NSString+html */,
+				4FD82B1A1AFBA0C200F102BE /* UIImage+Resize */,
 			);
 			sourceTree = "<group>";
 		};
@@ -1134,11 +1157,13 @@
 				4F79A0411AC99E0200A5C712 /* UIProgressView+AFNetworking.m in Sources */,
 				4FBA1F3A1A969BDE00364F01 /* SamplesViewController.m in Sources */,
 				4FBA1F371A96810A00364F01 /* LCPContent.m in Sources */,
+				4FD82B221AFBA0C200F102BE /* UIImage+Resize.m in Sources */,
 				4F79A05D1AC99E3400A5C712 /* AFURLConnectionOperation.m in Sources */,
 				4F79A0591AC99E3400A5C712 /* AFHTTPRequestOperationManager.m in Sources */,
 				4F79A03E1AC99E0200A5C712 /* UIAlertView+AFNetworking.m in Sources */,
 				4FB854261A9788750079866C /* MeetTheTeamViewController.m in Sources */,
 				2C97CF531AC649A000256BFA /* ParseDownload.m in Sources */,
+				4FD82B231AFBA0C200F102BE /* UIImage+RoundedCorner.m in Sources */,
 				4FCC5BCE1A8BC3FD00292D6B /* BrandMeetsWorldViewController.m in Sources */,
 				4FE195FC1ACCA0A500922ECE /* NSData+Base64Additions.m in Sources */,
 				4F79A0401AC99E0200A5C712 /* UIImageView+AFNetworking.m in Sources */,
@@ -1156,6 +1181,7 @@
 				4F79A05A1AC99E3400A5C712 /* AFHTTPSessionManager.m in Sources */,
 				4F7922281ACAFA13007457DF /* VideoViewController.m in Sources */,
 				4F79A05E1AC99E3400A5C712 /* AFURLRequestSerialization.m in Sources */,
+				4FD82B211AFBA0C200F102BE /* UIImage+Alpha.m in Sources */,
 				4FBA1F311A966E3F00364F01 /* NSString+HTML.m in Sources */,
 				4FCC5BCB1A8BBD7E00292D6B /* Reachability.m in Sources */,
 				4F3F5CC51A8E60FE00CE26C7 /* OverviewViewController.m in Sources */,
@@ -1292,7 +1318,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = Parse_LCP/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1308,7 +1334,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = Parse_LCP/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

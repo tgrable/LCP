@@ -12,6 +12,7 @@
 #import "Reachability.h"
 #import "SMPageControl.h"
 #import "NSString+HTML.h"
+#import "UIImage+Resize.h"
 #import "ParseDownload.h"
 #import <Parse/Parse.h>
 
@@ -328,24 +329,34 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [sampleFile getDataInBackgroundWithBlock:^(NSData *sampleData, NSError *error) {
                 
+                UIImage *videothumb = [UIImage imageWithData:sampleData];
                 UIImageView *sample = [[UIImageView alloc] initWithFrame:CGRectMake(x, y, 199, 117)];
-                if ([self fileExistsAtPath:[NSString stringWithFormat:@"%@.png", [self cleanString:[object objectForKey:@"title"]]]]) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-                        NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
-                        
-                        NSString *pathForFile = [NSString stringWithFormat:@"%@/%@.png", basePath, [self cleanString:[object objectForKey:@"title"]]];
-                        
-                        UIImage *image = [UIImage imageWithContentsOfFile:pathForFile];
-                        [sample setImage:image];
-                    });
+                
+                if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad && [[UIScreen mainScreen] respondsToSelector:@selector(scale)] && [UIScreen mainScreen].scale > 1)
+                {
+                    NSLog(@"This should be retnia");
+                    [sample setImage:videothumb];
                 }
                 else {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [sample setImage:[self createImgThumbnails:sampleData andFileName:[object objectForKey:@"title"]]];
-                    });
+                    NSLog(@"This should be non-retnia");
+                    if ([self fileExistsAtPath:[NSString stringWithFormat:@"%@.png", [self cleanString:[object objectForKey:@"title"]]]]) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+                            NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+                            
+                            NSString *pathForFile = [NSString stringWithFormat:@"%@/%@.png", basePath, [self cleanString:[object objectForKey:@"title"]]];
+                            
+                            UIImage *image = [UIImage imageWithContentsOfFile:pathForFile];
+                            [sample setImage:image];
+                        });
+                    }
+                    else {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [sample setImage:[self createImgThumbnails:sampleData andFileName:[object objectForKey:@"title"]]];
+                        });
+                    }
                 }
-                
+
                 [sample setUserInteractionEnabled:YES];
                 sample.alpha = 1.0;
                 sample.tag = 90;
@@ -480,8 +491,17 @@
             [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
                 if (!error) {
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
-                    UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:15 andTag:[object objectForKey:@"tid"]];
-                    [navBar addSubview:tempButton];
+                    if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad && [[UIScreen mainScreen] respondsToSelector:@selector(scale)] && [UIScreen mainScreen].scale > 1)
+                    {
+                        NSLog(@"This should be retnia");
+                        UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:15 andTag:[object objectForKey:@"tid"]];
+                        [navBar addSubview:tempButton];
+                    }
+                    else {
+                        NSLog(@"This should be non-retnia");
+                        UIButton *tempButton = [self navigationButtons:[self scaleImages:btnImg withSize:CGSizeMake(65, 65)] andtitle:[object objectForKey:@"name"] andXPos:x andYPos:15 andTag:[object objectForKey:@"tid"]];
+                        [navBar addSubview:tempButton];
+                    }
                 }
             }];
         });
@@ -504,6 +524,15 @@
     return tempButton;
 }
 
+- (UIImage *)scaleImages:(UIImage *)originalImg withSize:(CGSize)size {
+    CGSize destinationSize = size;
+    UIGraphicsBeginImageContext(destinationSize);
+    [originalImg drawInRect:CGRectMake(0,0,destinationSize.width,destinationSize.height)];
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+
+    return newImage;
+}
 
 - (UIImage *)createImgThumbnails:(NSData *)originalImgData andFileName:(NSString *)title {
     UIImage *originalImg = [[UIImage alloc] initWithData:originalImgData];
@@ -554,16 +583,15 @@
         [self fetchDataFromLocalDataStore:termArray];
     }
     else {
-        // TODO: find a better way to do this.
         PFQuery *query = [PFQuery queryWithClassName:@"term"];
-        [query whereKey:@"parent" equalTo:[NSString stringWithFormat:@"%d", sender.tag]];
+        [query whereKey:@"parent" equalTo:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
         [query fromLocalDatastore];
         [query orderByAscending:@"weight"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 if (!error) {
                     NSMutableArray *tempArray = [[NSMutableArray alloc] init];
-                    [tempArray addObject:[NSString stringWithFormat:@"%d", sender.tag]];
+                    [tempArray addObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
                     for (PFObject *obj in objects) {
                         [tempArray addObject:[obj objectForKey:@"tid"]];
                     }
@@ -573,7 +601,6 @@
         });
     }
     [self removeEverything];
-    
 }
 
 #pragma mark
@@ -607,7 +634,7 @@
 }
 
 - (void)showVideoDetails:(UIButton *)sender {
-    NSString *btntag = (sender.tag == 0) ? @"N/A" : [NSString stringWithFormat:@"%d", sender.tag];
+    NSString *btntag = (sender.tag == 0) ? @"N/A" : [NSString stringWithFormat:@"%ld", (long)sender.tag];
     
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     VideoViewController *vvc = (VideoViewController *)[storyboard instantiateViewControllerWithIdentifier:@"videoViewController"];
@@ -622,7 +649,7 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     CaseStudyViewController *cvc = (CaseStudyViewController *)[storyboard instantiateViewControllerWithIdentifier:@"caseStudyViewController"];
     cvc.isIndividualCaseStudy = YES;
-    cvc.nodeId = [NSString stringWithFormat:@"%d", sender.tag];
+    cvc.nodeId = [NSString stringWithFormat:@"%ld", (long)sender.tag];
     
     [self.navigationController pushViewController:cvc animated:YES];
     [self removeEverything];

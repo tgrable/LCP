@@ -17,6 +17,7 @@
 
 @property (strong, nonatomic) NSArray *parseClassTypes;
 @property (strong, nonatomic) NSMutableDictionary *parseClassDictionary;
+@property BOOL videoFileBeingDownloaded;
 
 @end
 
@@ -24,11 +25,12 @@
 
 @synthesize parseClassTypes;
 @synthesize parseClassDictionary;
+@synthesize videoFileBeingDownloaded;
 
 #pragma mark
 #pragma mark - Public API
 - (void)downloadAndPinPFObjects {
-    parseClassTypes = @[@"term", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member",@"testimonials"];
+    parseClassTypes = @[@"term", @"splash_screen", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member",@"testimonials"];
     parseClassDictionary = [[NSMutableDictionary alloc] init];
     count = 0;
     for (NSString *parseClass in parseClassTypes) {
@@ -41,7 +43,7 @@
 }
 
 - (void)unpinAllPFObjects {
-    parseClassTypes = @[@"term", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member",@"testimonials"];
+    parseClassTypes = @[@"term", @"splash_screen", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member",@"testimonials"];
     for (NSString *parseClass in parseClassTypes) {
         [self clearLocalDataStore:parseClass];
     }
@@ -99,9 +101,10 @@
                                                    UIActivityIndicatorViewStyleWhiteLarge];
     
     [videoActivityIndicator setCenter:CGPointMake(view.frame.size.width/2.0, view.frame.size.height/2.0)];
-    videoActivityIndicator.hidesWhenStopped = NO;
+    videoActivityIndicator.hidesWhenStopped = YES;
 
     [view addSubview:videoActivityIndicator];
+    videoFileBeingDownloaded = YES;
     
     PFQuery *query = [PFQuery queryWithClassName:@"video"];
     if (termId.length) {
@@ -135,6 +138,7 @@
                     
                     if (vidCount == objects.count) {
                         [videoActivityIndicator stopAnimating];
+                        videoFileBeingDownloaded = NO;
                         NSLog(@"All vidoes have been downloaded.");
                     }
                     
@@ -170,7 +174,7 @@
                             [defaults synchronize];
                             NSLog(@"Fetch: %@ and set NSUserDefault to %@", forParseClassType, [defaults objectForKey:forParseClassType]);
                             count++;
-                            if (count >= parseClassTypes.count) {
+                            if (count >= parseClassTypes.count && !videoFileBeingDownloaded) {
                                 [self postNotificationToRefresh];
                             }
                         }

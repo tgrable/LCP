@@ -10,6 +10,7 @@
 
 @interface LogoLoaderViewController : UIViewController
 
+//The companyName property get set in ContentSettingsViewController
 @property (strong, nonatomic) NSString *companyName;
 
 @end

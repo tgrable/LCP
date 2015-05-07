@@ -477,7 +477,8 @@
         [self.navigationController popToViewController:[array objectAtIndex:2] animated:YES];
     }
     else {
-        [self.navigationController popViewControllerAnimated:YES];
+        [self.navigationController popToViewController:[array objectAtIndex:3] animated:YES];
+        //[self.navigationController popViewControllerAnimated:YES];
     }
     [self removeEverything];
 }

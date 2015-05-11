@@ -133,7 +133,7 @@
     //Query the Local Datastore
     PFQuery *query = [PFQuery queryWithClassName:@"overview"];
     [query fromLocalDatastore];
-    [query whereKey:@"field_overview_tag_reference" equalTo:content.termId];
+    [query whereKey:@"field_term_reference" equalTo:content.termId];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             [self buildSummaryView:objects];
@@ -290,23 +290,6 @@
 
 #pragma mark -
 #pragma mark - Navigation
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-    if ([[segue identifier] isEqualToString:@"backToCatagory"]) {
-        CatagoryViewController *vc = [segue destinationViewController];
-        vc.content = content;
-    }
-    else if ([[segue identifier] isEqualToString:@"sample"]) {
-        SamplesViewController *vc = [segue destinationViewController];
-        vc.content = content;
-    }
-    else {
-        
-    }
-}
-
 -(void)backNav:(UIButton *)sender
 {
     NSArray *array = [self.navigationController viewControllers];

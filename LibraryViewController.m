@@ -326,7 +326,7 @@
             [sampleFile getDataInBackgroundWithBlock:^(NSData *sampleData, NSError *error) {
                 
                 UIImage *videothumb = [UIImage imageWithData:sampleData];
-                UIImageView *sample = [[UIImageView alloc] initWithFrame:CGRectMake(x, y, 199, 117)];
+                UIImageView *sample = [[UIImageView alloc] initWithFrame:CGRectMake(x, y, 161, 117)];
                 
                 if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad && [[UIScreen mainScreen] respondsToSelector:@selector(scale)] && [UIScreen mainScreen].scale > 1)
                 {
@@ -335,7 +335,8 @@
                 }
                 else {
                     NSLog(@"Non-retnia");
-                    if ([self fileExistsAtPath:[NSString stringWithFormat:@"%@.png", [self cleanString:[object objectForKey:@"title"]]]]) {
+                    [sample setImage:[self scaleImages:videothumb withSize:CGSizeMake(161, 117)]];
+                    /*if ([self fileExistsAtPath:[NSString stringWithFormat:@"%@.png", [self cleanString:[object objectForKey:@"title"]]]]) {
                         dispatch_async(dispatch_get_main_queue(), ^{
                             NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
                             NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
@@ -350,7 +351,7 @@
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [sample setImage:[self createImgThumbnails:sampleData andFileName:[object objectForKey:@"title"]]];
                         });
-                    }
+                    }*/
                 }
 
                 [sample setUserInteractionEnabled:YES];
@@ -366,19 +367,19 @@
                     }
                 }
                 
-                UILabel *sampleTittleLabel = [[UILabel alloc] initWithFrame:CGRectMake(x, y + 117, 199, 57)];
-                [sampleTittleLabel setFont:[UIFont fontWithName:@"Oswald" size:14.0f]];
-                sampleTittleLabel.textColor = [UIColor blackColor];
-                sampleTittleLabel.numberOfLines = 0;
-                sampleTittleLabel.lineBreakMode = NSLineBreakByWordWrapping;
-                sampleTittleLabel.backgroundColor = [UIColor clearColor];
-                sampleTittleLabel.textAlignment = NSTextAlignmentCenter;
-                sampleTittleLabel.text = [object objectForKey:@"title"];
-                [pageScroll addSubview:sampleTittleLabel];
+                UILabel *tittleLabel = [[UILabel alloc] initWithFrame:CGRectMake(x, y + 117, 161, 57)];
+                [tittleLabel setFont:[UIFont fontWithName:@"Oswald" size:14.0f]];
+                tittleLabel.textColor = [UIColor blackColor];
+                tittleLabel.numberOfLines = 0;
+                tittleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+                tittleLabel.backgroundColor = [UIColor clearColor];
+                tittleLabel.textAlignment = NSTextAlignmentCenter;
+                tittleLabel.text = [object objectForKey:@"title"];
+                [pageScroll addSubview:tittleLabel];
                 
                 int btntag = ([[object objectForKey:@"field_term_reference"] isEqual:@"N/A"]) ? 0 : [[object objectForKey:@"field_term_reference"] integerValue];
                 UIButton *sampleDetailsButton = [UIButton buttonWithType:UIButtonTypeCustom];
-                [sampleDetailsButton setFrame:CGRectMake(x, y, 199, 174)];
+                [sampleDetailsButton setFrame:CGRectMake(x, y, 161, 174)];
                 [sampleDetailsButton addTarget:self action:@selector(showVideoDetails:)forControlEvents:UIControlEventTouchUpInside];
                 sampleDetailsButton.showsTouchWhenHighlighted = YES;
                 [sampleDetailsButton setBackgroundColor:[UIColor clearColor]];
@@ -394,7 +395,7 @@
             multiplier++;
         }
         else {
-            x += 235;
+            x += 197;
         }
         
         [pageScroll setContentSize:CGSizeMake((background.bounds.size.width * multiplier), 400)];
@@ -476,7 +477,7 @@
         y += 147;
     }
     
-    [pageScroll setContentSize:CGSizeMake(background.bounds.size.width - 48, 250 * objects.count)];
+    [pageScroll setContentSize:CGSizeMake(background.bounds.size.width - 48, 150 * objects.count)];
 }
 
 - (void)buildView:(NSArray *)objects {
@@ -648,7 +649,6 @@
     CaseStudyViewController *cvc = (CaseStudyViewController *)[storyboard instantiateViewControllerWithIdentifier:@"caseStudyViewController"];
     cvc.isIndividualCaseStudy = YES;
     cvc.nodeId = [NSString stringWithFormat:@"%ld", (long)sender.tag];
-    
     [self.navigationController pushViewController:cvc animated:YES];
     [self removeEverything];
 }

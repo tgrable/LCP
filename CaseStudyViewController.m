@@ -14,6 +14,7 @@
 #import "VideoViewController.h"
 #import "DetailsViewController.h"
 
+#import "LCPCaseStudyMedia.h"
 #import "Reachability.h"
 #import "NSString+HTML.h"
 #import "ParseDownload.h"
@@ -24,8 +25,9 @@
 @property (strong, nonatomic) UIView *background;
 @property (strong, nonatomic) UIScrollView *pageScroll, *mediaColumnScroll;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
-@property NSMutableArray *nids, *nodeTitles, *casestudyObjects;
+@property NSMutableArray *nids, *nodeTitles, *casestudyMediaObjects;
 
+@property (strong, nonatomic) LCPCaseStudyMedia *csMedia;
 @property (strong, nonatomic) SMPageControl *paginationDots;
 @property (strong, nonatomic) ParseDownload *parsedownload;
 @end
@@ -37,8 +39,9 @@
 @synthesize background;                         //UIView
 @synthesize pageScroll, mediaColumnScroll;      //UIScrollView
 @synthesize favoriteContentButton;              //UIButton
-@synthesize nids, nodeTitles, casestudyObjects; //NSMutableArrays
+@synthesize nids, nodeTitles, casestudyMediaObjects; //NSMutableArrays
 
+@synthesize csMedia;                             //LCPCaseStudyMedia
 @synthesize content;                            //LCPContent
 @synthesize paginationDots;                     //SMPageControll
 @synthesize parsedownload;                      //ParseDownload
@@ -117,22 +120,41 @@
     //array used to hold nids for the current index of the case study
     nids = [NSMutableArray array];
     nodeTitles = [NSMutableArray array];
-    casestudyObjects = [NSMutableArray array];
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    if (content.termId == nil) {
-        content = [[LCPContent alloc] init];
-    }
+    casestudyMediaObjects = [NSMutableArray array];
     
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
-        [self fetchDataFromLocalDataStore];
+        if (content == nil) {
+            PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
+            [query fromLocalDatastore];
+            [query whereKey:@"nid" equalTo:nodeId];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                    if (!error) {
+                        content = [[LCPContent alloc] init];
+                        for (PFObject *object in objects) {
+                            content.termId = [object objectForKey:@"field_term_reference"];
+                            [self fetchCaseStudyMediaFromLocalDataStore];
+                            [self fetchCaseTermDataFromLocalDataStore];
+                        }
+                    }
+                }];
+            });
+        }
+        else {
+            [self fetchCaseStudyMediaFromLocalDataStore];
+        }
     }
     else {
         [self fetchDataFromParse];
     }
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    /*if (content.termId == nil) {
+        content = [[LCPContent alloc] init];
+    }*/
 }
 
 - (void)didReceiveMemoryWarning {
@@ -251,7 +273,31 @@
     [query whereKey:@"field_term_reference" equalTo:content.termId];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            [self buildCaseStudyMediaView:objects];
+            if (!error) {
+                if (objects.count > 0) {
+                    [self buildCaseStudyMediaView:objects];
+                }
+                else {
+                    [self fetchDataFromLocalDataStore];
+                }
+            }
+        }];
+    });
+}
+
+//Query the local datastore to build the views
+- (void)fetchCaseTermDataFromLocalDataStore {
+    //Query the Local Datastore
+    PFQuery *query = [PFQuery queryWithClassName:@"term"];
+    [query fromLocalDatastore];
+    [query whereKey:@"tid" equalTo:content.termId];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                for (PFObject *object in objects) {
+                    content.lblTitle = object[@"name"];
+                }
+            }
         }];
     });
 }
@@ -268,10 +314,7 @@
         
         //add the node title to be added for
         [nodeTitles addObject:object[@"title"]];
-        
-        //add the sample objects to SampleObjects Array
-        [casestudyObjects addObject:object];
-        
+
         UIView *caseStudy = [[UIView alloc] initWithFrame:CGRectMake(x, 0, background.bounds.size.width - 48, background.bounds.size.height - 254)];
         [caseStudy setBackgroundColor:[UIColor clearColor]];
         [pageScroll addSubview:caseStudy];
@@ -327,13 +370,27 @@
         [favoriteContentButton setTag:[[object objectForKey:@"nid"] integerValue]];
         [caseStudy addSubview:favoriteContentButton];
         
-        NSLog(@"Add CaseStudyMediaScroll");
         mediaColumnScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(766, 53, 137, caseStudy.bounds.size.height - 73)];
         [mediaColumnScroll setBackgroundColor:[UIColor clearColor]];
         [caseStudy addSubview:mediaColumnScroll];
         
-        [self fetchCaseStudyMediaFromLocalDataStore];
-        
+        int y = 0;
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"csMediaTermReferenceId = %@", [object objectForKey:@"field_term_reference"]];
+        NSArray *filteredArray = [casestudyMediaObjects filteredArrayUsingPredicate:predicate];
+        for (LCPCaseStudyMedia *csm in filteredArray) {
+            
+            UIButton *csMediaButton = [UIButton buttonWithType:UIButtonTypeCustom];
+            [csMediaButton setFrame:CGRectMake(0, y, 137, 80)];
+            [csMediaButton addTarget:self action:@selector(showDetails:)forControlEvents:UIControlEventTouchUpInside];
+            csMediaButton.showsTouchWhenHighlighted = YES;
+            [csMediaButton setBackgroundColor:[UIColor clearColor]];
+            [csMediaButton setTag:[csm.csMediaNodeId integerValue]];
+            [csMediaButton setBackgroundImage:csm.csMediaThumb forState:UIControlStateNormal];
+             
+            [mediaColumnScroll addSubview:csMediaButton];
+             
+            y += 100;
+        }
         x += background.bounds.size.width;
         [pageScroll setContentSize:CGSizeMake(background.bounds.size.width * objects.count, 355)];
     }
@@ -453,27 +510,36 @@
 }
 
 - (void)buildCaseStudyMediaView:(NSArray *)objects {
-    NSLog(@"%lu", (unsigned long)objects.count);
-    int __block y = 0;
+
+    int __block count = 0;
     for (PFObject *object in objects) {
 
         PFFile *imageFile = object[@"field_image_img"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
                 if (!error) {
+                    csMedia = [[LCPCaseStudyMedia alloc] init];
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
-
-                    UIButton *csMediaButton = [UIButton buttonWithType:UIButtonTypeCustom];
-                    [csMediaButton setFrame:CGRectMake(0, y, 137, 80)];
-                    [csMediaButton addTarget:self action:@selector(showDetails:)forControlEvents:UIControlEventTouchUpInside];
-                    csMediaButton.showsTouchWhenHighlighted = YES;
-                    [csMediaButton setBackgroundColor:[UIColor clearColor]];
-                    [csMediaButton setTag:[[object objectForKey:@"nid"] integerValue]];
-                    [csMediaButton setBackgroundImage:btnImg forState:UIControlStateNormal];
-                    NSLog(@"Add CaseStudyMediaScroll Image");
-                    [mediaColumnScroll addSubview:csMediaButton];
                     
-                    y += 100;
+                    NSArray *bodyArray = [object objectForKey:@"body"];
+                    NSMutableDictionary *bodyDict = [[NSMutableDictionary alloc] init];
+                    bodyDict = bodyArray[1];
+
+                    csMedia.csMediaTitle = object[@"title"];
+                    csMedia.csMediaBody = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];
+                    csMedia.csMediaNodeId = object[@"nid"];
+                    csMedia.csMediaTermReferenceId = object[@"field_term_reference"];
+                    csMedia.csMediaImage = btnImg;
+                    csMedia.csMediaThumb = [csMedia scaleImages:btnImg withSize:CGSizeMake(137, 80)];
+                    
+                    //add the case study objects to caseStudyObjects Array
+                    [casestudyMediaObjects addObject:csMedia];
+                    
+                    count++;
+                    
+                    if (count == objects.count) {
+                        [self fetchDataFromLocalDataStore];
+                    }
                 }
             }];
         });
@@ -548,14 +614,12 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     DetailsViewController *dvc = (DetailsViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
     
-    // FIXME: this is also total BS
     PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
     [query fromLocalDatastore];
     [query whereKey:@"nid" equalTo:[NSString stringWithFormat:@"%d", sender.tag]];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         dvc.contentObject = objects[0];
         [self.navigationController pushViewController:dvc animated:YES];
-        [self removeEverything];
     }];
 }
 

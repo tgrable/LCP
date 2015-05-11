@@ -16,8 +16,8 @@
 @end
 
 @implementation LogoLoaderViewController
-@synthesize logoView;                //UIView
-@synthesize companyName;
+@synthesize logoView;                       //UIView
+@synthesize companyName;                    //NSString
 
 - (BOOL)prefersStatusBarHidden
 {
@@ -44,10 +44,6 @@
     if ([[defaults objectForKey:@"splash_screen"] isEqualToString:@"hasData"]) {
         [self fetchDataFromLocalDataStore];
     }
-    else {
-        [self fetchDataFromParse];
-    }
-
 }
 
 - (void)didReceiveMemoryWarning {
@@ -57,46 +53,6 @@
 
 #pragma mark
 #pragma mark - Parse
-- (void)fetchDataFromParse {
-    //Using Reachability check if there is an internet connection
-    //If there is download term data from Parse.com if not query the local datastore for what ever term data exists
-    if ([self connected]) {
-        PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
-        query.limit = 1;
-        [query orderByAscending:@"updatedAt"];
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
-                        if (!error) {
-                            dispatch_async(dispatch_get_main_queue(), ^{
-                                PFFile *imageFile = [objects[0] objectForKey:@"field_background_image_img"];
-                                [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
-                                    if (!error) {
-                                        UIImage *backgroundImg = [[UIImage alloc] initWithData:imgData];
-                                        [self buldLogoLoader:backgroundImg];
-                                    }
-                                }];
-                            });
-                            
-                            //Once data is downloaded reset NSUserDefault for BrandMeetsWorldData to "hasData"
-                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                            [defaults setObject:@"hasData" forKey:@"splash_screen"];
-                            [defaults synchronize];
-                        }
-                    }];
-                });
-            }
-            else {
-                // Log details of the failure
-                NSLog(@"Error: %@ %@", error, [error userInfo]);
-            }
-        }];
-    }
-    else {
-        [self fetchDataFromLocalDataStore];
-    }
-}
 - (void)fetchDataFromLocalDataStore {
     PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
     query.limit = 1;
@@ -141,6 +97,8 @@
     [logoView addGestureRecognizer:tapGesture];
 }
 
+#pragma mark -
+#pragma mark - Navigation
 - (void)viewTapped:(id)sender {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     BrandMeetsWorldViewController *bmwvc = (BrandMeetsWorldViewController *)[storyboard instantiateViewControllerWithIdentifier:@"brandMeetsWorldViewController"];

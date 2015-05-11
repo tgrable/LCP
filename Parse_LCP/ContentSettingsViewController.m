@@ -163,6 +163,10 @@
                         for (PFObject *object in objects) {
                             [termsArray addObject:object];
                         }
+                        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                        [defaults setObject:@"hasData" forKey:@"term"];
+                        [defaults synchronize];
+
                         [self fetchRemainingObjectsFromParse];
                     }
                     else {
@@ -192,7 +196,7 @@
             [self fetchDataFromParse:parseClass andSortedBy:@"field_term_reference"];
         }
     }
-
+    
     if (![[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
         [parsedownload downloadVideoFile:background forTerm:@""];
     }
@@ -201,6 +205,12 @@
     }
     if (![[defaults objectForKey:@"team_member"] isEqualToString:@"hasData"]) {
         [parsedownload downloadAndPinIndividualParseClass:@"team_member"];
+    }
+    if (![[defaults objectForKey:@"case_study_media"] isEqualToString:@"hasData"]) {
+        [parsedownload downloadAndPinIndividualParseClass:@"case_study_media"];
+    }
+    if (![[defaults objectForKey:@"splash_screen"] isEqualToString:@"hasData"]) {
+        [parsedownload downloadAndPinIndividualParseClass:@"splash_screen"];
     }
 }
 

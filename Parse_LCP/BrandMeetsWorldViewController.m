@@ -139,8 +139,8 @@
     //Logo and setting navigation buttons
     UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
-    [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
-    logoButton.showsTouchWhenHighlighted = YES;
+    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
+    logoButton.showsTouchWhenHighlighted = NO;
     [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
@@ -154,11 +154,9 @@
     //NSUserDefaults to check if data has been downloaded.
     //If data has been downloaded pull from local datastore else fetch data from Parse.com
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    NSLog(@"%@", [defaults objectForKey:@"term"]);
     if ([[defaults objectForKey:@"term"] isEqualToString:@"hasData"]) {
         [self fetchDataFromLocalDataStore];
-    }
-    else {
-        [self fetchDataFromParse];
     }
 }
 
@@ -177,41 +175,7 @@
 
 #pragma mark
 #pragma mark - Parse
-- (void)fetchDataFromParse {
-    //Using Reachability check if there is an internet connection
-    //If there is download term data from Parse.com if not query the local datastore for what ever term data exists
-    if ([self connected]) {
-        PFQuery *query = [PFQuery queryWithClassName:@"term"];
-        [query whereKey:@"parent" equalTo:@"0"];
-        [query orderByAscending:@"weight"];
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
-                        if (!error) {
-                            [self buildView:objects];
-                            
-                            //Once data is downloaded reset NSUserDefault for BrandMeetsWorldData to "hasData"
-                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                            [defaults setObject:@"hasData" forKey:@"BrandMeetsWorldData"];
-                            [defaults synchronize];
-                        }
-                    }];
-                });
-            }
-            else {
-                // Log details of the failure
-                NSLog(@"Error: %@ %@", error, [error userInfo]);
-            }
-        }];
-    }
-    else {
-        [self fetchDataFromLocalDataStore];
-    }
-}
-
 - (void)fetchDataFromLocalDataStore {
-    
     // Query the Local Datastore for term data
     PFQuery *query = [PFQuery queryWithClassName:@"term"];
     [query whereKey:@"parent" equalTo:@"0"];
@@ -398,10 +362,6 @@
     [self.navigationController pushViewController:vvc animated:YES];
 }
 
-- (void)hiddenSection:(UIButton *)sender {
-    // TODO: add hidden slide deck.
-}
-
 // Send the presenter back to the dashboard
 -(void)backToDashboard:(id)sender
 {
@@ -415,5 +375,6 @@
     for (UIView *v in [background subviews]) {
         [v removeFromSuperview];
     }
+    [background removeFromSuperview];
 }
 @end

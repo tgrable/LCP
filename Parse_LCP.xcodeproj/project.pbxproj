@@ -65,6 +65,7 @@
 		4F394FA41AF81DF200F2BB8F /* btn-done.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F394FA01AF81DF200F2BB8F /* btn-done.png */; };
 		4F394FA51AF81DF200F2BB8F /* btn-done@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F394FA11AF81DF200F2BB8F /* btn-done@2x.png */; };
 		4F3F5CC51A8E60FE00CE26C7 /* OverviewViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F3F5CC41A8E60FE00CE26C7 /* OverviewViewController.m */; };
+		4F4AE84D1B00EB1500CE32F1 /* LCPCaseStudyMedia.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F4AE84C1B00EB1500CE32F1 /* LCPCaseStudyMedia.m */; };
 		4F5A77BC1A952AF000324D79 /* CaseStudyViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F5A77BB1A952AF000324D79 /* CaseStudyViewController.m */; };
 		4F7922281ACAFA13007457DF /* VideoViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F7922271ACAFA13007457DF /* VideoViewController.m */; };
 		4F79A03C1AC99E0200A5C712 /* AFNetworkActivityIndicatorManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F79A02C1AC99E0200A5C712 /* AFNetworkActivityIndicatorManager.m */; };
@@ -240,6 +241,8 @@
 		4F394FA11AF81DF200F2BB8F /* btn-done@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "btn-done@2x.png"; sourceTree = "<group>"; };
 		4F3F5CC31A8E60FD00CE26C7 /* OverviewViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = OverviewViewController.h; sourceTree = "<group>"; };
 		4F3F5CC41A8E60FE00CE26C7 /* OverviewViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = OverviewViewController.m; sourceTree = "<group>"; };
+		4F4AE84B1B00EB1500CE32F1 /* LCPCaseStudyMedia.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = LCPCaseStudyMedia.h; path = Parse_LCP/LCPCaseStudyMedia.h; sourceTree = "<group>"; };
+		4F4AE84C1B00EB1500CE32F1 /* LCPCaseStudyMedia.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = LCPCaseStudyMedia.m; path = Parse_LCP/LCPCaseStudyMedia.m; sourceTree = "<group>"; };
 		4F5A77BA1A952AF000324D79 /* CaseStudyViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CaseStudyViewController.h; path = ../CaseStudyViewController.h; sourceTree = "<group>"; };
 		4F5A77BB1A952AF000324D79 /* CaseStudyViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = CaseStudyViewController.m; path = ../CaseStudyViewController.m; sourceTree = "<group>"; };
 		4F7922261ACAFA13007457DF /* VideoViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = VideoViewController.h; path = ../VideoViewController.h; sourceTree = "<group>"; };
@@ -508,6 +511,8 @@
 				4FBA1F361A96810A00364F01 /* LCPContent.m */,
 				4FB854341A97D1ED0079866C /* LCPTeamMembers.h */,
 				4FB854351A97D1ED0079866C /* LCPTeamMembers.m */,
+				4F4AE84B1B00EB1500CE32F1 /* LCPCaseStudyMedia.h */,
+				4F4AE84C1B00EB1500CE32F1 /* LCPCaseStudyMedia.m */,
 			);
 			name = "Supporting Classes";
 			sourceTree = "<group>";
@@ -1026,6 +1031,7 @@
 				4F7922281ACAFA13007457DF /* VideoViewController.m in Sources */,
 				4F79A05E1AC99E3400A5C712 /* AFURLRequestSerialization.m in Sources */,
 				4FD82B211AFBA0C200F102BE /* UIImage+Alpha.m in Sources */,
+				4F4AE84D1B00EB1500CE32F1 /* LCPCaseStudyMedia.m in Sources */,
 				4FBA1F311A966E3F00364F01 /* NSString+HTML.m in Sources */,
 				4FCC5BCB1A8BBD7E00292D6B /* Reachability.m in Sources */,
 				4F3F5CC51A8E60FE00CE26C7 /* OverviewViewController.m in Sources */,

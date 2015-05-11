@@ -250,7 +250,7 @@
     CGFloat pageWidth = pageScroll.bounds.size.width;
     //display the appropriate dot when scrolled
     NSInteger pageNumber = floor((pageScroll.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
-    caseStudyDots.currentPage = pageNumber;
+    paginationDots.currentPage = pageNumber;
     
     //update the button color
     [self updateFavoriteButtonColor];
@@ -276,7 +276,6 @@
         
         //Sample Image
         PFFile *sampleFile = object[@"field_sample_image_img"];
-        
         dispatch_async(dispatch_get_main_queue(), ^{
             [sampleFile getDataInBackgroundWithBlock:^(NSData *sampleData, NSError *error) {
                 
@@ -332,18 +331,27 @@
             }];
         });
         
-        if(count % 4 == 0) {
-            x = 24, y = 174 + 43;
-        }
-        else if (count % 8 == 0) {
+        if (count < 8) {
+            if(count % 4 == 0) {
+                x = 24, y = 174 + 43;
+            }
+            else {
+                x += 235;
+            }
+        }else {
             multiplier++;
+            if((count - 9) % 4 == 0) {
+                x = background.bounds.size.width + 24;
+                y = 48;
+                NSLog(@"%@: %d - %d",[object objectForKey:@"title"], x, y);
+            }
+            else {
+                x += 235;
+            }
         }
-        else {
-            x += 235;
-        }
+        count++;
 
         [pageScroll setContentSize:CGSizeMake((background.bounds.size.width * multiplier), 400)];
-        count++;
     }
     
     UIView *hDivider = [[UIView alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 144, background.bounds.size.width, 1)];

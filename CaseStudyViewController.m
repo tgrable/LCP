@@ -22,7 +22,7 @@
 
 @interface CaseStudyViewController ()
 @property (strong, nonatomic) UIView *background;
-@property (strong, nonatomic) UIScrollView *pageScroll;
+@property (strong, nonatomic) UIScrollView *pageScroll, *mediaColumnScroll;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
 @property NSMutableArray *nids, *nodeTitles, *casestudyObjects;
 
@@ -31,16 +31,17 @@
 @end
 
 @implementation CaseStudyViewController
-@synthesize content;        //LCPContent
-@synthesize nodeId;
-@synthesize isIndividualCaseStudy;
-@synthesize background;     //UIView
-@synthesize pageScroll;     //UIScrollView
-@synthesize favoriteContentButton;                   //UIButton
-@synthesize nids, nodeTitles, casestudyObjects;                        //NSMutableArrays
 
-@synthesize paginationDots;                           //SMPageControll
-@synthesize parsedownload;                           //ParseDownload
+@synthesize nodeId;                             //NSString
+@synthesize isIndividualCaseStudy;              //Bool
+@synthesize background;                         //UIView
+@synthesize pageScroll, mediaColumnScroll;      //UIScrollView
+@synthesize favoriteContentButton;              //UIButton
+@synthesize nids, nodeTitles, casestudyObjects; //NSMutableArrays
+
+@synthesize content;                            //LCPContent
+@synthesize paginationDots;                     //SMPageControll
+@synthesize parsedownload;                      //ParseDownload
 
 - (BOOL)prefersStatusBarHidden
 {
@@ -120,7 +121,10 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
-  
+    if (content.termId == nil) {
+        content = [[LCPContent alloc] init];
+    }
+    
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
@@ -129,7 +133,6 @@
     else {
         [self fetchDataFromParse];
     }
-    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -177,7 +180,6 @@
 #pragma mark
 #pragma mark - Parse
 - (void)fetchDataFromParse {
-    
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
         if (isIndividualCaseStudy) {
@@ -205,10 +207,6 @@
                             [self buildCaseStudyView:selectedObjects];
                         }
                     }];
-                }
-                else {
-                    // Log details of the failure
-                    NSLog(@"Error: %@ %@", error, [error userInfo]);
                 }
             }];
         });
@@ -238,8 +236,22 @@
                 if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                     [selectedObjects addObject:object];
                 }
+                content.termId = [object objectForKey:@"field_term_reference"];
             }
             [self buildCaseStudyView:selectedObjects];
+        }];
+    });
+}
+
+//Query the local datastore to build the views
+- (void)fetchCaseStudyMediaFromLocalDataStore {
+    //Query the Local Datastore
+    PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
+    [query fromLocalDatastore];
+    [query whereKey:@"field_term_reference" equalTo:content.termId];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            [self buildCaseStudyMediaView:objects];
         }];
     });
 }
@@ -282,17 +294,25 @@
         NSArray *bodyArray = [object objectForKey:@"body"];
         NSMutableDictionary *bodyDict = [[NSMutableDictionary alloc] init];
         bodyDict = bodyArray[1];
+        
+        UIScrollView *bodyScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 556, 335)];
+        [bodyScroll setBackgroundColor:[UIColor clearColor]];
+        [bodyColumn addSubview:bodyScroll];
 
-        NSString *temp = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];        
-        UITextView *body = [[UITextView alloc] initWithFrame:CGRectMake(0, 0, 556, 355)];
-        body.editable = NO;
-        body.clipsToBounds = YES;
-        body.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:19.0];
-        body.backgroundColor = [UIColor clearColor];
-        body.scrollEnabled = YES;
-        body.textColor = [UIColor blackColor];
-        body.text = temp.stringByConvertingHTMLToPlainText;
-        [bodyColumn addSubview:body];
+        NSString *temp = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];
+
+        UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 556, 355)];
+        myLabel.numberOfLines = 0;
+        NSMutableParagraphStyle *style  = [[NSMutableParagraphStyle alloc] init];
+        style.minimumLineHeight = 22.0f;
+        style.maximumLineHeight = 22.0f;
+        NSDictionary *attributtes = @{NSParagraphStyleAttributeName : style,};
+        myLabel.attributedText = [[NSAttributedString alloc] initWithString:temp.stringByConvertingHTMLToPlainText attributes:attributtes];
+        myLabel.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:19.0];
+        [myLabel sizeToFit];
+        [bodyScroll addSubview:myLabel];
+        
+        [bodyScroll setContentSize:CGSizeMake(556, myLabel.frame.size.height)];
         
         UIView *vDivider = [[UIView alloc] initWithFrame:CGRectMake(748, 53, 1, caseStudy.bounds.size.height - 73)];
         [vDivider setBackgroundColor:[UIColor colorWithRed:218.0f/255.0f green:218.0f/255.0f blue:218.0f/255.0f alpha:1.0]];
@@ -307,30 +327,14 @@
         [favoriteContentButton setTag:[[object objectForKey:@"nid"] integerValue]];
         [caseStudy addSubview:favoriteContentButton];
         
-        UIScrollView *mediaColumnScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(766, 53, 137, caseStudy.bounds.size.height - 73)];
+        NSLog(@"Add CaseStudyMediaScroll");
+        mediaColumnScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(766, 53, 137, caseStudy.bounds.size.height - 73)];
         [mediaColumnScroll setBackgroundColor:[UIColor clearColor]];
         [caseStudy addSubview:mediaColumnScroll];
         
-        // FIXME: this is total BS!
-        NSArray *btnNames = @[@"abercrombie1-thumb.jpg", @"abercrombie2-thumb.jpg", @"aurora1-thumb.jpg"];
-        NSArray *btnTags = @[@"196", @"197", @"198"];
-        int y = 0;
-        for (int i = 0; i  < btnNames.count; i++) {
-            UIButton *csMediaButton = [UIButton buttonWithType:UIButtonTypeCustom];
-            [csMediaButton setFrame:CGRectMake(0, y, 137, 80)];
-            [csMediaButton addTarget:self action:@selector(showDetails:)forControlEvents:UIControlEventTouchUpInside];
-            csMediaButton.showsTouchWhenHighlighted = YES;
-            [csMediaButton setBackgroundColor:[UIColor clearColor]];
-            [csMediaButton setTag:[btnTags[i] integerValue]];
-            [csMediaButton setBackgroundImage:[UIImage imageNamed:btnNames[i]] forState:UIControlStateNormal];
-            [mediaColumnScroll addSubview:csMediaButton];
-            
-            y += 100;
-        }
-        // End fixme section
-        x += background.bounds.size.width;
+        [self fetchCaseStudyMediaFromLocalDataStore];
         
-        [mediaColumnScroll setContentSize:CGSizeMake(137, 100 * 3)]; //TODO: "3" needs to be set to the number of Case Study Media items.
+        x += background.bounds.size.width;
         [pageScroll setContentSize:CGSizeMake(background.bounds.size.width * objects.count, 355)];
     }
     
@@ -448,6 +452,35 @@
     [self updateFavoriteButtonColor];
 }
 
+- (void)buildCaseStudyMediaView:(NSArray *)objects {
+    NSLog(@"%lu", (unsigned long)objects.count);
+    int __block y = 0;
+    for (PFObject *object in objects) {
+
+        PFFile *imageFile = object[@"field_image_img"];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
+                if (!error) {
+                    UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
+
+                    UIButton *csMediaButton = [UIButton buttonWithType:UIButtonTypeCustom];
+                    [csMediaButton setFrame:CGRectMake(0, y, 137, 80)];
+                    [csMediaButton addTarget:self action:@selector(showDetails:)forControlEvents:UIControlEventTouchUpInside];
+                    csMediaButton.showsTouchWhenHighlighted = YES;
+                    [csMediaButton setBackgroundColor:[UIColor clearColor]];
+                    [csMediaButton setTag:[[object objectForKey:@"nid"] integerValue]];
+                    [csMediaButton setBackgroundImage:btnImg forState:UIControlStateNormal];
+                    NSLog(@"Add CaseStudyMediaScroll Image");
+                    [mediaColumnScroll addSubview:csMediaButton];
+                    
+                    y += 100;
+                }
+            }];
+        });
+    }
+    
+    [mediaColumnScroll setContentSize:CGSizeMake(137, 100 * objects.count)];
+}
 //this function updates the dots for the current image the the user is on
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     CGFloat pageWidth = pageScroll.bounds.size.width;
@@ -520,7 +553,6 @@
     [query fromLocalDatastore];
     [query whereKey:@"nid" equalTo:[NSString stringWithFormat:@"%d", sender.tag]];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        NSLog(@"%@", objects[0]);
         dvc.contentObject = objects[0];
         [self.navigationController pushViewController:dvc animated:YES];
         [self removeEverything];

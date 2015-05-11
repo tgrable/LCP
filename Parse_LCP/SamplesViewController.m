@@ -194,7 +194,6 @@
         [query orderByAscending:@"createdAt"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-                NSLog(@"objects: %lu", (unsigned long)objects.count);
                 if (!error) {
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                         if (!error) {

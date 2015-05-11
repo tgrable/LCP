@@ -89,9 +89,6 @@
     else {
         [self fetchDataFromParse];
     }
-
-    
-    //[pageScroll setContentSize:CGSizeMake(1024, (self.view.bounds.size.height * 2))];
 }
 
 
@@ -139,9 +136,7 @@
     [query whereKey:@"field_overview_tag_reference" equalTo:content.termId];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            NSLog(@"call buildSummaryView");
             [self buildSummaryView:objects];
-
         }];
     });
 }
@@ -170,16 +165,19 @@
         bodyDict = bodyArray[1];
         
         NSString *introText = [NSString stringWithFormat:@"%@",[bodyDict objectForKey:@"value"]];
-        UITextView *introTextView = [[UITextView alloc] initWithFrame:CGRectMake(24, 24, summaryScroll.bounds.size.width - (24 * 2), summaryScroll.bounds.size.height - 48)];
-        [introTextView setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:26.0f]];
-        introTextView.textColor = [UIColor whiteColor];
-        introTextView.textAlignment = NSTextAlignmentCenter;
-        introTextView.backgroundColor = [UIColor clearColor];
-        introTextView.text = introText.stringByConvertingHTMLToPlainText;
-        introTextView.userInteractionEnabled = NO;
-        [summaryScroll addSubview:introTextView];
-
-        [summaryScroll setContentSize:CGSizeMake(summaryScroll.bounds.size.width, (introTextView.font.lineHeight * (introTextView.contentSize.height/introTextView.font.lineHeight)) + 36)];
+        UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 24, summaryScroll.bounds.size.width - (24 * 2), summaryScroll.bounds.size.height - 48)];
+        myLabel.numberOfLines = 0;
+        NSMutableParagraphStyle *style  = [[NSMutableParagraphStyle alloc] init];
+        style.minimumLineHeight = 28.0f;
+        style.maximumLineHeight = 28.0f;
+        NSDictionary *attributtes = @{NSParagraphStyleAttributeName : style,};
+        myLabel.attributedText = [[NSAttributedString alloc] initWithString:introText.stringByConvertingHTMLToPlainText attributes:attributtes];
+        myLabel.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:26.0];
+        myLabel.textColor = [UIColor whiteColor];
+        [myLabel sizeToFit];
+        [summaryScroll addSubview:myLabel];
+        
+        [summaryScroll setContentSize:CGSizeMake(summaryScroll.bounds.size.width, myLabel.frame.size.height)];
         
         UIView *navBar = [[UIView alloc] initWithFrame:CGRectMake(0, (summaryView.bounds.size.height - 96), summaryView.bounds.size.width, 96)];
         [navBar setBackgroundColor:[UIColor colorWithRed:230.0f/255.0f green:230.0f/255.0f blue:230.0f/255.0f alpha:1.0]];

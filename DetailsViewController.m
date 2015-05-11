@@ -44,36 +44,48 @@
         [self.view addSubview:imgView];
     }];
 
-    
     UIView *infoBar = [[UIView alloc] initWithFrame:CGRectMake(36, 616, self.view.bounds.size.width - (36 *2), self.view.bounds.size.height - 652)];
     [infoBar setBackgroundColor:[UIColor clearColor]];
     [self.view addSubview:infoBar];
     
-    UITextView *title = [[UITextView alloc] initWithFrame:CGRectMake(20, 0, infoBar.bounds.size.width * 0.25, self.view.bounds.size.height - 652)];
-    [title setFont:[UIFont fontWithName:@"Oswald-Bold" size:20.0f]];
-    title.editable = NO;
-    title.clipsToBounds = YES;
-    title.scrollEnabled = NO;
-    title.textColor = [UIColor blackColor];
-    title.backgroundColor = [UIColor clearColor];
-    title.text = [[contentObject objectForKey:@"title"] uppercaseString];
-    [infoBar addSubview:title];
+    UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(20, 0, infoBar.bounds.size.width * 0.25, 50)];
+    titleLabel.numberOfLines = 0;
+    NSMutableParagraphStyle *styleTitle  = [[NSMutableParagraphStyle alloc] init];
+    styleTitle.minimumLineHeight = 26.0f;
+    styleTitle.maximumLineHeight = 26.0f;
+    NSDictionary *titleAttributtes = @{NSParagraphStyleAttributeName : styleTitle,};
+    titleLabel.attributedText = [[NSAttributedString alloc] initWithString:[[contentObject objectForKey:@"title"] uppercaseString] attributes:titleAttributtes];
+    titleLabel.font = [UIFont fontWithName:@"Oswald-Bold" size:20.0];
+    titleLabel.backgroundColor = [UIColor clearColor];
+    titleLabel.textColor = [UIColor blackColor];
+    [titleLabel sizeToFit];
+    [infoBar addSubview:titleLabel];
     
     NSArray *bodyArray = [contentObject objectForKey:@"body"];
-    NSLog(@"%@", bodyArray);
     NSMutableDictionary *bodyDict = [[NSMutableDictionary alloc] init];
     bodyDict = bodyArray[1];
     
-    NSString *temp = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];
-    UITextView *body = [[UITextView alloc] initWithFrame:CGRectMake((infoBar.bounds.size.width * 0.25) + 14, 0, infoBar.bounds.size.width * 0.5, self.view.bounds.size.height - 652)];
-    body.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:16.0f];
-    body.editable = NO;
-    body.clipsToBounds = YES;
-    body.scrollEnabled = YES;
-    body.textColor = [UIColor blackColor];
-    body.backgroundColor = [UIColor clearColor];
-    body.text = temp.stringByConvertingHTMLToPlainText;
-    [infoBar addSubview:body];
+    UIScrollView *summaryScroll = [[UIScrollView alloc] initWithFrame:CGRectMake((infoBar.bounds.size.width * 0.25) + 14, 0, infoBar.bounds.size.width * 0.60, self.view.bounds.size.height - 652)];
+    summaryScroll.layer.borderWidth = 1.0f;
+    summaryScroll.layer.borderColor = [UIColor whiteColor].CGColor;
+    summaryScroll.backgroundColor = [UIColor clearColor];
+    [infoBar addSubview:summaryScroll];
+    
+    NSString *introText = [NSString stringWithFormat:@"%@",[bodyDict objectForKey:@"value"]];
+    UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 0, summaryScroll.bounds.size.width - (24 * 2), summaryScroll.bounds.size.height - 48)];
+    myLabel.numberOfLines = 0;
+    NSMutableParagraphStyle *style  = [[NSMutableParagraphStyle alloc] init];
+    style.minimumLineHeight = 18.0f;
+    style.maximumLineHeight = 18.0f;
+    NSDictionary *attributtes = @{NSParagraphStyleAttributeName : style,};
+    myLabel.attributedText = [[NSAttributedString alloc] initWithString:introText.stringByConvertingHTMLToPlainText attributes:attributtes];
+    myLabel.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:16.0];
+    myLabel.backgroundColor = [UIColor clearColor];
+    myLabel.textColor = [UIColor blackColor];
+    [myLabel sizeToFit];
+    [summaryScroll addSubview:myLabel];
+    
+    [summaryScroll setContentSize:CGSizeMake(summaryScroll.bounds.size.width, myLabel.frame.size.height)];
     
     UIButton *favButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [favButton setFrame:CGRectMake((infoBar.bounds.size.width - 124), 20, 24, 24)];

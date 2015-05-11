@@ -149,10 +149,6 @@
                     }
                 }];
             }
-            else {
-                // Log details of the failure
-                NSLog(@"Error: %@ %@", error, [error userInfo]);
-            }
         }];
     }
     else {
@@ -291,14 +287,27 @@
             positionLabel.text = tms.teamMemberTitle;
             [jobDescription addSubview:positionLabel];
             
+            UIScrollView *summaryScroll = [[UIScrollView alloc] initWithFrame:CGRectMake((jobDescription.bounds.size.width / 2) - 100, 0, (jobDescription.bounds.size.width / 2) + 100, 320)];
+            summaryScroll.layer.borderWidth = 1.0f;
+            summaryScroll.layer.borderColor = [UIColor whiteColor].CGColor;
+            summaryScroll.backgroundColor = [UIColor clearColor];
+            [jobDescription addSubview:summaryScroll];
+            
             NSString *temp = [NSString stringWithFormat:@"%@", tms.teamMemberBio];
-            UITextView *descLabel = [[UITextView alloc] initWithFrame:CGRectMake((jobDescription.bounds.size.width / 2) - 100, 0, (jobDescription.bounds.size.width / 2) + 100, 320)];
-            [descLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:16.0]];
-            descLabel.textColor = [UIColor blackColor];
-            descLabel.backgroundColor = [UIColor clearColor];
-            descLabel.textAlignment = NSTextAlignmentLeft;
-            descLabel.text = temp.stringByConvertingHTMLToPlainText;
-            [jobDescription addSubview:descLabel];
+            UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, (jobDescription.bounds.size.width / 2) + 100, 320)];
+            myLabel.numberOfLines = 0;
+            NSMutableParagraphStyle *style  = [[NSMutableParagraphStyle alloc] init];
+            style.minimumLineHeight = 19.0f;
+            style.maximumLineHeight = 19.0f;
+            NSDictionary *attributtes = @{NSParagraphStyleAttributeName : style,};
+            myLabel.attributedText = [[NSAttributedString alloc] initWithString:temp.stringByConvertingHTMLToPlainText attributes:attributtes];
+            myLabel.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:16.0];
+            myLabel.backgroundColor = [UIColor clearColor];
+            myLabel.textColor = [UIColor blackColor];
+            [myLabel sizeToFit];
+            [summaryScroll addSubview:myLabel];
+            
+            [summaryScroll setContentSize:CGSizeMake(summaryScroll.bounds.size.width, myLabel.frame.size.height)];
         }
     }
 }

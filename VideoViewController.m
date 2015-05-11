@@ -131,9 +131,6 @@
                 }];
             }
         }
-        else {
-            NSLog(@"%@", error);
-        }
     }];
 }
 
@@ -141,14 +138,12 @@
 -(void)setContentAsFavorite:(UIButton *)sender
 {
     if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[NSString stringWithFormat:@"%ld", (long)sender.tag]] == nil){
-        NSLog(@"YES");
         [parsedownload addOrRemoveFavoriteNodeID:nid
                                        nodeTitle:nodeTitle
                                         nodeType:@"Video"
                              withAddOrRemoveFlag:YES];
         [sender setBackgroundImage:[UIImage imageNamed:@"ico-fav-active"] forState:UIControlStateNormal];
     }else{
-        NSLog(@"NO");
         [parsedownload addOrRemoveFavoriteNodeID:nid
                                        nodeTitle:@""
                                         nodeType:@""

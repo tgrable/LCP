@@ -363,7 +363,6 @@
         [self.navigationController pushViewController:mvc animated:YES];
     }
     else {
-        NSLog(@"%@", sender.titleLabel.text);
         //Pass LCPContent object to next view UINavigation View Controller
         OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"overviewViewController"];
         dvc.content = content;

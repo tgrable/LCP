@@ -238,10 +238,6 @@
                         }
                     }];
                 }
-                else {
-                    // Log details of the failure
-                    NSLog(@"Error: %@ %@", error, [error userInfo]);
-                }
             }];
         });
     }
@@ -334,11 +330,11 @@
                 
                 if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad && [[UIScreen mainScreen] respondsToSelector:@selector(scale)] && [UIScreen mainScreen].scale > 1)
                 {
-                    NSLog(@"This should be retnia");
+                    NSLog(@"Retnia");
                     [sample setImage:videothumb];
                 }
                 else {
-                    NSLog(@"This should be non-retnia");
+                    NSLog(@"Non-retnia");
                     if ([self fileExistsAtPath:[NSString stringWithFormat:@"%@.png", [self cleanString:[object objectForKey:@"title"]]]]) {
                         dispatch_async(dispatch_get_main_queue(), ^{
                             NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -450,17 +446,19 @@
         NSArray *bodyArray = [object objectForKey:@"body"];
         NSMutableDictionary *bodyDict = [[NSMutableDictionary alloc] init];
         bodyDict = bodyArray[1];
-        
+
         NSString *temp = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];
-        UITextView *body = [[UITextView alloc] initWithFrame:CGRectMake(33, y + 24, pageScroll.bounds.size.width - 237, 75)];
-        body.editable = NO;
-        body.clipsToBounds = YES;
-        body.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:16.0f];
-        body.backgroundColor = [UIColor clearColor];
-        body.scrollEnabled = NO;
-        body.textColor = [UIColor colorWithRed:51.0f/255.0f green:51.0f/255.0f blue:51.0f/255.0f alpha:1.0];
-        body.text = temp.stringByConvertingHTMLToPlainText;
-        [pageScroll addSubview:body];
+        UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(39, y + 24, pageScroll.bounds.size.width - 237, 75)];
+        myLabel.numberOfLines = 0;
+        NSMutableParagraphStyle *style  = [[NSMutableParagraphStyle alloc] init];
+        style.minimumLineHeight = 19.0f;
+        style.maximumLineHeight = 19.0f;
+        NSDictionary *attributtes = @{NSParagraphStyleAttributeName : style,};
+        myLabel.attributedText = [[NSAttributedString alloc] initWithString:temp.stringByConvertingHTMLToPlainText attributes:attributtes];
+        myLabel.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:16.0];
+        myLabel.backgroundColor = [UIColor clearColor];
+        myLabel.textColor = [UIColor blackColor];
+        [pageScroll addSubview:myLabel];
         
         UIButton *viewCaseStudyButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [viewCaseStudyButton setFrame:CGRectMake(pageScroll.bounds.size.width - 175, y + 24, 150, 30)];

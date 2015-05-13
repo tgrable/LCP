@@ -64,6 +64,22 @@
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
     
+    //UIImageView used to hold header image and text
+    UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(36, 36, background.bounds.size.width, 110)];
+    headerImgView.image = [UIImage imageNamed:@"hdr-casestudy"];
+    [self.view addSubview:headerImgView];
+    
+    //UILabel used to hold header text
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, headerImgView.bounds.size.width, 110)];
+    [headerLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:60.0f]];
+    headerLabel.textColor = [UIColor whiteColor];
+    [headerLabel setNumberOfLines:2];
+    headerLabel.backgroundColor = [UIColor clearColor];
+    headerLabel.textAlignment = NSTextAlignmentCenter;
+    headerLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    headerLabel.text = @"CASE STUDIES";
+    [headerImgView addSubview:headerLabel];
+    
     /******** Logo and setting navigation buttons ********/
     //UIImageView used to hold LCP logo
     UIImageView *logo = [[UIImageView alloc] initWithFrame:CGRectMake(60, 6.5f, 70, 23)];
@@ -95,22 +111,6 @@
     homeButton.tag = 0;
     [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home"] forState:UIControlStateNormal];
     [self.view addSubview:homeButton];
-
-    //UIImageView used to hold header image and text
-    UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, background.bounds.size.width, 110)];
-    headerImgView.image = [UIImage imageNamed:@"hdr-casestudy"];
-    [background addSubview:headerImgView];
-    
-    //UILabel used to hold header text
-    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, headerImgView.bounds.size.width, 110)];
-    [headerLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:60.0f]];
-    headerLabel.textColor = [UIColor whiteColor];
-    [headerLabel setNumberOfLines:2];
-    headerLabel.backgroundColor = [UIColor clearColor];
-    headerLabel.textAlignment = NSTextAlignmentCenter;
-    headerLabel.lineBreakMode = NSLineBreakByWordWrapping;
-    headerLabel.text = @"CASE STUDIES";
-    [background addSubview:headerLabel];
     
     //array used to hold nids for the current index of the case study
     nids = [NSMutableArray array];
@@ -120,11 +120,36 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+    if (content == nil) {
+        content = [[LCPContent alloc] init];
+    }
+    
     //NSUserDefaults to check if data has been downloaded.
     //If data has been downloaded pull from local datastore
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"overview"] isEqualToString:@"hasData"]) {
-        [self fetchCaseStudyMediaFromLocalDataStore];
+    if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
+        
+        if (isIndividualCaseStudy) {
+            PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
+            [query fromLocalDatastore];
+            [query whereKey:@"nid" equalTo:nodeId];
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                    if (!error) {
+                        if (objects.count > 0) {
+                            for (PFObject *object in objects) {
+                                content.termId = [object objectForKey:@"field_term_reference"];
+                            }
+                            
+                            [self fetchCaseStudyMediaFromLocalDataStore];
+                        }
+                    }
+                }];
+            });
+        }
+        else {
+            [self fetchCaseStudyMediaFromLocalDataStore];
+        }
     }
     else {
         [self fetchDataFromParse];
@@ -186,6 +211,17 @@
                 if (objects.count > 0) {
                     [self buildCaseStudyMediaView:objects];
                 }
+                else {
+                    //NSUserDefaults to check if data has been downloaded.
+                    //If data has been downloaded pull from local datastore
+                    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                    if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
+                        [self fetchDataFromLocalDataStore];
+                    }
+                    else {
+                        [self fetchDataFromParse];
+                    }
+                }
             }
         }];
     });
@@ -204,6 +240,17 @@
                 if (!error) {
                     if (objects.count > 0) {
                         [self buildCaseStudyMediaView:objects];
+                    }
+                    else {
+                        //NSUserDefaults to check if data has been downloaded.
+                        //If data has been downloaded pull from local datastore
+                        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                        if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
+                            [self fetchDataFromLocalDataStore];
+                        }
+                        else {
+                            [self fetchDataFromParse];
+                        }
                     }
                 }
             }];
@@ -406,6 +453,7 @@
         [mediaColumnScroll setBackgroundColor:[UIColor clearColor]];
         [caseStudy addSubview:mediaColumnScroll];
         
+        NSLog(@"casestudyMediaObjects.count: %d", casestudyMediaObjects.count);
         int y = 0;
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"csMediaTermReferenceId = %@", [object objectForKey:@"field_term_reference"]];
         NSArray *filteredArray = [casestudyMediaObjects filteredArrayUsingPredicate:predicate];
@@ -554,6 +602,8 @@
 //they will be available when running throught he loop
 - (void)buildCaseStudyMediaView:(NSArray *)objects {
 
+    casestudyMediaObjects = [NSMutableArray array];
+    
     int __block count = 0;
     for (PFObject *object in objects) {
 
@@ -689,7 +739,5 @@
     for (UIView *v in [background subviews]) {
         [v removeFromSuperview];
     }
-    casestudyMediaObjects = nil;
-    [paginationDots removeFromSuperview];
 }
 @end

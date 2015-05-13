@@ -1,5 +1,5 @@
 //
-//  SampleDetailsViewController.m
+//  DetailsViewController.m
 //  Parse_LCP
 //
 //  Created by Timothy C Grable on 5/4/15.
@@ -18,16 +18,16 @@
 
 @implementation DetailsViewController
 
-@synthesize content;
-@synthesize contentID;
-@synthesize contentObject;
-@synthesize contentType;
-@synthesize parsedownload;                           //ParseDownload
+@synthesize content;        //LCPContent
+@synthesize contentObject;  //PFObject
+@synthesize contentType;    //NSString
+@synthesize parsedownload;  //ParseDownload
 
 - (void)viewDidLoad {
     [super viewDidLoad];
     parsedownload = [[ParseDownload alloc] init];
     
+    //Create the main image
     PFFile *file;
     if ([contentType isEqualToString:@"samples"]) {
        file = contentObject[@"field_sample_image_img"];
@@ -43,7 +43,8 @@
         imgView.alpha = 1.0;
         [self.view addSubview:imgView];
     }];
-
+    
+    //Info content
     UIView *infoBar = [[UIView alloc] initWithFrame:CGRectMake(36, 616, self.view.bounds.size.width - (36 *2), self.view.bounds.size.height - 652)];
     [infoBar setBackgroundColor:[UIColor clearColor]];
     [self.view addSubview:infoBar];
@@ -88,10 +89,12 @@
     [summaryScroll setContentSize:CGSizeMake(summaryScroll.bounds.size.width, myLabel.frame.size.height)];
     
     UIButton *favButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [favButton setFrame:CGRectMake((infoBar.bounds.size.width - 124), 20, 24, 24)];
+    [favButton setFrame:CGRectMake((infoBar.bounds.size.width - 124), 0, 24, 24)];
     [favButton addTarget:self action:@selector(setContentAsFavorite:)forControlEvents:UIControlEventTouchUpInside];
     favButton.showsTouchWhenHighlighted = YES;
     favButton.tag = [[contentObject objectForKey:@"objectId"] integerValue];
+    favButton.titleLabel.text = contentType;
+    [favButton setTitleColor:[UIColor clearColor] forState:UIControlStateNormal];
     if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[contentObject objectForKey:@"nid"]] != nil){
         [favButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-active"] forState:UIControlStateNormal];
     }else{
@@ -101,8 +104,8 @@
     [infoBar addSubview:favButton];
     
     UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [doneButton setFrame:CGRectMake((infoBar.bounds.size.width - 80), 20, 60, 30)];
-    [doneButton addTarget:self action:@selector(backToSamples:)forControlEvents:UIControlEventTouchUpInside];
+    [doneButton setFrame:CGRectMake((infoBar.bounds.size.width - 80), 0, 60, 30)];
+    [doneButton addTarget:self action:@selector(backToContent:)forControlEvents:UIControlEventTouchUpInside];
     doneButton.showsTouchWhenHighlighted = YES;
     doneButton.tag = 1;
     [doneButton setBackgroundImage:[UIImage imageNamed:@"btn-done"] forState:UIControlStateNormal];
@@ -119,12 +122,12 @@
 #pragma mark - Favorite Functionality
 
 //pick the current nid of the content and save it to the NSUserDefault
--(void)setContentAsFavorite:(UIButton *)sender
-{
+-(void)setContentAsFavorite:(UIButton *)sender {
+    NSLog(@"%@", sender.titleLabel.text);
     if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[contentObject objectForKey:@"nid"]] == nil){
         [parsedownload addOrRemoveFavoriteNodeID:[contentObject objectForKey:@"nid"]
                                        nodeTitle:[contentObject objectForKey:@"title"]
-                                        nodeType:@"Samples"
+                                        nodeType:sender.titleLabel.text
                              withAddOrRemoveFlag:YES];
         [sender setBackgroundImage:[UIImage imageNamed:@"ico-fav-active"] forState:UIControlStateNormal];
     }else{
@@ -138,8 +141,7 @@
 
 
 // Send the presenter back to the dashboard
--(void)backToSamples:(id)sender
-{
+-(void)backToContent:(id)sender {
     [self.navigationController popViewControllerAnimated:YES];
     [self removeEverything];
 }

@@ -20,7 +20,7 @@
 @property (strong, nonatomic) UIImage *posterImage, *headerImage;
 @property (strong, nonatomic) UIView *background, *pagination;
 @property (strong, nonatomic) UIScrollView *navContainer;
-@property (strong, nonatomic) UIImageView *logo, *overlay;
+@property (strong, nonatomic) UIImageView *overlay;
 @property (strong, nonatomic) NSMutableDictionary *posterDict, *headerDict, *teamDict, *iconDict;
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
 
@@ -32,11 +32,11 @@
 
 @implementation BrandMeetsWorldViewController
 
-@synthesize catagoryType, catagoryId, termId;               //NSString
+@synthesize catagoryId, catagoryType, termId;               //NSString
 @synthesize posterImage, headerImage;                       //UIImage
 @synthesize background, pagination;                         //UIView
 @synthesize navContainer;                                   //UIScrollView
-@synthesize logo, overlay;                                  //UIImageView
+@synthesize overlay;                                        //UIImageView
 @synthesize posterDict, headerDict, teamDict, iconDict;     //NSMutableDictionary
 @synthesize moviePlayerController;                          //MPMoviePlayerController
 
@@ -45,8 +45,8 @@
 @synthesize paginationDots;                                 //SMPageControl
 @synthesize parsedownload;                                  //ParseDownload
 
-- (BOOL)prefersStatusBarHidden
-{
+- (BOOL)prefersStatusBarHidden {
+    //Hide status bar
     return YES;
 }
 
@@ -73,9 +73,11 @@
     //If data has been downloaded pull from local datastore
     NSUserDefaults *videoDefaults = [NSUserDefaults standardUserDefaults];
     if ([[videoDefaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
+        
         //Get video title from NSUserDefaults whos field_term_reference is 0
         NSArray *videoName = [[videoDefaults objectForKey:@"VideoDataDictionary"] allKeysForObject:@"N/A"];
         if (videoName.count > 0) {
+            
             //Extract the video file name from the rackspace url then build the local path
             //http://8f2161d9c4589de9f316-5aa980248e6d72557f77fd2618031fcc.r92.cf2.rackcdn.com/videos/BrandMeetsWorld.mp4
             NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -94,13 +96,14 @@
                 [background addSubview:moviePlayerController.view];
             }
             
+            //UITapGesture used to start the video
             UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(imageTapped:)];
             tapGesture.numberOfTapsRequired = 1;
-            
             [background addGestureRecognizer:tapGesture];
         }
     }
     else {
+        //Video has not been downloaded
         dispatch_async(dispatch_get_main_queue(), ^{
             [parsedownload downloadVideoFile:self.view forTerm:@"N/A"];
         });
@@ -109,13 +112,14 @@
     //Create the poster image overlay after the video player has been added to background
     overlay = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 952, 696)];
     [overlay setBackgroundColor:[UIColor clearColor]];
-    [overlay setImage:[UIImage imageNamed:@"bmwposter"]];
+    [overlay setImage:[UIImage imageNamed:@"poster"]];
     [overlay setUserInteractionEnabled:YES];
     overlay.alpha = 1.0;
     [background addSubview:overlay];
     
+    //UIScrollView used to hold navigation icons
     navContainer = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), 30, 320, (background.bounds.size.height - 130))];
-    [navContainer setBackgroundColor:[UIColor clearColor]];
+    [navContainer setBackgroundColor:[UIColor colorWithRed:179.0f/255.0f green:179.0f/255.0f blue:179.0f/255.0f alpha:1.0]];
     navContainer.layer.borderColor = [UIColor whiteColor].CGColor;
     navContainer.layer.borderWidth = 1.0f;
     [navContainer setUserInteractionEnabled:YES];
@@ -123,8 +127,9 @@
     [background addSubview:navContainer];
     [navContainer setContentSize:CGSizeMake((320 * 2), (background.bounds.size.height - (36 * 4)))];
     
+    //UIScrollView used to hold pagination dots
     pagination = [[UIScrollView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), ((background.bounds.size.height - 100) - 1.0f), 320, 36)];
-    [pagination setBackgroundColor:[UIColor clearColor]];
+    [pagination setBackgroundColor:[UIColor colorWithRed:179.0f/255.0f green:179.0f/255.0f blue:179.0f/255.0f alpha:1.0]];
     pagination.layer.borderColor = [UIColor whiteColor].CGColor;
     pagination.layer.borderWidth = 1.0f;
     [pagination setUserInteractionEnabled:YES];
@@ -136,14 +141,13 @@
     paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-white"];
     [pagination addSubview:paginationDots];
     
-    //Logo and setting navigation buttons
-    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
-    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
-    logoButton.showsTouchWhenHighlighted = NO;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
-    [self.view addSubview:logoButton];
+    /******** Logo and setting navigation buttons ********/
+    //UIImageView used to hold LCP logo
+    UIImageView *logo = [[UIImageView alloc] initWithFrame:CGRectMake(60, 6.5f, 70, 23)];
+    logo.image = [UIImage imageNamed:@"logo"];
+    [self.view addSubview:logo];
     
+    //UIButton used to navigate back to content dashboard
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [dashboardButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
     [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
@@ -151,12 +155,14 @@
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
     [self.view addSubview:dashboardButton];
     
-    //NSUserDefaults to check if data has been downloaded.
+    //NSUserDefaults used to check if data has been downloaded.
     //If data has been downloaded pull from local datastore else fetch data from Parse.com
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSLog(@"%@", [defaults objectForKey:@"term"]);
     if ([[defaults objectForKey:@"term"] isEqualToString:@"hasData"]) {
         [self fetchDataFromLocalDataStore];
+    }
+    else {
+        [self fetchDataFromParse];
     }
 }
 
@@ -175,8 +181,9 @@
 
 #pragma mark
 #pragma mark - Parse
+//Query the local datastore to build the views
 - (void)fetchDataFromLocalDataStore {
-    // Query the Local Datastore for term data
+
     PFQuery *query = [PFQuery queryWithClassName:@"term"];
     [query whereKey:@"parent" equalTo:@"0"];
     [query fromLocalDatastore];
@@ -184,11 +191,51 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
+                
+                //Call buildView: with objects returned from query
                 [self buildView:objects];
             }
         }];
     });
 }
+
+//Query the parse.com to build the views
+- (void)fetchDataFromParse {
+    
+    //Using Reachability check if there is an internet connection
+    //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
+    if ([self connected]) {
+        PFQuery *query = [PFQuery queryWithClassName:@"term"];
+       [query whereKey:@"parent" equalTo:@"0"];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                if (!error) {
+                    [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
+                        if (!error) {
+                            
+                            //Set NSUserDefaults to "hasData" for key "term"
+                            NSUserDefaults *csDefaults = [NSUserDefaults standardUserDefaults];
+                            [csDefaults setObject:@"hasData" forKey:@"term"];
+                            [csDefaults synchronize];
+                            
+                            //Call buildView: with objects returned from query
+                            [self buildView:objects];
+                        }
+                    }];
+                }
+            }];
+        });
+    }
+    else {
+        //Alert the user there is no internet connection
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error"
+                                                        message:@"You need an internet connection to download data."
+                                                       delegate:self cancelButtonTitle:@"Okay"
+                                              otherButtonTitles:nil];
+        [alert show];
+    }
+}
+
 
 #pragma mark
 #pragma mark - Build View
@@ -211,11 +258,14 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
                 if (!error) {
+                    
+                    //Create button image for navigation
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
                     [iconDict setObject:btnImg forKey:object[@"tid"]];
                     UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:y andTag:[object objectForKey:@"tid"]];
                     [navContainer addSubview:tempButton];
                     
+                    //UIlabel for navigation
                     UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(x, (y + 114), 100, 42)];
                     [title setFont:[UIFont fontWithName:@"Oswald" size:14.0]];
                     title.textColor = [UIColor blackColor];
@@ -230,14 +280,14 @@
         });
         count++;
         
-        //Poster Image
+        /*//Poster Image
         PFFile *posterFile = object[@"field_poster_image_img"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [posterFile getDataInBackgroundWithBlock:^(NSData *posterData, NSError *error) {
                 UIImage *posterImg = [[UIImage alloc] initWithData:posterData];
                 [posterDict setObject:posterImg forKey:object[@"tid"]];
             }];
-        });
+        });*/
         
         //Header Image
         PFFile *headerFile = object[@"field_header_image_img"];
@@ -249,6 +299,7 @@
         });
     }
     
+    //Add video & case study library buttons and labels
     UIButton *videoLibraryButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [videoLibraryButton setFrame:CGRectMake((320 + 36), 36, 100, 100)];
     [videoLibraryButton addTarget:self action:@selector(libraryNavigationButtonPressed:)forControlEvents:UIControlEventTouchUpInside];
@@ -288,9 +339,14 @@
     [navContainer addSubview:caseStudiesLabel];
 }
 
-- (void)imageTapped:(UITapGestureRecognizer *)sender
-{
+#pragma mark
+#pragma mark - UITapGestureRecognizer
+- (void)imageTapped:(UITapGestureRecognizer *)sender {
+    
+    //Start the LCP video
     [moviePlayerController play];
+    
+    //Fade out the overlay poster image
     [UIView animateWithDuration:2.0f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
         overlay.alpha = 0.0;
     }completion:^(BOOL finished) {
@@ -300,8 +356,9 @@
 
 #pragma mark
 #pragma mark - Reachability
-- (BOOL)connected
-{
+- (BOOL)connected {
+
+    //Check if there is an internet connection
     Reachability *reachability = [Reachability reachabilityForInternetConnection];
     NetworkStatus networkStatus = [reachability currentReachabilityStatus];
     return networkStatus != NotReachable;
@@ -324,12 +381,12 @@
 }
 
 - (void)firstLevelNavigationButtonPressed:(UIButton *)sender {
-    //Create LCPContent object and assign catagoryId, imgPoster, and imgHeader properties
     
+    //Create LCPContent object and assign catagoryId, imgPoster, and imgHeader properties
     content.catagoryId = [NSString stringWithFormat: @"%ld", (long)sender.tag];
     content.lblMainSectionTitle = sender.titleLabel.text;
     content.imgIcon = [iconDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
-    content.imgPoster = [posterDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
+    //content.imgPoster = [posterDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     content.imgHeader = [headerDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     
     //Pass LCPContent object to next view UINavigation View Controller
@@ -341,10 +398,13 @@
     [moviePlayerController stop];
     overlay.alpha = 1.0f;
     
+    //Push next view controller into the stack
     [self.navigationController pushViewController:cvc animated:YES];
 }
 
 - (void)libraryNavigationButtonPressed:(UIButton *)sender {
+    
+    //Pass contentType to next view UINavigation View Controller
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     LibraryViewController *vvc = (LibraryViewController *)[storyboard instantiateViewControllerWithIdentifier:@"libraryViewController"];
     if (sender.tag == 0) {
@@ -353,18 +413,19 @@
     else {
         vvc.contentType = @"case_study";
     }
-    vvc.content = content;
+    //vvc.content = content;
 
     //Stop video and reset poster image alpha to 1.0
     [moviePlayerController stop];
     overlay.alpha = 1.0f;
     
+    //Push next view controller into the stack
     [self.navigationController pushViewController:vvc animated:YES];
 }
 
-// Send the presenter back to the dashboard
--(void)backToDashboard:(id)sender
-{
+-(void)backToDashboard:(id)sender {
+    
+    // Send the presenter back to the dashboard
     [self.navigationController popToRootViewControllerAnimated:YES];
     [self removeEverything];
 }

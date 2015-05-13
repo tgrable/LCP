@@ -40,14 +40,15 @@
 @synthesize paginationDots;                     //SMPageControll
 @synthesize parsedownload;                      //ParseDownload
 
-- (BOOL)prefersStatusBarHidden
-{
+- (BOOL)prefersStatusBarHidden {
+    //Hide status bar
     return YES;
 }
 
+#pragma mark -
+#pragma mark - ViewController Life Cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
     
     parsedownload = [[ParseDownload alloc] init];
     
@@ -57,14 +58,13 @@
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
     
-    //Logo and setting navigation buttons
-    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
-    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
-    logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
-    [self.view addSubview:logoButton];
+    /******** Logo and setting navigation buttons ********/
+    //UIImageView used to hold LCP logo
+    UIImageView *logo = [[UIImageView alloc] initWithFrame:CGRectMake(60, 6.5f, 70, 23)];
+    logo.image = [UIImage imageNamed:@"logo"];
+    [self.view addSubview:logo];
     
+    //UIButton used to navigate back to content dashboard
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [dashboardButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
     [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
@@ -72,14 +72,16 @@
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
     [self.view addSubview:dashboardButton];
     
+    //UIButton used to navigate back to CatagoryViewController
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [backButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
     [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     backButton.showsTouchWhenHighlighted = YES;
     backButton.tag = 1;
-    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back"] forState:UIControlStateNormal];
+    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back.png"] forState:UIControlStateNormal];
     [self.view addSubview:backButton];
     
+    //UIButton used to navigate back to BrandMeetsWorldViewController
     UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 235), 0, 45, 45)];
     [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
@@ -88,37 +90,17 @@
     [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home"] forState:UIControlStateNormal];
     [self.view addSubview:homeButton];
     
-    UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, background.bounds.size.width, 110)];
-    headerImgView.image = [UIImage imageNamed:@"hdr-casestudy"];
-    [background addSubview:headerImgView];
-    
-    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, headerImgView.bounds.size.width, 110)];
-    [headerLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:60.0f]];
-    headerLabel.textColor = [UIColor whiteColor];
-    [headerLabel setNumberOfLines:2];
-    headerLabel.backgroundColor = [UIColor clearColor];
-    headerLabel.textAlignment = NSTextAlignmentCenter;
-    headerLabel.lineBreakMode = NSLineBreakByWordWrapping;
-    headerLabel.text = [NSString stringWithFormat:@"%@ SAMPLES", content.lblTitle];
-    [background addSubview:headerLabel];
-    
-    pageScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 110, background.bounds.size.width, background.bounds.size.width - 110)];
-    pageScroll.showsHorizontalScrollIndicator = NO;
-    pageScroll.showsVerticalScrollIndicator = YES;
-    pageScroll.pagingEnabled = YES;
-    pageScroll.scrollEnabled = YES;
-    pageScroll.delegate = self;
-    pageScroll.backgroundColor = [UIColor clearColor];
-    [background addSubview:pageScroll];
-    
-    //array used to hold nids for the current index of the case study
+    //array used to hold nids for the current index of the sample
     nids = [NSMutableArray array];
     nodeTitles = [NSMutableArray array];
     sampleObjects = [NSMutableArray array];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
     //NSUserDefaults to check if data has been downloaded.
+    //If data has been downloaded pull from local datastore
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"samples"] isEqualToString:@"hasData"]) {
         [self fetchDataFromLocalDataStore];
@@ -133,7 +115,7 @@
     // Dispose of any resources that can be recreated.
 }
 
-#pragma
+#pragma mark -
 #pragma mark - Favorite Functionality
 
 //pick the current nid of the content and save it to the NSUserDefault
@@ -184,10 +166,38 @@
     }
 }
 
-#pragma mark
+#pragma mark -
 #pragma mark - Parse
+//Query the local datastore to build the views
+- (void)fetchDataFromLocalDataStore {
+
+    PFQuery *query = [PFQuery queryWithClassName:@"samples"];
+    [query fromLocalDatastore];
+    [query whereKey:@"field_term_reference" equalTo:content.termId];
+    [query orderByAscending:@"createdAt"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            
+            //Some samples may have be disabled in the app dashboard
+            //Check which one are set to "show" and use those to build the view
+            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            
+            //Add selected objects the the array
+            for (PFObject *object in objects) {
+                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                    [selectedObjects addObject:object];
+                }
+            }
+            [self buildSamplesView:selectedObjects];
+        }];
+    });
+}
+
 - (void)fetchDataFromParse {
     
+    //Using Reachability check if there is an internet connection
+    //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"samples"];
         [query whereKey:@"field_term_reference" equalTo:content.termId];
@@ -201,8 +211,12 @@
                             [csDefaults setObject:@"hasData" forKey:@"samples"];
                             [csDefaults synchronize];
                             
+                            //Some samples may have be disabled in the app dashboard
+                            //Check which one are set to "show" and use those to build the view
                             NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
                             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            
+                            //Add selected objects the the array
                             for (PFObject *object in objects) {
                                 if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                                     [selectedObjects addObject:object];
@@ -212,38 +226,17 @@
                         }
                     }];
                 }
-                else {
-                    // Log details of the failure
-                    NSLog(@"Error: %@ %@", error, [error userInfo]);
-                }
             }];
         });
     }
     else {
-        [self fetchDataFromLocalDataStore];
+        //Alert the user there is no internet connection
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error"
+                                                        message:@"You need an internet connection to download data."
+                                                       delegate:self cancelButtonTitle:@"Okay"
+                                              otherButtonTitles:nil];
+        [alert show];
     }
-}
-
-//Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore {
-    //Query the Local Datastore
-    PFQuery *query = [PFQuery queryWithClassName:@"samples"];
-    [query fromLocalDatastore];
-    [query whereKey:@"field_term_reference" equalTo:content.termId];
-    [query orderByAscending:@"createdAt"];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            
-            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-            for (PFObject *object in objects) {
-                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
-                    [selectedObjects addObject:object];
-                }
-            }
-            [self buildSamplesView:selectedObjects];
-        }];
-    });
 }
 
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
@@ -256,12 +249,38 @@
     [self updateFavoriteButtonColor];
 }
 
-#pragma mark
+#pragma mark -
 #pragma mark - Build Views
 - (void)buildSamplesView:(NSArray *)objects {
     
-    int x = 24, y = 48, count = 1;
-    int multiplier = 0;
+    //UIImageView used to hold header image and text
+    UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, background.bounds.size.width, 110)];
+    headerImgView.image = [UIImage imageNamed:@"hdr-casestudy"];
+    [background addSubview:headerImgView];
+    
+    //UILabel used to hold header text
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, headerImgView.bounds.size.width, 110)];
+    [headerLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:60.0f]];
+    headerLabel.textColor = [UIColor whiteColor];
+    [headerLabel setNumberOfLines:2];
+    headerLabel.backgroundColor = [UIColor clearColor];
+    headerLabel.textAlignment = NSTextAlignmentCenter;
+    headerLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    headerLabel.text = [NSString stringWithFormat:@"%@ SAMPLES", content.lblTitle];
+    [background addSubview:headerLabel];
+
+    //UIScrollView used to hold the case study objects
+    pageScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 110, background.bounds.size.width, background.bounds.size.width - 110)];
+    pageScroll.showsHorizontalScrollIndicator = NO;
+    pageScroll.showsVerticalScrollIndicator = YES;
+    pageScroll.pagingEnabled = YES;
+    pageScroll.scrollEnabled = YES;
+    pageScroll.delegate = self;
+    pageScroll.backgroundColor = [UIColor clearColor];
+    [background addSubview:pageScroll];
+    
+    int x = 24, y = 48, count = 1, subcount = 1;
+    int multiplier = 1, offset = 0;
     
     for (PFObject *object in objects){
         
@@ -279,30 +298,44 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [sampleFile getDataInBackgroundWithBlock:^(NSData *sampleData, NSError *error) {
                 
-                UIImageView *sample = [[UIImageView alloc] initWithFrame:CGRectMake(x, y, 199, 117)];
+                //UIButton for sample images
+                UIButton *sampleDetailsButton = [UIButton buttonWithType:UIButtonTypeCustom];
+                [sampleDetailsButton setFrame:CGRectMake(x, y, 199, 117)];
+                [sampleDetailsButton addTarget:self action:@selector(showDetails:)forControlEvents:UIControlEventTouchUpInside];
+                sampleDetailsButton.showsTouchWhenHighlighted = YES;
+                [sampleDetailsButton setBackgroundColor:[UIColor clearColor]];
+                sampleDetailsButton.tag = count - 1;
                 
-                if ([self fileExistsAtPath:[NSString stringWithFormat:@"%@.png", [self cleanString:[object objectForKey:@"title"]]]]) {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-                        NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
-                        
-                        NSString *pathForFile = [NSString stringWithFormat:@"%@/%@.png", basePath, [self cleanString:[object objectForKey:@"title"]]];
-                        
-                        UIImage *image = [UIImage imageWithContentsOfFile:pathForFile];
-                        [sample setImage:image];
-                    });
+                //If its a retnia device create the image thumb nails from NSData
+                if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad && [[UIScreen mainScreen] respondsToSelector:@selector(scale)] && [UIScreen mainScreen].scale > 1)
+                {
+                    [sampleDetailsButton setBackgroundImage:[UIImage imageWithData:sampleData] forState:UIControlStateNormal];
                 }
+                //Else create a thumb nail image and save it to the device
                 else {
-                    dispatch_async(dispatch_get_main_queue(), ^{
-                        [sample setImage:[self createImgThumbnails:sampleData andFileName:[object objectForKey:@"title"]]];
-                    });
+                    
+                    //If the file already exists load it
+                    if ([self fileExistsAtPath:[NSString stringWithFormat:@"%@.png", [self cleanString:[object objectForKey:@"title"]]]]) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+                            NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
+                            
+                            NSString *pathForFile = [NSString stringWithFormat:@"%@/%@.png", basePath, [self cleanString:[object objectForKey:@"title"]]];
+                            
+                            UIImage *image = [UIImage imageWithContentsOfFile:pathForFile];
+                            [sampleDetailsButton setBackgroundImage:image forState:UIControlStateNormal];
+                        });
+                    }
+                    //Else create a new thumb nail image, this will be slow
+                    else {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [sampleDetailsButton setBackgroundImage:[self createImgThumbnails:sampleData andFileName:[object objectForKey:@"title"]] forState:UIControlStateNormal];
+                        });
+                    }
                 }
+                [pageScroll addSubview:sampleDetailsButton];
                 
-                [sample setUserInteractionEnabled:YES];
-                sample.alpha = 1.0;
-                sample.tag = 90;
-                [pageScroll addSubview:sample];
-                
+                //Set the favorite icon if content has been favorited
                 if([nids count] > 0){
                     if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[object objectForKey:@"nid"]] != nil){
                         UIImageView *favItem = [[UIImageView alloc] initWithFrame:CGRectMake(x + 165, 83 + y, 24, 24)];
@@ -311,6 +344,7 @@
                     }
                 }
                 
+                //UILabel used to hold the title of the sample
                 UILabel *sampleTittleLabel = [[UILabel alloc] initWithFrame:CGRectMake(x, y + 117, 199, 57)];
                 [sampleTittleLabel setFont:[UIFont fontWithName:@"Oswald" size:14.0f]];
                 sampleTittleLabel.textColor = [UIColor blackColor];
@@ -320,37 +354,28 @@
                 sampleTittleLabel.textAlignment = NSTextAlignmentCenter;
                 sampleTittleLabel.text = [object objectForKey:@"title"];
                 [pageScroll addSubview:sampleTittleLabel];
-                
-                UIButton *sampleDetailsButton = [UIButton buttonWithType:UIButtonTypeCustom];
-                [sampleDetailsButton setFrame:CGRectMake(x, y, 199, 174)];
-                [sampleDetailsButton addTarget:self action:@selector(showDetails:)forControlEvents:UIControlEventTouchUpInside];
-                sampleDetailsButton.showsTouchWhenHighlighted = YES;
-                [sampleDetailsButton setBackgroundColor:[UIColor clearColor]];
-                sampleDetailsButton.tag = count - 1;
-                [pageScroll addSubview:sampleDetailsButton];
             }];
         });
         
+        //Create the four column two row grid with pagination
         if (count < 8) {
-            if(count % 4 == 0) {
-                x = 24, y = 174 + 43;
+            if (subcount < 4) {
+                x += 235 + offset;
+                subcount++;
             }
             else {
-                x += 235;
-            }
-        }else {
-            multiplier++;
-            if((count - 9) % 4 == 0) {
-                x = background.bounds.size.width + 24;
-                y = 48;
-                NSLog(@"%@: %d - %d",[object objectForKey:@"title"], x, y);
-            }
-            else {
-                x += 235;
+                x = 24 + offset, y = 174 + 43;
+                subcount = 1;
             }
         }
+        else {
+            offset += background.bounds.size.width;
+            x = 24 + offset, y = 48;
+            multiplier++;
+            subcount = 1;
+            count = 0;
+        }
         count++;
-
         [pageScroll setContentSize:CGSizeMake((background.bounds.size.width * multiplier), 400)];
     }
     
@@ -358,13 +383,17 @@
     [hDivider setBackgroundColor:[UIColor colorWithRed:218.0f/255.0f green:218.0f/255.0f blue:218.0f/255.0f alpha:1.0]];
     [background addSubview:hDivider];
     
-    paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 145, background.bounds.size.width, 48)];
-    paginationDots.numberOfPages = multiplier;
-    paginationDots.backgroundColor = [UIColor clearColor];
-    paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-black"];
-    paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
-    [background addSubview:paginationDots];
+    //If there is more than one page of content add pagination dots
+    if (multiplier > 1) {
+        paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 145, background.bounds.size.width, 48)];
+        paginationDots.numberOfPages = multiplier;
+        paginationDots.backgroundColor = [UIColor clearColor];
+        paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-black"];
+        paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
+        [background addSubview:paginationDots];
+    }
     
+    //Navigation Bar content
     UIView *navBar = [[UIView alloc] initWithFrame:CGRectMake(0, (background.bounds.size.height - 96), background.bounds.size.width, 96)];
     [navBar setBackgroundColor:[UIColor colorWithRed:230.0f/255.0f green:230.0f/255.0f blue:230.0f/255.0f alpha:1.0]];
     [background addSubview:navBar];
@@ -438,6 +467,7 @@
     videosLabel.text = @"VIDEOS";
     [navBar addSubview:videosLabel];
     
+    //Set the color of the location indicator view
     UIView *locationIndicator = [[UIView alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2), 0, 80, 5)];
     if ([content.catagoryId isEqualToString:@"38"]) {
         [locationIndicator setBackgroundColor:[UIColor yellowColor]];
@@ -466,6 +496,9 @@
     [self updateFavoriteButtonColor];
 }
 
+#pragma mark -
+#pragma mark - Thumbnails
+//Create thumbnail images
 - (UIImage *)createImgThumbnails:(NSData *)originalImgData andFileName:(NSString *)title {
     UIImage *originalImg = [[UIImage alloc] initWithData:originalImgData];
     CGSize destinationSize = CGSizeMake(199, 117);
@@ -478,6 +511,7 @@
     return newImage;
 }
 
+//Clean the image title to create file path name
 - (NSString *)cleanString:(NSString *)stringToClean {
     NSCharacterSet *doNotWant = [NSCharacterSet characterSetWithCharactersInString:@"/:.''"" ,!@#$%^&*(){}[]+-*"];
     stringToClean = [[stringToClean componentsSeparatedByCharactersInSet: doNotWant] componentsJoinedByString: @""];
@@ -485,6 +519,7 @@
     return stringToClean;
 }
 
+//Save images to disk
 - (void)saveThumbnailImgToDisk:(UIImage *)imageToSave andFileName:(NSString *)title {
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
@@ -494,6 +529,7 @@
     [binaryImageData writeToFile:[basePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png", title]] atomically:YES];
 }
 
+//Check if the file exists
 - (BOOL)fileExistsAtPath:(NSString *)fileName {
     NSFileManager *fileManager = [NSFileManager defaultManager];
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
@@ -511,8 +547,9 @@
 
 #pragma mark
 #pragma mark - Reachability
-- (BOOL)connected
-{
+- (BOOL)connected {
+    
+    //Check if there is an internet connection
     Reachability *reachability = [Reachability reachabilityForInternetConnection];
     NetworkStatus networkStatus = [reachability currentReachabilityStatus];
     return networkStatus != NotReachable;
@@ -520,16 +557,26 @@
 
 #pragma mark -
 #pragma mark - Navigation
-// In a storyboard-based application, you will often want to do a little preparation before navigation
 -(void)backNav:(UIButton *)sender {
+    
+    //NSArry used to hold all view controllers in the navigation stack
     NSArray *array = [self.navigationController viewControllers];
+    
     if (sender.tag == 0) {
+        //Send the presenter back to the 2nd view in the stack, BrandMeetsWorldViewController
         [self.navigationController popToViewController:[array objectAtIndex:2] animated:YES];
     }
     else {
+        //Send the presenter back to the 3nd view in the stack, CatagoryViewController
         [self.navigationController popToViewController:[array objectAtIndex:3] animated:YES];
-        //[self.navigationController popViewControllerAnimated:YES];
     }
+    [self removeEverything];
+}
+
+-(void)backToDashboard:(id)sender {
+    
+    // Send the presenter back to the dashboard
+    [self.navigationController popToRootViewControllerAnimated:YES];
     [self removeEverything];
 }
 
@@ -537,16 +584,24 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     
     if(sender.tag == 0){
+        
+        // Send the presenter to OverviewViewController
         OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"overviewViewController"];
         dvc.content = content;
         [self.navigationController pushViewController:dvc animated:YES];
         [self removeEverything];
-    }else if(sender.tag == 1){
+        
+    } else if(sender.tag == 1) {
+        
+        // Send the presenter to CaseStudyViewController
         CaseStudyViewController *cvc = (CaseStudyViewController *)[storyboard instantiateViewControllerWithIdentifier:@"caseStudyViewController"];
         cvc.content = content;
         [self.navigationController pushViewController:cvc animated:YES];
         [self removeEverything];
-    }else if(sender.tag == 3){
+        
+    } else if(sender.tag == 3) {
+        
+        // Send the presenter to VideoViewController
         VideoViewController *vvc = (VideoViewController *)[storyboard instantiateViewControllerWithIdentifier:@"videoViewController"];
         vvc.content = content;
         [self.navigationController pushViewController:vvc animated:YES];
@@ -555,6 +610,8 @@
 }
 
 - (void)showDetails:(UIButton *)sender {
+    
+    // Send the presenter to DetailsViewController
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     DetailsViewController *svc = (DetailsViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
 
@@ -566,18 +623,12 @@
     [self removeEverything];
 }
 
-// Send the presenter back to the dashboard
--(void)backToDashboard:(id)sender
-{
-    [self.navigationController popToRootViewControllerAnimated:YES];
-    [self removeEverything];
-}
-
 #pragma mark
 #pragma mark - Memory Management
 - (void)removeEverything {
-    for (UIView *v in [pageScroll subviews]) {
+    for (UIView *v in [background subviews]) {
         [v removeFromSuperview];
     }
+    
 }
 @end

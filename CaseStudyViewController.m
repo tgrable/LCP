@@ -46,14 +46,15 @@
 @synthesize paginationDots;                     //SMPageControll
 @synthesize parsedownload;                      //ParseDownload
 
-- (BOOL)prefersStatusBarHidden
-{
+- (BOOL)prefersStatusBarHidden {
+    //Hide status bar
     return YES;
 }
 
+#pragma mark
+#pragma mark - ViewController Life Cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
     
     parsedownload = [[ParseDownload alloc] init];
     
@@ -63,14 +64,13 @@
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
     
-    //Logo and setting navigation buttons
-    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
-    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
-    logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
-    [self.view addSubview:logoButton];
+    /******** Logo and setting navigation buttons ********/
+    //UIImageView used to hold LCP logo
+    UIImageView *logo = [[UIImageView alloc] initWithFrame:CGRectMake(60, 6.5f, 70, 23)];
+    logo.image = [UIImage imageNamed:@"logo"];
+    [self.view addSubview:logo];
     
+    //UIButton used to navigate back to content dashboard
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [dashboardButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
     [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
@@ -78,14 +78,16 @@
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
     [self.view addSubview:dashboardButton];
     
+    //UIButton used to navigate back to CatagoryViewController
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [backButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
     [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     backButton.showsTouchWhenHighlighted = YES;
     backButton.tag = 1;
-    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back"] forState:UIControlStateNormal];
+    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back.png"] forState:UIControlStateNormal];
     [self.view addSubview:backButton];
     
+    //UIButton used to navigate back to BrandMeetsWorldViewController
     UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 235), 0, 45, 45)];
     [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
@@ -93,11 +95,13 @@
     homeButton.tag = 0;
     [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home"] forState:UIControlStateNormal];
     [self.view addSubview:homeButton];
-    
+
+    //UIImageView used to hold header image and text
     UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, background.bounds.size.width, 110)];
     headerImgView.image = [UIImage imageNamed:@"hdr-casestudy"];
     [background addSubview:headerImgView];
     
+    //UILabel used to hold header text
     UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, headerImgView.bounds.size.width, 110)];
     [headerLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:60.0f]];
     headerLabel.textColor = [UIColor whiteColor];
@@ -108,53 +112,23 @@
     headerLabel.text = @"CASE STUDIES";
     [background addSubview:headerLabel];
     
-    pageScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 110, background.bounds.size.width, background.bounds.size.width - 110)];
-    pageScroll.showsHorizontalScrollIndicator = NO;
-    pageScroll.showsVerticalScrollIndicator = YES;
-    pageScroll.pagingEnabled = YES;
-    pageScroll.scrollEnabled = YES;
-    pageScroll.delegate = self;
-    pageScroll.backgroundColor = [UIColor clearColor];
-    [background addSubview:pageScroll];
-
     //array used to hold nids for the current index of the case study
     nids = [NSMutableArray array];
     nodeTitles = [NSMutableArray array];
-    casestudyMediaObjects = [NSMutableArray array];
+}
+
+- (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
     
     //NSUserDefaults to check if data has been downloaded.
+    //If data has been downloaded pull from local datastore
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
-        if (content == nil) {
-            PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
-            [query fromLocalDatastore];
-            [query whereKey:@"nid" equalTo:nodeId];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-                    if (!error) {
-                        content = [[LCPContent alloc] init];
-                        for (PFObject *object in objects) {
-                            content.termId = [object objectForKey:@"field_term_reference"];
-                            [self fetchCaseStudyMediaFromLocalDataStore];
-                            [self fetchCaseTermDataFromLocalDataStore];
-                        }
-                    }
-                }];
-            });
-        }
-        else {
-            [self fetchCaseStudyMediaFromLocalDataStore];
-        }
+    if ([[defaults objectForKey:@"overview"] isEqualToString:@"hasData"]) {
+        [self fetchCaseStudyMediaFromLocalDataStore];
     }
     else {
         [self fetchDataFromParse];
     }
-}
-
-- (void)viewWillAppear:(BOOL)animated {
-    /*if (content.termId == nil) {
-        content = [[LCPContent alloc] init];
-    }*/
 }
 
 - (void)didReceiveMemoryWarning {
@@ -165,8 +139,7 @@
 #pragma mark - Favorite Functionality
 
 //pick the current nid of the content and save it to the NSUserDefault
--(void)setContentAsFavorite:(UIButton *)sender
-{
+-(void)setContentAsFavorite:(UIButton *)sender {
     if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[NSString stringWithFormat:@"%ld", (long)sender.tag]] == nil){
         [parsedownload addOrRemoveFavoriteNodeID:[nids objectAtIndex:paginationDots.currentPage]
                                        nodeTitle:[nodeTitles objectAtIndex:paginationDots.currentPage]
@@ -201,7 +174,88 @@
 
 #pragma mark
 #pragma mark - Parse
+//Query the local datastore for Case_Study_Media to build the views
+- (void)fetchCaseStudyMediaFromLocalDataStore {
+    
+    PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
+    [query fromLocalDatastore];
+    [query whereKey:@"field_term_reference" equalTo:content.termId];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    [self buildCaseStudyMediaView:objects];
+                }
+            }
+        }];
+    });
+}
+
+//Query the Parse.com for Case_Study_Media to build the views
+- (void)fetchCaseStudyMediaFromParse {
+    
+    //Using Reachability check if there is an internet connection
+    //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
+    if ([self connected]) {
+        PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
+        [query whereKey:@"field_term_reference" equalTo:content.termId];
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                if (!error) {
+                    if (objects.count > 0) {
+                        [self buildCaseStudyMediaView:objects];
+                    }
+                }
+            }];
+        });
+    }
+    else {
+        //Alert the user there is no internet connection
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error"
+                                                        message:@"You need an internet connection to download data."
+                                                       delegate:self cancelButtonTitle:@"Okay"
+                                              otherButtonTitles:nil];
+        [alert show];
+    }
+}
+
+//Query the local datastore for case_study to build the views
+- (void)fetchDataFromLocalDataStore {
+    
+    PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
+    [query fromLocalDatastore];
+    if (isIndividualCaseStudy) {
+        [query whereKey:@"nid" equalTo:nodeId];
+    }
+    else {
+        [query whereKey:@"field_term_reference" equalTo:content.termId];
+    }
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            
+            //Some case studies may have be disabled in the app dashboard
+            //Check which one are set to "show" and use those to build the view
+            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
+            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            
+            for (PFObject *object in objects) {
+                
+                //Add selected objects the the array
+                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                    [selectedObjects addObject:object];
+                }
+                content.termId = [object objectForKey:@"field_term_reference"];
+            }
+            [self buildCaseStudyView:selectedObjects];
+        }];
+    });
+}
+
+//Query the Parse.com for case_study to build the views
 - (void)fetchDataFromParse {
+    
+    //Using Reachability check if there is an internet connection
+    //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
         if (isIndividualCaseStudy) {
@@ -219,8 +273,12 @@
                             [csDefaults setObject:@"hasData" forKey:@"case_study"];
                             [csDefaults synchronize];
                             
+                            //Some case studies may have be disabled in the app dashboard
+                            //Check which one are set to "show" and use those to build the view
                             NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
                             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            
+                            //Add selected objects the the array
                             for (PFObject *object in objects) {
                                 if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                                     [selectedObjects addObject:object];
@@ -234,102 +292,63 @@
         });
     }
     else {
-        [self fetchDataFromLocalDataStore];
+        //Alert the user there is no internet connection
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error"
+                                                        message:@"You need an internet connection to download data."
+                                                       delegate:self cancelButtonTitle:@"Okay"
+                                              otherButtonTitles:nil];
+        [alert show];
     }
-}
-
-//Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore {
-    //Query the Local Datastore
-    PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
-    [query fromLocalDatastore];
-    if (isIndividualCaseStudy) {
-        [query whereKey:@"nid" equalTo:nodeId];
-    }
-    else {
-        [query whereKey:@"field_term_reference" equalTo:content.termId];
-    }
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            
-            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-            for (PFObject *object in objects) {
-                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
-                    [selectedObjects addObject:object];
-                }
-                content.termId = [object objectForKey:@"field_term_reference"];
-            }
-            [self buildCaseStudyView:selectedObjects];
-        }];
-    });
-}
-
-//Query the local datastore to build the views
-- (void)fetchCaseStudyMediaFromLocalDataStore {
-    //Query the Local Datastore
-    PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
-    [query fromLocalDatastore];
-    [query whereKey:@"field_term_reference" equalTo:content.termId];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                if (objects.count > 0) {
-                    [self buildCaseStudyMediaView:objects];
-                }
-                else {
-                    [self fetchDataFromLocalDataStore];
-                }
-            }
-        }];
-    });
-}
-
-//Query the local datastore to build the views
-- (void)fetchCaseTermDataFromLocalDataStore {
-    //Query the Local Datastore
-    PFQuery *query = [PFQuery queryWithClassName:@"term"];
-    [query fromLocalDatastore];
-    [query whereKey:@"tid" equalTo:content.termId];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                for (PFObject *object in objects) {
-                    content.lblTitle = object[@"name"];
-                }
-            }
-        }];
-    });
 }
 
 #pragma mark
 #pragma mark - Build Views
 - (void)buildCaseStudyView:(NSArray *)objects {
+    
+    //UIScrollView used to hold the case study objects
+    pageScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 110, background.bounds.size.width, background.bounds.size.width - 110)];
+    pageScroll.showsHorizontalScrollIndicator = NO;
+    pageScroll.showsVerticalScrollIndicator = YES;
+    pageScroll.pagingEnabled = YES;
+    pageScroll.scrollEnabled = YES;
+    pageScroll.delegate = self;
+    pageScroll.backgroundColor = [UIColor clearColor];
+    [background addSubview:pageScroll];
+
     int x = 24;
     
     for(PFObject *object in objects) {
-        
         //add the nid for the object to nid array
         [nids addObject:object[@"nid"]];
         
         //add the node title to be added for
         [nodeTitles addObject:object[@"title"]];
 
-        UIView *caseStudy = [[UIView alloc] initWithFrame:CGRectMake(x, 0, background.bounds.size.width - 48, background.bounds.size.height - 254)];
+        UIView *caseStudy = [[UIView alloc] init];
+        
+        //If it's not an individual case study called from the case study library allow room for navigation bar
+        if (!isIndividualCaseStudy) {
+            [caseStudy setFrame:CGRectMake(x, 0, background.bounds.size.width - 48, background.bounds.size.height - 254)];
+        }
+        else {
+            [caseStudy setFrame:CGRectMake(x, 0, background.bounds.size.width - 48, background.bounds.size.height - 110)];
+        }
         [caseStudy setBackgroundColor:[UIColor clearColor]];
         [pageScroll addSubview:caseStudy];
         
-        UITextView *title = [[UITextView alloc] initWithFrame:CGRectMake(-2, 53, 141, caseStudy.bounds.size.height - 73)];
-        title.editable = NO;
-        title.clipsToBounds = YES;
-        title.scrollEnabled = NO;
-        [title setFont:[UIFont fontWithName:@"Oswald-Bold" size:26.0f]];
-        title.textColor = [UIColor blackColor];
-        title.backgroundColor = [UIColor clearColor];
-        title.textAlignment = NSTextAlignmentCenter;
-        title.text = [[object objectForKey:@"title"] uppercaseString];
-        [caseStudy addSubview:title];
+        //UILabbel used to hold the case study title
+        UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(-2, 53, 141, caseStudy.bounds.size.height - 73)];
+        titleLabel.numberOfLines = 0;
+        NSMutableParagraphStyle *titleStyle  = [[NSMutableParagraphStyle alloc] init];
+        titleStyle.minimumLineHeight = 34.0f;
+        titleStyle.maximumLineHeight = 34.0f;
+        NSDictionary *titleAttributtes = @{NSParagraphStyleAttributeName : titleStyle,};
+        titleLabel.attributedText = [[NSAttributedString alloc] initWithString:[[object objectForKey:@"title"] uppercaseString] attributes:titleAttributtes];
+        titleLabel.font = [UIFont fontWithName:@"Oswald-Bold" size:26.0f];
+        [titleLabel sizeToFit];
+        [caseStudy addSubview:titleLabel];
         
+        //Case study body content
         UIView *bodyColumn = [[UIView alloc] initWithFrame:CGRectMake(173, 53, 556, caseStudy.bounds.size.height - 89)];
         [bodyColumn setBackgroundColor:[UIColor clearColor]];
         [caseStudy addSubview:bodyColumn];
@@ -338,13 +357,24 @@
         NSMutableDictionary *bodyDict = [[NSMutableDictionary alloc] init];
         bodyDict = bodyArray[1];
         
-        UIScrollView *bodyScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 0, 556, 335)];
+        UIScrollView *bodyScroll = [[UIScrollView alloc] init];
+        if (!isIndividualCaseStudy) {
+            [bodyScroll setFrame:CGRectMake(0, 0, 556, 335)];
+        }
+        else {
+            [bodyScroll setFrame:CGRectMake(0, 0, 556, background.bounds.size.height - 208)];
+        }
         [bodyScroll setBackgroundColor:[UIColor clearColor]];
         [bodyColumn addSubview:bodyScroll];
 
         NSString *temp = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];
-
-        UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, 556, 355)];
+        UILabel *myLabel = [[UILabel alloc] init];
+        if (!isIndividualCaseStudy) {
+            [myLabel setFrame:CGRectMake(0, 0, 556, 355)];
+        }
+        else {
+            [myLabel setFrame:CGRectMake(0, 0, 556, background.bounds.size.height - 208)];
+        }
         myLabel.numberOfLines = 0;
         NSMutableParagraphStyle *style  = [[NSMutableParagraphStyle alloc] init];
         style.minimumLineHeight = 22.0f;
@@ -353,6 +383,7 @@
         myLabel.attributedText = [[NSAttributedString alloc] initWithString:temp.stringByConvertingHTMLToPlainText attributes:attributtes];
         myLabel.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:19.0];
         [myLabel sizeToFit];
+        myLabel.backgroundColor = [UIColor clearColor];
         [bodyScroll addSubview:myLabel];
         
         [bodyScroll setContentSize:CGSizeMake(556, myLabel.frame.size.height)];
@@ -361,15 +392,16 @@
         [vDivider setBackgroundColor:[UIColor colorWithRed:218.0f/255.0f green:218.0f/255.0f blue:218.0f/255.0f alpha:1.0]];
         [caseStudy addSubview:vDivider];
         
+        //UIButton used to set favorite
         favoriteContentButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
         [favoriteContentButton setFrame:CGRectMake(caseStudy.bounds.size.width - 24, 14.5f, 24, 24)];
         [favoriteContentButton addTarget:self action:@selector(setContentAsFavorite:)forControlEvents:UIControlEventTouchUpInside];
         favoriteContentButton.showsTouchWhenHighlighted = YES;
-        //[favoriteContentButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-inactive"] forState:UIControlStateNormal];
         [favoriteContentButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
         [favoriteContentButton setTag:[[object objectForKey:@"nid"] integerValue]];
         [caseStudy addSubview:favoriteContentButton];
         
+        //Case Study media content
         mediaColumnScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(766, 53, 137, caseStudy.bounds.size.height - 73)];
         [mediaColumnScroll setBackgroundColor:[UIColor clearColor]];
         [caseStudy addSubview:mediaColumnScroll];
@@ -386,129 +418,140 @@
             [csMediaButton setBackgroundColor:[UIColor clearColor]];
             [csMediaButton setTag:[csm.csMediaNodeId integerValue]];
             [csMediaButton setBackgroundImage:csm.csMediaThumb forState:UIControlStateNormal];
-             
             [mediaColumnScroll addSubview:csMediaButton];
-             
+            
+            if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:csm.csMediaNodeId] != nil) {
+                UIImageView *favItem = [[UIImageView alloc] initWithFrame:CGRectMake(103, y + 46, 24, 24)];
+                favItem.image = [UIImage imageNamed:@"ico-fav-active"];
+                [mediaColumnScroll addSubview:favItem];
+            }
             y += 100;
         }
         x += background.bounds.size.width;
         [pageScroll setContentSize:CGSizeMake(background.bounds.size.width * objects.count, 355)];
     }
     
-    UIView *hDivider = [[UIView alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 144, background.bounds.size.width, 1)];
-    [hDivider setBackgroundColor:[UIColor colorWithRed:218.0f/255.0f green:218.0f/255.0f blue:218.0f/255.0f alpha:1.0]];
-    [background addSubview:hDivider];
-    
-    if (objects.count > 1) {
-        paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 145, background.bounds.size.width, 48)];
-        paginationDots.numberOfPages = objects.count;
-        paginationDots.backgroundColor = [UIColor clearColor];
-        paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-black"];
-        paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
-        [background addSubview:paginationDots];
+    //If it's not an individual case study build the navigation bar
+    if (!isIndividualCaseStudy) {
+        UIView *hDivider = [[UIView alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 144, background.bounds.size.width, 1)];
+        [hDivider setBackgroundColor:[UIColor colorWithRed:218.0f/255.0f green:218.0f/255.0f blue:218.0f/255.0f alpha:1.0]];
+        [background addSubview:hDivider];
+        
+        if (objects.count > 1) {
+            paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 145, background.bounds.size.width, 48)];
+            paginationDots.numberOfPages = objects.count;
+            paginationDots.backgroundColor = [UIColor clearColor];
+            paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-black"];
+            paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
+            [background addSubview:paginationDots];
+        }
+        
+        //Navigation Bar content
+        UIView *navBar = [[UIView alloc] initWithFrame:CGRectMake(0, (background.bounds.size.height - 96), background.bounds.size.width, 96)];
+        [navBar setBackgroundColor:[UIColor colorWithRed:230.0f/255.0f green:230.0f/255.0f blue:230.0f/255.0f alpha:1.0]];
+        [background addSubview:navBar];
+        
+        UIButton *overviewButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [overviewButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (97.5f + 45), 10, 45, 45)];
+        [overviewButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
+        overviewButton.showsTouchWhenHighlighted = YES;
+        [overviewButton setBackgroundImage:[UIImage imageNamed:@"ico-overview"] forState:UIControlStateNormal];
+        [overviewButton setBackgroundColor:[UIColor clearColor]];
+        overviewButton.tag = 0;
+        [navBar addSubview:overviewButton];
+        
+        UILabel *overviewLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 160, navBar.bounds.size.height - 32, 80, 32)];
+        [overviewLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
+        overviewLabel.textColor = [UIColor blackColor];
+        overviewLabel.numberOfLines = 1;
+        overviewLabel.backgroundColor = [UIColor clearColor];
+        overviewLabel.textAlignment = NSTextAlignmentCenter;
+        overviewLabel.text = @"OVERVIEW";
+        [navBar addSubview:overviewLabel];
+        
+        UIButton *caseStudiesButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [caseStudiesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (17.5f + 45), 10, 45, 45)];
+        [caseStudiesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
+        caseStudiesButton.showsTouchWhenHighlighted = YES;
+        [caseStudiesButton setBackgroundImage:[UIImage imageNamed:@"ico-casestudy2"] forState:UIControlStateNormal];
+        caseStudiesButton.tag = 1;
+        [navBar addSubview:caseStudiesButton];
+        
+        UILabel *casestudyLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 80, navBar.bounds.size.height - 32, 80, 32)];
+        [casestudyLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
+        casestudyLabel.textColor = [UIColor blackColor];
+        casestudyLabel.numberOfLines = 1;
+        casestudyLabel.backgroundColor = [UIColor clearColor];
+        casestudyLabel.textAlignment = NSTextAlignmentCenter;
+        casestudyLabel.text = @"CASE STUDIES";
+        [navBar addSubview:casestudyLabel];
+        
+        UIButton *samplesButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [samplesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 17.5f, 10, 45, 45)];
+        [samplesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
+        samplesButton.showsTouchWhenHighlighted = YES;
+        [samplesButton setBackgroundImage:[UIImage imageNamed:@"ico-samples"] forState:UIControlStateNormal];
+        samplesButton.tag = 2;
+        [navBar addSubview:samplesButton];
+        
+        UILabel *samplesLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2), navBar.bounds.size.height - 32, 80, 32)];
+        [samplesLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
+        samplesLabel.textColor = [UIColor blackColor];
+        samplesLabel.numberOfLines = 1;
+        samplesLabel.backgroundColor = [UIColor clearColor];
+        samplesLabel.textAlignment = NSTextAlignmentCenter;
+        samplesLabel.text = @"SAMPLES";
+        [navBar addSubview:samplesLabel];
+        
+        UIButton *videoButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [videoButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 97.5f, 10, 45, 45)];
+        [videoButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
+        videoButton.showsTouchWhenHighlighted = YES;
+        [videoButton setBackgroundImage:[UIImage imageNamed:@"ico-video2"] forState:UIControlStateNormal];
+        videoButton.tag = 3;
+        [navBar addSubview:videoButton];
+        
+        UILabel *videosLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) + 80, navBar.bounds.size.height - 32, 80, 32)];
+        [videosLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
+        videosLabel.textColor = [UIColor blackColor];
+        videosLabel.numberOfLines = 1;
+        videosLabel.backgroundColor = [UIColor clearColor];
+        videosLabel.textAlignment = NSTextAlignmentCenter;
+        videosLabel.text = @"VIDEOS";
+        [navBar addSubview:videosLabel];
+        
+        //Set the color of the location indicator view
+        UIView *locationIndicator = [[UIView alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 80, 0, 80, 5)];
+        if ([content.catagoryId isEqualToString:@"38"]) {
+            [locationIndicator setBackgroundColor:[UIColor yellowColor]];
+        }
+        else if ([content.catagoryId isEqualToString:@"40"]) {
+            [locationIndicator setBackgroundColor:[UIColor blueColor]];
+        }
+        else if ([content.catagoryId isEqualToString:@"41"]) {
+            [locationIndicator setBackgroundColor:[UIColor purpleColor]];
+        }
+        else if ([content.catagoryId isEqualToString:@"42"]) {
+            [locationIndicator setBackgroundColor:[UIColor greenColor]];
+        }
+        else if ([content.catagoryId isEqualToString:@"43"]) {
+            [locationIndicator setBackgroundColor:[UIColor orangeColor]];
+        }
+        else if ([content.catagoryId isEqualToString:@"44"]) {
+            [locationIndicator setBackgroundColor:[UIColor redColor]];
+        }
+        else {
+            
+        }
+        [navBar addSubview:locationIndicator];
     }
 
-    UIView *navBar = [[UIView alloc] initWithFrame:CGRectMake(0, (background.bounds.size.height - 96), background.bounds.size.width, 96)];
-    [navBar setBackgroundColor:[UIColor colorWithRed:230.0f/255.0f green:230.0f/255.0f blue:230.0f/255.0f alpha:1.0]];
-    [background addSubview:navBar];
-    
-    UIButton *overviewButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [overviewButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (97.5f + 45), 10, 45, 45)];
-    [overviewButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
-    overviewButton.showsTouchWhenHighlighted = YES;
-    [overviewButton setBackgroundImage:[UIImage imageNamed:@"ico-overview"] forState:UIControlStateNormal];
-    [overviewButton setBackgroundColor:[UIColor clearColor]];
-    overviewButton.tag = 0;
-    [navBar addSubview:overviewButton];
-    
-    UILabel *overviewLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 160, navBar.bounds.size.height - 32, 80, 32)];
-    [overviewLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
-    overviewLabel.textColor = [UIColor blackColor];
-    overviewLabel.numberOfLines = 1;
-    overviewLabel.backgroundColor = [UIColor clearColor];
-    overviewLabel.textAlignment = NSTextAlignmentCenter;
-    overviewLabel.text = @"OVERVIEW";
-    [navBar addSubview:overviewLabel];
-    
-    UIButton *caseStudiesButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [caseStudiesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (17.5f + 45), 10, 45, 45)];
-    [caseStudiesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
-    caseStudiesButton.showsTouchWhenHighlighted = YES;
-    [caseStudiesButton setBackgroundImage:[UIImage imageNamed:@"ico-casestudy2"] forState:UIControlStateNormal];
-    caseStudiesButton.tag = 1;
-    [navBar addSubview:caseStudiesButton];
-    
-    UILabel *casestudyLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 80, navBar.bounds.size.height - 32, 80, 32)];
-    [casestudyLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
-    casestudyLabel.textColor = [UIColor blackColor];
-    casestudyLabel.numberOfLines = 1;
-    casestudyLabel.backgroundColor = [UIColor clearColor];
-    casestudyLabel.textAlignment = NSTextAlignmentCenter;
-    casestudyLabel.text = @"CASE STUDIES";
-    [navBar addSubview:casestudyLabel];
-    
-    UIButton *samplesButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [samplesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 17.5f, 10, 45, 45)];
-    [samplesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
-    samplesButton.showsTouchWhenHighlighted = YES;
-    [samplesButton setBackgroundImage:[UIImage imageNamed:@"ico-samples"] forState:UIControlStateNormal];
-    samplesButton.tag = 2;
-    [navBar addSubview:samplesButton];
-    
-    UILabel *samplesLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2), navBar.bounds.size.height - 32, 80, 32)];
-    [samplesLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
-    samplesLabel.textColor = [UIColor blackColor];
-    samplesLabel.numberOfLines = 1;
-    samplesLabel.backgroundColor = [UIColor clearColor];
-    samplesLabel.textAlignment = NSTextAlignmentCenter;
-    samplesLabel.text = @"SAMPLES";
-    [navBar addSubview:samplesLabel];
-    
-    UIButton *videoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [videoButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 97.5f, 10, 45, 45)];
-    [videoButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
-    videoButton.showsTouchWhenHighlighted = YES;
-    [videoButton setBackgroundImage:[UIImage imageNamed:@"ico-video2"] forState:UIControlStateNormal];
-    videoButton.tag = 3;
-    [navBar addSubview:videoButton];
-    
-    UILabel *videosLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) + 80, navBar.bounds.size.height - 32, 80, 32)];
-    [videosLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
-    videosLabel.textColor = [UIColor blackColor];
-    videosLabel.numberOfLines = 1;
-    videosLabel.backgroundColor = [UIColor clearColor];
-    videosLabel.textAlignment = NSTextAlignmentCenter;
-    videosLabel.text = @"VIDEOS";
-    [navBar addSubview:videosLabel];
-    
-    UIView *locationIndicator = [[UIView alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 80, 0, 80, 5)];
-    if ([content.catagoryId isEqualToString:@"38"]) {
-        [locationIndicator setBackgroundColor:[UIColor yellowColor]];
-    }
-    else if ([content.catagoryId isEqualToString:@"40"]) {
-        [locationIndicator setBackgroundColor:[UIColor blueColor]];
-    }
-    else if ([content.catagoryId isEqualToString:@"41"]) {
-        [locationIndicator setBackgroundColor:[UIColor purpleColor]];
-    }
-    else if ([content.catagoryId isEqualToString:@"42"]) {
-        [locationIndicator setBackgroundColor:[UIColor greenColor]];
-    }
-    else if ([content.catagoryId isEqualToString:@"43"]) {
-        [locationIndicator setBackgroundColor:[UIColor orangeColor]];
-    }
-    else if ([content.catagoryId isEqualToString:@"44"]) {
-        [locationIndicator setBackgroundColor:[UIColor redColor]];
-    }
-    else {
-        
-    }
-    [navBar addSubview:locationIndicator];
-    
     //update the button color
     [self updateFavoriteButtonColor];
 }
 
+//Create the case study media content items before the rest of the view so
+//they will be available when running throught he loop
 - (void)buildCaseStudyMediaView:(NSArray *)objects {
 
     int __block count = 0;
@@ -547,6 +590,7 @@
     
     [mediaColumnScroll setContentSize:CGSizeMake(137, 100 * objects.count)];
 }
+
 //this function updates the dots for the current image the the user is on
 - (void)scrollViewDidScroll:(UIScrollView *)scrollView {
     CGFloat pageWidth = pageScroll.bounds.size.width;
@@ -560,8 +604,9 @@
 
 #pragma mark
 #pragma mark - Reachability
-- (BOOL)connected
-{
+- (BOOL)connected {
+    
+    //Check if there is an internet connection
     Reachability *reachability = [Reachability reachabilityForInternetConnection];
     NetworkStatus networkStatus = [reachability currentReachabilityStatus];
     return networkStatus != NotReachable;
@@ -569,33 +614,51 @@
 
 #pragma mark -
 #pragma mark - Navigation
--(void)backNav:(UIButton *)sender
-{
+-(void)backNav:(UIButton *)sender {
+    
+    //NSArry used to hold all view controllers in the navigation stack
     NSArray *array = [self.navigationController viewControllers];
+    
     if (sender.tag == 0) {
+        //Send the presenter back to the 2nd view in the stack, BrandMeetsWorldViewController
         [self.navigationController popToViewController:[array objectAtIndex:2] animated:YES];
     }
     else {
+        //Send the presenter back to the 3nd view in the stack, CatagoryViewController
         [self.navigationController popToViewController:[array objectAtIndex:3] animated:YES];
-        //[self.navigationController popViewControllerAnimated:YES];
     }
+    [self removeEverything];
+}
+
+-(void)backToDashboard:(id)sender {
+    
+    // Send the presenter back to the dashboard
+    [self.navigationController popToRootViewControllerAnimated:YES];
     [self removeEverything];
 }
 
 - (void)navigateViewButton:(UIButton *)sender {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     
-    if(sender.tag == 0){
+    if(sender.tag == 0) {
+        
+        // Send the presenter to OverviewViewController
         OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"overviewViewController"];
         dvc.content = content;
         [self.navigationController pushViewController:dvc animated:YES];
         [self removeEverything];
-    }else if(sender.tag == 2){
+        
+    } else if(sender.tag == 2) {
+        
+        // Send the presenter to SamplesViewController
         SamplesViewController *svc = (SamplesViewController *)[storyboard instantiateViewControllerWithIdentifier:@"samplesViewController"];
         svc.content = content;
         [self.navigationController pushViewController:svc animated:YES];
         [self removeEverything];
-    }else if(sender.tag == 3){
+        
+    } else if(sender.tag == 3) {
+        
+        // Send the presenter to VideoViewController
         VideoViewController *vvc = (VideoViewController *)[storyboard instantiateViewControllerWithIdentifier:@"videoViewController"];
         vvc.content = content;
         [self.navigationController pushViewController:vvc animated:YES];
@@ -603,14 +666,9 @@
     }
 }
 
-// Send the presenter back to the dashboard
--(void)backToDashboard:(id)sender
-{
-    [self.navigationController popToRootViewControllerAnimated:YES];
-    [self removeEverything];
-}
-
 - (void)showDetails:(UIButton *)sender {
+    
+    // Send the presenter to DetailsViewController
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     DetailsViewController *dvc = (DetailsViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
     
@@ -619,15 +677,19 @@
     [query whereKey:@"nid" equalTo:[NSString stringWithFormat:@"%d", sender.tag]];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         dvc.contentObject = objects[0];
+        dvc.contentType = @"Case Study Media";
         [self.navigationController pushViewController:dvc animated:YES];
+        [self removeEverything];
     }];
 }
 
 #pragma mark
 #pragma mark - Memory Management
 - (void)removeEverything {
-    for (UIView *v in [pageScroll subviews]) {
+    for (UIView *v in [background subviews]) {
         [v removeFromSuperview];
     }
+    casestudyMediaObjects = nil;
+    [paginationDots removeFromSuperview];
 }
 @end

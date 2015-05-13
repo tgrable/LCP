@@ -68,8 +68,7 @@
     contentActivityIndicator.hidesWhenStopped = YES;
 }
 
-- (void)viewWillAppear:(BOOL)animated
-{
+- (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     //build email view is executed here so that the list is always refreshed
     [self refreshEmailList];
@@ -220,7 +219,7 @@
     //First Page Summary View
     
     background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, (self.view.bounds.size.width - (36 * 2)), (self.view.bounds.size.height - (36 * 2)))];
-    [background setBackgroundColor:[UIColor colorWithRed:191.0f/255.0f green:191.0f/255.0f blue:191.0f/255.0f alpha:1.0]];
+    [background setBackgroundColor:[UIColor colorWithRed:115.0f/255.0f green:115.0f/255.0f blue:115.0f/255.0f alpha:1.0]];
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
     
@@ -351,6 +350,7 @@
     [formSlidView addSubview:message];
     
     submitButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    submitButton.titleLabel.font = [UIFont fontWithName:@"Oswald" size:19];
     [submitButton setFrame:CGRectMake(0, 370, 108, 33)];
     [submitButton addTarget:self action:@selector(submitEmail:)forControlEvents:UIControlEventTouchUpInside];
     submitButton.showsTouchWhenHighlighted = YES;
@@ -435,6 +435,7 @@
     // TODO: add presentation layout
     UILabel *companyNameLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 0, 200, 40)];
     companyNameLabel.textColor = [UIColor whiteColor];
+    companyNameLabel.font = [UIFont fontWithName:@"Oswald" size:20];
     companyNameLabel.numberOfLines = 1;
     companyNameLabel.backgroundColor = [UIColor clearColor];
     companyNameLabel.textAlignment = NSTextAlignmentLeft;
@@ -443,7 +444,7 @@
     
     companyNameTextField = [[UITextField alloc] initWithFrame:CGRectMake(24, 50, 400, 40)];
     companyNameTextField.textColor = [UIColor blackColor];
-    companyNameTextField.font = [UIFont fontWithName:@"Helvetica" size:15];
+    companyNameTextField.font = [UIFont fontWithName:@"Oswald" size:15];
     companyNameTextField.backgroundColor = [UIColor whiteColor];
     [companyNameTextField setBorderStyle:UITextBorderStyleRoundedRect];
     [companyNameTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
@@ -485,17 +486,17 @@
                 catagoryLabel.text = @"Brand Meets World";
             }
             else {
-                catagoryLabel.text = [NSString stringWithFormat:@"%@", termName];
+                catagoryLabel.text = [NSString stringWithFormat:@"%@", [termName uppercaseString]];
             }
             
-            y += 35;
+            y += 45;
             
             lineView = [[UIView alloc] initWithFrame:CGRectMake(160, y, 550, 2)];
             lineView.backgroundColor = [UIColor lightGrayColor];
         }
         
-        UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(185, y, 550, 50)];
-        [titleLabel setFont:[UIFont fontWithName:@"Oswald" size:20.0]];
+        UILabel *titleLabel = [[UILabel alloc] initWithFrame:CGRectMake(160, y, 550, 50)];
+        [titleLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:20.0]];
         titleLabel.textColor = [UIColor whiteColor];
         titleLabel.numberOfLines = 1;
         titleLabel.backgroundColor = [UIColor clearColor];
@@ -519,6 +520,7 @@
         }
         
         UISwitch *mySwitch = [[UISwitch alloc] initWithFrame:CGRectMake(800, y, 0, 0)];
+        mySwitch.onTintColor = [UIColor colorWithRed:75.0f/255.0f green:129.0f/255.0f blue:0.0f/255.0f alpha:1.0];
         mySwitch.tag = [[object objectForKey:@"nid"] integerValue];
         [mySwitch setOn:switchVal animated:NO];
         [mySwitch addTarget:self action:@selector(changeSwitch:) forControlEvents:UIControlEventValueChanged];
@@ -733,8 +735,8 @@
     if([favoriteList count] > 0){
         for(id key in favoriteList){
             
-            UILabel *messageLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, yVal, 600, 24)];
-            messageLabel.font = [UIFont fontWithName:@"Oswald" size:19.0];
+            UILabel *messageLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, yVal, 685, 24)];
+            messageLabel.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:19.0];
             messageLabel.textColor = [UIColor whiteColor];
             messageLabel.numberOfLines = 1;
             messageLabel.backgroundColor = [UIColor clearColor];

@@ -14,7 +14,6 @@
 
 @property (strong, nonatomic) LCPContent *content;
 @property (strong, nonatomic) PFObject *contentObject;
-@property (strong, nonatomic) NSString *contentID;
 @property (strong, nonatomic) NSString *contentType;
 
 @end

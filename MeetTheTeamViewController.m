@@ -46,6 +46,38 @@
     //[pageScroll addSubview:background];
     [self.view addSubview:background];
     
+    /******** Logo and setting navigation buttons ********/
+    //UIImageView used to hold LCP logo
+    UIImageView *logo = [[UIImageView alloc] initWithFrame:CGRectMake(60, 6.5f, 70, 23)];
+    logo.image = [UIImage imageNamed:@"logo"];
+    [self.view addSubview:logo];
+    
+    //UIButton used to navigate back to content dashboard
+    UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [dashboardButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
+    [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
+    dashboardButton.showsTouchWhenHighlighted = YES;
+    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
+    [self.view addSubview:dashboardButton];
+    
+    //UIButton used to navigate back to CatagoryViewController
+    UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [backButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
+    [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
+    backButton.showsTouchWhenHighlighted = YES;
+    backButton.tag = 1;
+    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back.png"] forState:UIControlStateNormal];
+    [self.view addSubview:backButton];
+    
+    //UIButton used to navigate back to BrandMeetsWorldViewController
+    UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 235), 0, 45, 45)];
+    [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
+    homeButton.showsTouchWhenHighlighted = YES;
+    homeButton.tag = 0;
+    [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home"] forState:UIControlStateNormal];
+    [self.view addSubview:homeButton];
+    
     UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, background.bounds.size.width, 110)];
     headerImgView.image = [UIImage imageNamed:@"hdr-team"];
     [background addSubview:headerImgView];
@@ -59,37 +91,6 @@
     headerLabel.lineBreakMode = NSLineBreakByWordWrapping;
     headerLabel.text = @"MEET THE TEAM";
     [background addSubview:headerLabel];
-    
-    //Logo and setting navigation buttons
-    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
-    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
-    logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
-    [self.view addSubview:logoButton];
-    
-    UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [dashboardButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
-    [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
-    dashboardButton.showsTouchWhenHighlighted = YES;
-    [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
-    [self.view addSubview:dashboardButton];
-    
-    UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [backButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
-    [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
-    backButton.showsTouchWhenHighlighted = YES;
-    backButton.tag = 1;
-    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back"] forState:UIControlStateNormal];
-    [self.view addSubview:backButton];
-    
-    UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 235), 0, 45, 45)];
-    [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
-    homeButton.showsTouchWhenHighlighted = YES;
-    homeButton.tag = 0;
-    [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home"] forState:UIControlStateNormal];
-    [self.view addSubview:homeButton];
     
     teamScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, 234)];
     [teamScroll setBackgroundColor:[UIColor clearColor]];
@@ -123,17 +124,26 @@
     }
 }
 
-//this function updates the dots for the current image the the user is on
-- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
-    CGFloat pageWidth = teamScroll.bounds.size.width;
-    //display the appropriate dot when scrolled
-    NSInteger pageNumber = floor((teamScroll.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
-    paginationDots.currentPage = pageNumber;
-}
-
 #pragma mark
 #pragma mark - Parse
+//Query the local datastore to build the views
+- (void)fetchDataFromLocalDataStore {
+    
+    PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
+    [query fromLocalDatastore];
+    [query whereKey:@"field_term_reference" equalTo:content.catagoryId];
+    [query orderByAscending:@"createdAt"];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) {
+            [self buildImgArray:objects];
+        }
+    }];
+}
+
 - (void)fetchDataFromParse {
+    
+    //Using Reachability check if there is an internet connection
+    //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
         [query whereKey:@"field_term_reference" equalTo:content.catagoryId];
@@ -152,20 +162,13 @@
         }];
     }
     else {
-        [self fetchDataFromLocalDataStore];
+        //Alert the user there is no internet connection
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error"
+                                                        message:@"You need an internet connection to download data."
+                                                       delegate:self cancelButtonTitle:@"Okay"
+                                              otherButtonTitles:nil];
+        [alert show];
     }
-}
-
-//Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore {
-    //Query the Local Datastore
-    PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
-    [query fromLocalDatastore];
-    [query whereKey:@"field_term_reference" equalTo:content.catagoryId];
-    [query orderByAscending:@"createdAt"];
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        [self buildImgArray:objects];
-    }];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -217,6 +220,7 @@
     }
 }
 
+//Layout the team members in the scroll view
 - (void)buldGrid:(NSArray *)teamMemberObjects {
     int x = 24;
     for (LCPTeamMembers *tm in teamMemberObjects) {
@@ -250,10 +254,12 @@
         paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
         [pagination addSubview:paginationDots];
 
-        [teamScroll setContentSize:CGSizeMake(background.bounds.size.width * multiplier, 252)];
+        [teamScroll setContentSize:CGSizeMake(background.bounds.size.width * multiplier, 200)];
     }
 }
 
+//Show the team member Name, title, and bio.
+//Also change the alpha on the other team members
 -(void)teamMemberClicked:(UIButton *)sender {
     
     for(UIButton *teamMembers in buttons){
@@ -278,13 +284,19 @@
             nameLabel.text = tms.teamMemberName;
             [jobDescription addSubview:nameLabel];
             
-            UILabel *positionLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 36, 400, 30)];
-            [positionLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:16.0]];
+            UILabel *positionLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 36, 375, 30)];
             positionLabel.textColor = [UIColor colorWithRed:51.0f/255.0f green:51.0f/255.0f blue:51.0f/255.0f alpha:1.0];
-            [positionLabel setNumberOfLines:1];
+            [positionLabel setNumberOfLines:0];
+            NSMutableParagraphStyle *posStyle  = [[NSMutableParagraphStyle alloc] init];
+            posStyle.minimumLineHeight = 20.0f;
+            posStyle.maximumLineHeight = 20.0f;
+            NSDictionary *posAttributtes = @{NSParagraphStyleAttributeName : posStyle,};
+            positionLabel.attributedText = [[NSAttributedString alloc] initWithString:tms.teamMemberTitle.stringByConvertingHTMLToPlainText attributes:posAttributtes];
+            [positionLabel setFont:[UIFont fontWithName:@"AktivGrotesk-Regular" size:16.0]];
             positionLabel.backgroundColor = [UIColor clearColor];
             positionLabel.textAlignment = NSTextAlignmentLeft;
-            positionLabel.text = tms.teamMemberTitle;
+            positionLabel.lineBreakMode = NSLineBreakByWordWrapping;
+            [positionLabel sizeToFit];
             [jobDescription addSubview:positionLabel];
             
             UIScrollView *summaryScroll = [[UIScrollView alloc] initWithFrame:CGRectMake((jobDescription.bounds.size.width / 2) - 100, 0, (jobDescription.bounds.size.width / 2) + 100, 320)];
@@ -297,8 +309,8 @@
             UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, 0, (jobDescription.bounds.size.width / 2) + 100, 320)];
             myLabel.numberOfLines = 0;
             NSMutableParagraphStyle *style  = [[NSMutableParagraphStyle alloc] init];
-            style.minimumLineHeight = 19.0f;
-            style.maximumLineHeight = 19.0f;
+            style.minimumLineHeight = 20.0f;
+            style.maximumLineHeight = 20.0f;
             NSDictionary *attributtes = @{NSParagraphStyleAttributeName : style,};
             myLabel.attributedText = [[NSAttributedString alloc] initWithString:temp.stringByConvertingHTMLToPlainText attributes:attributtes];
             myLabel.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:16.0];
@@ -312,31 +324,44 @@
     }
 }
 
+//this function updates the dots for the current image the the user is on
+- (void)scrollViewDidScroll:(UIScrollView *)scrollView {
+    CGFloat pageWidth = teamScroll.bounds.size.width;
+    //display the appropriate dot when scrolled
+    NSInteger pageNumber = floor((teamScroll.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
+    paginationDots.currentPage = pageNumber;
+}
+
 #pragma mark
 #pragma mark - Navigation
--(void)backNav:(UIButton *)sender
-{
+-(void)backNav:(UIButton *)sender {
+    
+    //NSArry used to hold all view controllers in the navigation stack
     NSArray *array = [self.navigationController viewControllers];
+    
     if (sender.tag == 0) {
+        //Send the presenter back to the 2nd view in the stack, BrandMeetsWorldViewController
         [self.navigationController popToViewController:[array objectAtIndex:2] animated:YES];
     }
     else {
-        [self.navigationController popViewControllerAnimated:YES];
+        //Send the presenter back to the 3nd view in the stack, CatagoryViewController
+        [self.navigationController popToViewController:[array objectAtIndex:3] animated:YES];
     }
     [self removeEverything];
 }
 
-// Send the presenter back to the dashboard
--(void)backToDashboard:(id)sender
-{
+-(void)backToDashboard:(id)sender {
+    
+    // Send the presenter back to the dashboard
     [self.navigationController popToRootViewControllerAnimated:YES];
     [self removeEverything];
 }
 
 #pragma mark
 #pragma mark - Reachability
-- (BOOL)connected
-{
+- (BOOL)connected {
+    
+    //Check if there is an internet connection
     Reachability *reachability = [Reachability reachabilityForInternetConnection];
     NetworkStatus networkStatus = [reachability currentReachabilityStatus];
     return networkStatus != NotReachable;

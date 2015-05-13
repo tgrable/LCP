@@ -45,6 +45,7 @@
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
     
+    //UIButton used to navigate one view back in the stack
     UIButton *doneButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [doneButton setFrame:CGRectMake(self.view.bounds.size.width - 116, 56, 60, 30)];
     [doneButton addTarget:self action:@selector(backHome:)forControlEvents:UIControlEventTouchUpInside];
@@ -114,9 +115,9 @@
                         favoriteContentButton.showsTouchWhenHighlighted = YES;
                         favoriteContentButton.tag = [nid integerValue];
                         if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[objects[0] objectForKey:@"nid"]] != nil){
-                            [favoriteContentButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-active"] forState:UIControlStateNormal];
+                            [favoriteContentButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-active-white"] forState:UIControlStateNormal];
                         }else{
-                            [favoriteContentButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-inactive"] forState:UIControlStateNormal];
+                            [favoriteContentButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-inactive-white"] forState:UIControlStateNormal];
                         }
                         [background addSubview:favoriteContentButton];
                     }
@@ -168,8 +169,9 @@
 
 #pragma mark
 #pragma mark - Reachability
-- (BOOL)connected
-{
+- (BOOL)connected {
+    
+    //Check if there is an internet connection
     Reachability *reachability = [Reachability reachabilityForInternetConnection];
     NetworkStatus networkStatus = [reachability currentReachabilityStatus];
     return networkStatus != NotReachable;
@@ -177,15 +179,16 @@
 
 #pragma mark -
 #pragma mark - Navigation
--(void)backHome:(id)sender
-{
+-(void)backHome:(id)sender {
+    
+    //Send the presenter back on level in the stack
     [self.navigationController popViewControllerAnimated:YES];
     [self removeEverything];
 }
 
-// Send the presenter back to the dashboard
--(void)backToDashboard:(id)sender
-{
+-(void)backToDashboard:(id)sender {
+    
+    // Send the presenter back to the dashboard
     [self.navigationController popToRootViewControllerAnimated:YES];
     [self removeEverything];
 }

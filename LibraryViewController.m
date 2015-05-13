@@ -17,7 +17,7 @@
 #import <Parse/Parse.h>
 
 @interface LibraryViewController ()
-@property (strong, nonatomic) UIView *background, *navBar;
+@property (strong, nonatomic) UIView *background, *navBar, *filterSelection;
 @property (strong, nonatomic) UIScrollView *pageScroll;
 @property (strong, nonatomic) UIPageControl *caseStudyDots;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
@@ -31,9 +31,9 @@
 
 @implementation LibraryViewController
 
-@synthesize content;                                        //LCPContent
+@synthesize content;                            //LCPContent
 @synthesize contentType;
-@synthesize background, navBar; //UIView
+@synthesize background, navBar, filterSelection;//UIView
 @synthesize pageScroll;                         //UIScrollView
 @synthesize caseStudyDots;                      //UIPageControl
 @synthesize favoriteContentButton;              //UIButton
@@ -66,14 +66,13 @@
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
     
-    //Logo and setting navigation buttons
-    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
-    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
-    logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
-    [self.view addSubview:logoButton];
+    /******** Logo and setting navigation buttons ********/
+    //UIImageView used to hold LCP logo
+    UIImageView *logo = [[UIImageView alloc] initWithFrame:CGRectMake(60, 6.5f, 70, 23)];
+    logo.image = [UIImage imageNamed:@"logo"];
+    [self.view addSubview:logo];
     
+    //UIButton used to navigate back to content dashboard
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [dashboardButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
     [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
@@ -81,14 +80,16 @@
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
     [self.view addSubview:dashboardButton];
     
+    //UIButton used to navigate back to CatagoryViewController
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [backButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
     [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     backButton.showsTouchWhenHighlighted = YES;
     backButton.tag = 1;
-    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back"] forState:UIControlStateNormal];
+    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back.png"] forState:UIControlStateNormal];
     [self.view addSubview:backButton];
     
+    //UIButton used to navigate back to BrandMeetsWorldViewController
     UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 235), 0, 45, 45)];
     [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
@@ -126,7 +127,7 @@
     
     UIButton *allButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [allButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - 332.5, 15, 65, 65)];
-    [allButton addTarget:self action:@selector(firstLevelNavigationButtonPressed:)forControlEvents:UIControlEventTouchUpInside];
+    [allButton addTarget:self action:@selector(filterButtonPressed:)forControlEvents:UIControlEventTouchUpInside];
     allButton.showsTouchWhenHighlighted = YES;
     [allButton setBackgroundImage:[UIImage imageNamed:@"ico-all-filter"] forState:UIControlStateNormal];
     [allButton setTag:99];
@@ -308,8 +309,8 @@
 #pragma mark - Build Views
 - (void)buildVideosView:(NSArray *)objects {
     
-    int x = 24, y = 48, count = 1;
-    int multiplier = 0;
+    int x = 24, y = 48, count = 1, subcount = 1;
+    int multiplier = 1, offset = 0;
     
     for (PFObject *object in objects){
         
@@ -319,99 +320,60 @@
         //add the node title to be added for
         [nodeTitles addObject:object[@"title"]];
         
-        //Sample Image
-        PFFile *sampleFile = object[@"field_poster_image_img"];
+        int btntag = ([[object objectForKey:@"field_term_reference"] isEqual:@"N/A"]) ? 0 : [[object objectForKey:@"field_term_reference"] integerValue];
+        UIButton *detailsButton = [UIButton buttonWithType:UIButtonTypeCustom];
+        [detailsButton setFrame:CGRectMake(x, y, 199, 117)];
+        [detailsButton addTarget:self action:@selector(showVideoDetails:)forControlEvents:UIControlEventTouchUpInside];
+        detailsButton.showsTouchWhenHighlighted = YES;
+        [detailsButton setBackgroundColor:[UIColor clearColor]];
+        [detailsButton setBackgroundImage:[UIImage imageNamed:@"tmb-video"] forState:UIControlStateNormal];
+        detailsButton.tag = btntag;
+        [pageScroll addSubview:detailsButton];
         
-        dispatch_async(dispatch_get_main_queue(), ^{
-            [sampleFile getDataInBackgroundWithBlock:^(NSData *sampleData, NSError *error) {
-                
-                UIImage *videothumb = [UIImage imageWithData:sampleData];
-                UIImageView *sample = [[UIImageView alloc] initWithFrame:CGRectMake(x, y, 161, 117)];
-                
-                if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad && [[UIScreen mainScreen] respondsToSelector:@selector(scale)] && [UIScreen mainScreen].scale > 1)
-                {
-                    NSLog(@"Retnia");
-                    [sample setImage:videothumb];
-                }
-                else {
-                    NSLog(@"Non-retnia");
-                    [sample setImage:[self scaleImages:videothumb withSize:CGSizeMake(161, 117)]];
-                    /*if ([self fileExistsAtPath:[NSString stringWithFormat:@"%@.png", [self cleanString:[object objectForKey:@"title"]]]]) {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-                            NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
-                            
-                            NSString *pathForFile = [NSString stringWithFormat:@"%@/%@.png", basePath, [self cleanString:[object objectForKey:@"title"]]];
-                            
-                            UIImage *image = [UIImage imageWithContentsOfFile:pathForFile];
-                            [sample setImage:image];
-                        });
-                    }
-                    else {
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [sample setImage:[self createImgThumbnails:sampleData andFileName:[object objectForKey:@"title"]]];
-                        });
-                    }*/
-                }
-
-                [sample setUserInteractionEnabled:YES];
-                sample.alpha = 1.0;
-                sample.tag = 90;
-                [pageScroll addSubview:sample];
-                
-                if([nids count] > 0){
-                    if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[object objectForKey:@"nid"]] != nil){
-                        UIImageView *favItem = [[UIImageView alloc] initWithFrame:CGRectMake(x + 165, 83 + y, 24, 24)];
-                        favItem.image = [UIImage imageNamed:@"ico-fav-active"];
-                        [pageScroll addSubview:favItem];
-                    }
-                }
-                
-                UILabel *tittleLabel = [[UILabel alloc] initWithFrame:CGRectMake(x, y + 117, 161, 57)];
-                [tittleLabel setFont:[UIFont fontWithName:@"Oswald" size:14.0f]];
-                tittleLabel.textColor = [UIColor blackColor];
-                tittleLabel.numberOfLines = 0;
-                tittleLabel.lineBreakMode = NSLineBreakByWordWrapping;
-                tittleLabel.backgroundColor = [UIColor clearColor];
-                tittleLabel.textAlignment = NSTextAlignmentCenter;
-                tittleLabel.text = [object objectForKey:@"title"];
-                [pageScroll addSubview:tittleLabel];
-                
-                int btntag = ([[object objectForKey:@"field_term_reference"] isEqual:@"N/A"]) ? 0 : [[object objectForKey:@"field_term_reference"] integerValue];
-                UIButton *sampleDetailsButton = [UIButton buttonWithType:UIButtonTypeCustom];
-                [sampleDetailsButton setFrame:CGRectMake(x, y, 161, 174)];
-                [sampleDetailsButton addTarget:self action:@selector(showVideoDetails:)forControlEvents:UIControlEventTouchUpInside];
-                sampleDetailsButton.showsTouchWhenHighlighted = YES;
-                [sampleDetailsButton setBackgroundColor:[UIColor clearColor]];
-                sampleDetailsButton.tag = btntag;
-                [pageScroll addSubview:sampleDetailsButton];
-            }];
-        });
+        UILabel *tittleLabel = [[UILabel alloc] initWithFrame:CGRectMake(x, y + 117, 199, 57)];
+        [tittleLabel setFont:[UIFont fontWithName:@"Oswald" size:14.0f]];
+        tittleLabel.textColor = [UIColor blackColor];
+        tittleLabel.numberOfLines = 0;
+        tittleLabel.lineBreakMode = NSLineBreakByWordWrapping;
+        tittleLabel.backgroundColor = [UIColor clearColor];
+        tittleLabel.textAlignment = NSTextAlignmentCenter;
+        tittleLabel.text = [object objectForKey:@"title"];
+        [pageScroll addSubview:tittleLabel];
         
-        if(count % 4 == 0) {
-            x = 24, y = 174 + 43;
-        }
-        else if (count % 8 == 0) {
-            multiplier++;
+        if (count < 8) {
+            if (subcount < 4) {
+                x += 235 + offset;
+                subcount++;
+            }
+            else {
+                x = 24 + offset, y = 174 + 43;
+                subcount = 1;
+            }
         }
         else {
-            x += 197;
+            offset += background.bounds.size.width;
+            x = 24 + offset, y = 48;
+            multiplier++;
+            subcount = 1;
+            count = 0;
         }
+        count++;
         
         [pageScroll setContentSize:CGSizeMake((background.bounds.size.width * multiplier), 400)];
-        count++;
     }
     
     UIView *hDivider = [[UIView alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 144, background.bounds.size.width, 1)];
     [hDivider setBackgroundColor:[UIColor colorWithRed:218.0f/255.0f green:218.0f/255.0f blue:218.0f/255.0f alpha:1.0]];
     [background addSubview:hDivider];
     
-    paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 145, background.bounds.size.width, 48)];
-    paginationDots.numberOfPages = multiplier;
-    paginationDots.backgroundColor = [UIColor clearColor];
-    paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-black"];
-    paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
-    [background addSubview:paginationDots];
+    if (multiplier > 1) {
+        paginationDots = [[SMPageControl alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 145, background.bounds.size.width, 48)];
+        paginationDots.numberOfPages = multiplier;
+        paginationDots.backgroundColor = [UIColor clearColor];
+        paginationDots.pageIndicatorImage = [UIImage imageNamed:@"ico-dot-inactive-black"];
+        paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
+        [background addSubview:paginationDots];
+    }
     
     //update the button color
     [self updateFavoriteButtonColor];
@@ -492,12 +454,10 @@
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
                     if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad && [[UIScreen mainScreen] respondsToSelector:@selector(scale)] && [UIScreen mainScreen].scale > 1)
                     {
-                        NSLog(@"This should be retnia");
                         UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:15 andTag:[object objectForKey:@"tid"]];
                         [navBar addSubview:tempButton];
                     }
                     else {
-                        NSLog(@"This should be non-retnia");
                         UIButton *tempButton = [self navigationButtons:[self scaleImages:btnImg withSize:CGSizeMake(65, 65)] andtitle:[object objectForKey:@"name"] andXPos:x andYPos:15 andTag:[object objectForKey:@"tid"]];
                         [navBar addSubview:tempButton];
                     }
@@ -507,13 +467,17 @@
 
         x += 100;
     }
+    
+    filterSelection = [[UIView alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 342, 0, 80, 5)];
+    [filterSelection setBackgroundColor:[UIColor colorWithRed:115.0f/255.0f green:115.0f/255.0f blue:115.0f/255.0f alpha:1.0]];
+    [navBar addSubview:filterSelection];
 }
 
 - (UIButton *)navigationButtons:(UIImage *)imgData andtitle:(NSString *)buttonTitle andXPos:(int)xpos andYPos:(int)ypos andTag:(NSString *)buttonTag {
     //the grid of buttons
     UIButton *tempButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [tempButton setFrame:CGRectMake(xpos, ypos, 65, 65)];
-    [tempButton addTarget:self action:@selector(firstLevelNavigationButtonPressed:)forControlEvents:UIControlEventTouchUpInside];
+    [tempButton addTarget:self action:@selector(filterButtonPressed:)forControlEvents:UIControlEventTouchUpInside];
     tempButton.showsTouchWhenHighlighted = YES;
     [tempButton setBackgroundImage:imgData forState:UIControlStateNormal];
     [tempButton setTitle:buttonTitle forState:normal];
@@ -523,60 +487,7 @@
     return tempButton;
 }
 
-- (UIImage *)scaleImages:(UIImage *)originalImg withSize:(CGSize)size {
-    CGSize destinationSize = size;
-    UIGraphicsBeginImageContext(destinationSize);
-    [originalImg drawInRect:CGRectMake(0,0,destinationSize.width,destinationSize.height)];
-    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-
-    return newImage;
-}
-
-- (UIImage *)createImgThumbnails:(NSData *)originalImgData andFileName:(NSString *)title {
-    UIImage *originalImg = [[UIImage alloc] initWithData:originalImgData];
-    CGSize destinationSize = CGSizeMake(199, 117);
-    UIGraphicsBeginImageContext(destinationSize);
-    [originalImg drawInRect:CGRectMake(0,0,destinationSize.width,destinationSize.height)];
-    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    [self saveThumbnailImgToDisk:newImage andFileName:[self cleanString:title]];
-    return newImage;
-}
-
-- (NSString *)cleanString:(NSString *)stringToClean {
-    NSCharacterSet *doNotWant = [NSCharacterSet characterSetWithCharactersInString:@"/:.''"" ,!@#$%^&*(){}[]+-*"];
-    stringToClean = [[stringToClean componentsSeparatedByCharactersInSet: doNotWant] componentsJoinedByString: @""];
-    
-    return stringToClean;
-}
-
-- (void)saveThumbnailImgToDisk:(UIImage *)imageToSave andFileName:(NSString *)title {
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
-    
-    NSData *binaryImageData = UIImagePNGRepresentation(imageToSave);
-    
-    [binaryImageData writeToFile:[basePath stringByAppendingPathComponent:[NSString stringWithFormat:@"%@.png", title]] atomically:YES];
-}
-
-- (BOOL)fileExistsAtPath:(NSString *)fileName {
-    NSFileManager *fileManager = [NSFileManager defaultManager];
-    NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-    NSString *basePath = ([paths count] > 0) ? [paths objectAtIndex:0] : nil;
-    
-    NSString *pathForFile = [NSString stringWithFormat:@"%@/%@", basePath, fileName];
-    
-    if ([fileManager fileExistsAtPath:pathForFile]){
-        return YES;
-    }
-    else {
-        return NO;
-    }
-}
-
--(void)firstLevelNavigationButtonPressed:(UIButton *)sender {
+-(void)filterButtonPressed:(UIButton *)sender {
     if (sender.tag == 99) {
         NSArray *termArray = [NSArray array];
         [self fetchDataFromLocalDataStore:termArray];
@@ -599,7 +510,38 @@
             }];
         });
     }
+    if (sender.tag == 44) {
+        [filterSelection setFrame:CGRectMake((navBar.bounds.size.width / 2) - 242, 0, 80, 5)];
+    }
+    else if (sender.tag == 38) {
+        [filterSelection setFrame:CGRectMake((navBar.bounds.size.width / 2) - 142, 0, 80, 5)];
+    }
+    else if (sender.tag == 43) {
+        [filterSelection setFrame:CGRectMake((navBar.bounds.size.width / 2) - 42, 0, 80, 5)];
+    }
+    else if (sender.tag == 40) {
+        [filterSelection setFrame:CGRectMake((navBar.bounds.size.width / 2) + 58, 0, 80, 5)];
+    }
+    else if (sender.tag == 41) {
+        [filterSelection setFrame:CGRectMake((navBar.bounds.size.width / 2) + 158, 0, 80, 5)];
+    }
+    else if (sender.tag == 42) {
+        [filterSelection setFrame:CGRectMake((navBar.bounds.size.width / 2) + 258, 0, 80, 5)];
+    }
+    else {
+        [filterSelection setFrame:CGRectMake((navBar.bounds.size.width / 2) - 342, 0, 80, 5)];
+    }
+    
     [self removeEverything];
+}
+
+- (UIImage *)scaleImages:(UIImage *)originalImg withSize:(CGSize)size {
+    CGSize destinationSize = size;
+    UIGraphicsBeginImageContext(destinationSize);
+    [originalImg drawInRect:CGRectMake(0,0,destinationSize.width,destinationSize.height)];
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return newImage;
 }
 
 #pragma mark
@@ -625,9 +567,9 @@
     [self removeEverything];
 }
 
-// Send the presenter back to the dashboard
--(void)backToDashboard:(id)sender
-{
+-(void)backToDashboard:(id)sender {
+
+    // Send the presenter back to the dashboard
     [self.navigationController popToRootViewControllerAnimated:YES];
     [self removeEverything];
 }

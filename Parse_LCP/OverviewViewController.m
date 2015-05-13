@@ -20,7 +20,6 @@
 
 @property (strong, nonatomic) UIImage *ovImg, *csImg, *sImg, *vImg;
 @property (strong, nonatomic) UIView *background, *summaryView;
-@property (strong, nonatomic) UIScrollView *pageScroll;
 
 @end
 
@@ -29,12 +28,14 @@
 @synthesize content;                    //LCPContent
 @synthesize ovImg, csImg, sImg, vImg;   //UIImage
 @synthesize summaryView;                //UIView
-@synthesize pageScroll;                 //UIScrollView
 
-- (BOOL)prefersStatusBarHidden
-{
+- (BOOL)prefersStatusBarHidden {
+    //Hide status bar
     return YES;
 }
+
+#pragma mark
+#pragma mark - ViewController Life Cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
     
@@ -48,14 +49,13 @@
     summaryBackground.image = [UIImage imageNamed:@"bkgrd-overview"];
     [summaryView addSubview:summaryBackground];
 
-    //Logo and setting navigation buttons
-    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
-    //[logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
-    logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
-    [self.view addSubview:logoButton];
+    /******** Logo and setting navigation buttons ********/
+    //UIImageView used to hold LCP logo
+    UIImageView *logo = [[UIImageView alloc] initWithFrame:CGRectMake(60, 6.5f, 70, 23)];
+    logo.image = [UIImage imageNamed:@"logo"];
+    [self.view addSubview:logo];
     
+    //UIButton used to navigate back to content dashboard
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [dashboardButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
     [dashboardButton addTarget:self action:@selector(backToDashboard:)forControlEvents:UIControlEventTouchUpInside];
@@ -63,14 +63,16 @@
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
     [self.view addSubview:dashboardButton];
     
+    //UIButton used to navigate back to CatagoryViewController
     UIButton *backButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [backButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
     [backButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
     backButton.showsTouchWhenHighlighted = YES;
     backButton.tag = 1;
-    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back"] forState:UIControlStateNormal];
+    [backButton setBackgroundImage:[UIImage imageNamed:@"ico-back.png"] forState:UIControlStateNormal];
     [self.view addSubview:backButton];
     
+    //UIButton used to navigate back to BrandMeetsWorldViewController
     UIButton *homeButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [homeButton setFrame:CGRectMake((self.view.bounds.size.width - 235), 0, 45, 45)];
     [homeButton addTarget:self action:@selector(backNav:)forControlEvents:UIControlEventTouchUpInside];
@@ -81,7 +83,10 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
     //NSUserDefaults to check if data has been downloaded.
+    //If data has been downloaded pull from local datastore
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"overview"] isEqualToString:@"hasData"]) {
         [self fetchDataFromLocalDataStore];
@@ -91,7 +96,6 @@
     }
 }
 
-
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
@@ -100,7 +104,23 @@
 
 #pragma mark
 #pragma mark - Parse
+//Query the local datastore to build the views
+- (void)fetchDataFromLocalDataStore {
+    PFQuery *query = [PFQuery queryWithClassName:@"overview"];
+    [query fromLocalDatastore];
+    [query whereKey:@"field_term_reference" equalTo:content.termId];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            [self buildSummaryView:objects];
+        }];
+    });
+}
+
+//Query the parse.com to build the views
 - (void)fetchDataFromParse {
+    
+    //Using Reachability check if there is an internet connection
+    //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"overview"];
         [query whereKey:@"field_overview_tag_reference" equalTo:content.termId];
@@ -117,35 +137,25 @@
                     }];
                 });
             }
-            else {
-                // Log details of the failure
-                NSLog(@"Error: %@ %@", error, [error userInfo]);
-            }
         }];
     }
     else {
-        [self fetchDataFromLocalDataStore];
+        //Alert the user there is no internet connection
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error"
+                                                        message:@"You need an internet connection to download data."
+                                                       delegate:self cancelButtonTitle:@"Okay"
+                                              otherButtonTitles:nil];
+        [alert show];
     }
 }
 
-//Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore {
-    //Query the Local Datastore
-    PFQuery *query = [PFQuery queryWithClassName:@"overview"];
-    [query fromLocalDatastore];
-    [query whereKey:@"field_term_reference" equalTo:content.termId];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            [self buildSummaryView:objects];
-        }];
-    });
-}
 
 #pragma mark
 #pragma mark - Build Views
 - (void)buildSummaryView:(NSArray *)objects {
     for(PFObject *object in objects) {
         
+        //UIlabel used to hold the Overview title
         content.lblTitle = object[@"title"];
         UILabel *summaryLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 65, summaryView.bounds.size.width - 48, 80)];
         [summaryLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:80.0f]];
@@ -155,40 +165,47 @@
         summaryLabel.text = [content.lblTitle uppercaseString];
         [summaryView addSubview:summaryLabel];
         
+        //UIScrollView used to hold the overview body text
         UIScrollView *summaryScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(24, 210, (summaryView.bounds.size.width - 48), summaryView.bounds.size.height - 354)];
         summaryScroll.layer.borderWidth = 1.0f;
         summaryScroll.layer.borderColor = [UIColor whiteColor].CGColor;
         [summaryView addSubview:summaryScroll];
         
+        //Body content comimg in from Parse.com looks like an array of dictionary values
+        /*[{"summary":"<p>As the number of marketing channels continues to grow, a content management system (CMS) has quickly become a must-have for marketers. A CMS provides a central repository for content deployed across print, web, social media, mobile and more. With a user-friendly interface and automated workflow, the CMS provides a collaborative environment for creation, editing, approval, publishing and storage of all your company’s digital assets.</p>\r\n"},{"value":"<p>As the number of marketing channels continues to grow, a content management system (CMS) has quickly become a must-have for marketers. A CMS provides a central repository for content deployed across print, web, social media, mobile and more. With a user-friendly interface and automated workflow, the CMS provides a collaborative environment for creation, editing, approval, publishing and storage of all your company’s digital assets.</p>\r\n"},{"format":"filtered_html"}]*/
         NSArray *bodyArray = [object objectForKey:@"body"];
         NSMutableDictionary *bodyDict = [[NSMutableDictionary alloc] init];
         bodyDict = bodyArray[1];
         
-        NSString *introText = [NSString stringWithFormat:@"%@",[bodyDict objectForKey:@"value"]];
+        //UILabel used to hold the body copy content
         UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 24, summaryScroll.bounds.size.width - (24 * 2), summaryScroll.bounds.size.height - 48)];
         myLabel.numberOfLines = 0;
         NSMutableParagraphStyle *style  = [[NSMutableParagraphStyle alloc] init];
-        style.minimumLineHeight = 28.0f;
-        style.maximumLineHeight = 28.0f;
+        style.minimumLineHeight = 30.0f;
+        style.maximumLineHeight = 30.0f;
         NSDictionary *attributtes = @{NSParagraphStyleAttributeName : style,};
-        myLabel.attributedText = [[NSAttributedString alloc] initWithString:introText.stringByConvertingHTMLToPlainText attributes:attributtes];
+        myLabel.attributedText = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@",[bodyDict objectForKey:@"value"]].stringByConvertingHTMLToPlainText attributes:attributtes];
         myLabel.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:26.0];
         myLabel.textColor = [UIColor whiteColor];
         [myLabel sizeToFit];
         [summaryScroll addSubview:myLabel];
         
+        //Set the hieght of summaryScroll to the height of the UILabel
         [summaryScroll setContentSize:CGSizeMake(summaryScroll.bounds.size.width, myLabel.frame.size.height)];
         
+        //UIView used to hold the four content sections
         UIView *navBar = [[UIView alloc] initWithFrame:CGRectMake(0, (summaryView.bounds.size.height - 96), summaryView.bounds.size.width, 96)];
         [navBar setBackgroundColor:[UIColor colorWithRed:230.0f/255.0f green:230.0f/255.0f blue:230.0f/255.0f alpha:1.0]];
         [summaryView addSubview:navBar];
-         
+        
+        /******** Content section navigation buttons and labels ********/
         UIButton *overviewButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [overviewButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (97.5f + 45), 10, 45, 45)];
+        [overviewButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (97.5f + 45), 10, 47, 47)];
         [overviewButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
         overviewButton.showsTouchWhenHighlighted = YES;
         [overviewButton setBackgroundImage:[UIImage imageNamed:@"ico-overview"] forState:UIControlStateNormal];
         [overviewButton setBackgroundColor:[UIColor clearColor]];
+        [overviewButton setContentMode:UIViewContentModeCenter];
         overviewButton.tag = 0;
         [navBar addSubview:overviewButton];
 
@@ -252,6 +269,7 @@
         videosLabel.text = @"VIDEOS";
         [navBar addSubview:videosLabel];
         
+        //Set the color of the location indicator view
         UIView *locationIndicator = [[UIView alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 160, 0, 80, 5)];
         if ([content.catagoryId isEqualToString:@"38"]) {
             [locationIndicator setBackgroundColor:[UIColor yellowColor]];
@@ -275,14 +293,14 @@
             
         }
         [navBar addSubview:locationIndicator];
-
-    } //End objects for loop
+    }
 }
 
 #pragma mark
 #pragma mark - Reachability
-- (BOOL)connected
-{
+- (BOOL)connected {
+    
+    //Check if there is an internet connection
     Reachability *reachability = [Reachability reachabilityForInternetConnection];
     NetworkStatus networkStatus = [reachability currentReachabilityStatus];
     return networkStatus != NotReachable;
@@ -290,16 +308,26 @@
 
 #pragma mark -
 #pragma mark - Navigation
--(void)backNav:(UIButton *)sender
-{
+-(void)backNav:(UIButton *)sender {
+
+    //NSArry used to hold all view controllers in the navigation stack
     NSArray *array = [self.navigationController viewControllers];
+    
     if (sender.tag == 0) {
+        //Send the presenter back to the 2nd view in the stack, BrandMeetsWorldViewController
         [self.navigationController popToViewController:[array objectAtIndex:2] animated:YES];
     }
     else {
+        //Send the presenter back to the 3nd view in the stack, CatagoryViewController
         [self.navigationController popToViewController:[array objectAtIndex:3] animated:YES];
-        //[self.navigationController popViewControllerAnimated:YES];
     }
+    [self removeEverything];
+}
+
+-(void)backToDashboard:(id)sender {
+    
+    // Send the presenter back to the dashboard
+    [self.navigationController popToRootViewControllerAnimated:YES];
     [self removeEverything];
 }
 
@@ -307,16 +335,24 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
 
     if(sender.tag == 1){
+        
+        // Send the presenter to CaseStudyViewController
         CaseStudyViewController *cvc = (CaseStudyViewController *)[storyboard instantiateViewControllerWithIdentifier:@"caseStudyViewController"];
         cvc.content = content;
         [self.navigationController pushViewController:cvc animated:YES];
         [self removeEverything];
-    }else if(sender.tag == 2){
+        
+    } else if(sender.tag == 2){
+        
+        // Send the presenter to SamplesViewController
         SamplesViewController *svc = (SamplesViewController *)[storyboard instantiateViewControllerWithIdentifier:@"samplesViewController"];
         svc.content = content;
         [self.navigationController pushViewController:svc animated:YES];
         [self removeEverything];
-    }else if(sender.tag == 3){
+        
+    } else if(sender.tag == 3){
+        
+        // Send the presenter to VideoViewController
         VideoViewController *vvc = (VideoViewController *)[storyboard instantiateViewControllerWithIdentifier:@"videoViewController"];
         vvc.content = content;
         [self.navigationController pushViewController:vvc animated:YES];
@@ -324,17 +360,14 @@
     }
 }
 
-// Send the presenter back to the dashboard
--(void)backToDashboard:(id)sender
-{
-    [self.navigationController popToRootViewControllerAnimated:YES];
-    [self removeEverything];
-}
+
 
 #pragma mark
 #pragma mark - Memory Management
 - (void)removeEverything {
-    for (UIView *v in [pageScroll subviews]) {
+    
+    //Loop through and remove all the views in background
+    for (UIView *v in [summaryView subviews]) {
         [v removeFromSuperview];
     }
 }

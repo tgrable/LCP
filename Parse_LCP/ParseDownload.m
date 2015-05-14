@@ -7,6 +7,7 @@
 //
 
 #import "ParseDownload.h"
+#import "LogoLoaderViewController.h"
 #import "Reachability.h"
 #import "AFNetworking.h"
 #import <Parse/Parse.h>
@@ -23,9 +24,9 @@
 
 @implementation ParseDownload
 
-@synthesize parseClassTypes;
-@synthesize parseClassDictionary;
-@synthesize videoFileBeingDownloaded;
+@synthesize parseClassTypes;                        //NSArray
+@synthesize parseClassDictionary; //NSMutableDictionary
+@synthesize videoFileBeingDownloaded;               //BOOL
 
 #pragma mark
 #pragma mark - Public API
@@ -169,11 +170,14 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                         if (!error) {
+                            
                             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                             [defaults setObject:@"hasData" forKey:forParseClassType];
                             [defaults synchronize];
                             NSLog(@"Fetch: %@ and set NSUserDefault to %@", forParseClassType, [defaults objectForKey:forParseClassType]);
+                            
                             count++;
+                            
                             if (count >= parseClassTypes.count && !videoFileBeingDownloaded) {
                                 [self postNotificationToRefresh];
                             }

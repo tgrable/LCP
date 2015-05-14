@@ -19,8 +19,9 @@
 
 @implementation LogoLoaderViewController
 
-@synthesize logoView;                       //UIView
-@synthesize companyName;                    //NSString
+@synthesize logoView;           //UIView
+@synthesize companyName;        //NSString
+@synthesize backgroundImg;  //NSMutableDictionary
 
 - (BOOL)prefersStatusBarHidden {
     //Hide status bar
@@ -36,12 +37,34 @@
     logoView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
     logoView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:logoView];
-    
+
     //NSUserDefaults to check if data has been downloaded.
     //If data has been downloaded pull from local datastore else fetch data from Parse.com
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"splash_screen"] isEqualToString:@"hasData"]) {
-        [self fetchDataFromLocalDataStore];
+        
+        NSLog(@"%@", backgroundImg);
+        
+        //UIImageView used to hold the splash screen image
+        UIImageView *splashImg = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, logoView.bounds.size.width, logoView.bounds.size.height)];
+        [splashImg setImage:backgroundImg];
+        [logoView addSubview:splashImg];
+        
+        //UILable and NSString used to hold Presented to content
+        NSString *name = (companyName == (id)[NSNull null] || companyName.length == 0 ) ? @"<COMPANY NAME HERE>" : companyName;
+        UILabel *presentedTo = [[UILabel alloc] initWithFrame:CGRectMake(0, 520, logoView.bounds.size.width, 30)];
+        [presentedTo setFont:[UIFont fontWithName:@"Oswald-light" size:24.0]];
+        presentedTo.textColor = [UIColor whiteColor];
+        presentedTo.numberOfLines = 1;
+        presentedTo.backgroundColor = [UIColor clearColor];
+        presentedTo.textAlignment = NSTextAlignmentCenter;
+        presentedTo.text = [NSString stringWithFormat:@"PRESENTED TO %@", name];
+        [logoView addSubview:presentedTo];
+        
+        //UITapGesture used to navigate into the app
+        UITapGestureRecognizer *tapGesture = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(viewTapped:)];
+        tapGesture.numberOfTapsRequired = 1;
+        [logoView addGestureRecognizer:tapGesture];
     }
     else {
         [self fetchDataFromParse];
@@ -63,28 +86,6 @@
 // TODO: look into getting the image before this view
 #pragma mark
 #pragma mark - Parse
-- (void)fetchDataFromLocalDataStore {
-    PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
-    query.limit = 1;
-    [query fromLocalDatastore];
-    [query orderByAscending:@"updatedAt"];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    PFFile *imageFile = [objects[0] objectForKey:@"field_background_image_img"];
-                    [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
-                        if (!error) {
-                            UIImage *backgroundImg = [[UIImage alloc] initWithData:imgData];
-                            [self buldLogoLoader:backgroundImg];
-                        }
-                    }];
-                });
-            }
-        }];
-    });
-}
-
 - (void)fetchDataFromParse {
     PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
     query.limit = 1;
@@ -96,8 +97,8 @@
                     PFFile *imageFile = [objects[0] objectForKey:@"field_background_image_img"];
                     [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
                         if (!error) {
-                            UIImage *backgroundImg = [[UIImage alloc] initWithData:imgData];
-                            [self buldLogoLoader:backgroundImg];
+                            UIImage *backgroundImage = [[UIImage alloc] initWithData:imgData];
+                            [self buldLogoLoader:backgroundImage];
                         }
                     }];
                 });

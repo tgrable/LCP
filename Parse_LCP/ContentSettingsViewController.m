@@ -24,6 +24,7 @@
 @property (strong, nonatomic) UIButton *submitButton;
 @property NSMutableArray *favoritedNIDs;
 @property NSMutableArray *termsArray;
+@property NSMutableDictionary *posterDictionary;
 
 @property (strong, nonatomic) SendEmail *emailObject;
 @property (strong, nonatomic) ParseDownload *parsedownload;
@@ -41,6 +42,7 @@
 @synthesize email, subject, companyNameTextField;                       //Email textfields
 @synthesize message;                                                    //Email textview
 @synthesize favoritedNIDs, termsArray;
+@synthesize posterDictionary;
 
 - (BOOL)prefersStatusBarHidden
 {
@@ -59,6 +61,7 @@
     termsArray = [[NSMutableArray alloc] init];
     emailObject = [[SendEmail alloc] init];
     parsedownload = [[ParseDownload alloc] init];
+    posterDictionary = [[NSMutableDictionary alloc] init];
 
     [self drawViews];
     
@@ -92,6 +95,7 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                         if (succeded) {
+                            
                             NSLog(@"Fetch: %@", forParseClassType);
                             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                             [defaults setObject:@"hasData" forKey:forParseClassType];
@@ -211,6 +215,28 @@
     if (![[defaults objectForKey:@"splash_screen"] isEqualToString:@"hasData"]) {
         [parsedownload downloadAndPinIndividualParseClass:@"splash_screen"];
     }
+}
+
+- (void)fetchPosterImage {
+    
+    PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
+    query.limit = 1;
+    [query orderByAscending:@"updatedAt"];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) {
+            for (PFObject *object in objects) {
+                PFFile *imageFile = [object objectForKey:@"field_background_image_img"];
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
+                        UIImage *posterImg = [[UIImage alloc] initWithData:imageData];
+                        [posterDictionary setObject:posterImg forKey:[objects[0] objectForKey:@"nid"]];
+                        
+                        NSLog(@"%@", posterDictionary);
+                    }];
+                });
+            }
+        }
+    }];
 }
 
 #pragma mark -
@@ -421,6 +447,7 @@
     [background addSubview:loadingView];
     
     [self buildPresentationView];
+    [self fetchPosterImage];
     [self fetchTerms];
 }
 
@@ -866,11 +893,12 @@
 
 #pragma mark
 #pragma mark - Navigation
--(void)startPresentation:(id)sender
-{
+-(void)startPresentation:(id)sender {
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     LogoLoaderViewController *lvc = (LogoLoaderViewController *)[storyboard instantiateViewControllerWithIdentifier:@"logoLoaderViewController"];
     lvc.companyName = [companyNameTextField.text uppercaseString];
+    lvc.backgroundImg = [posterDictionary objectForKey:@"202"];
+    //content.imgPoster = [posterDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
     [self.navigationController pushViewController:lvc animated:YES];
 }
 

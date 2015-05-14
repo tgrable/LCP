@@ -413,7 +413,6 @@
     else {
         vvc.contentType = @"case_study";
     }
-    //vvc.content = content;
 
     //Stop video and reset poster image alpha to 1.0
     [moviePlayerController stop];

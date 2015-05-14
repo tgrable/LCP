@@ -209,8 +209,7 @@
         }];
         
         NSArray *bodyArray = [object objectForKey:@"body"];
-        NSMutableDictionary *bodyDict = [[NSMutableDictionary alloc] init];
-        bodyDict = bodyArray[1];
+        NSMutableDictionary *bodyDict = bodyArray[1];
         
         UIView *testimonialView = [[UIView alloc] initWithFrame:CGRectMake(x, 210, pageScroll.bounds.size.width - 48, 315)];
         testimonialView.layer.borderWidth = 1.0f;
@@ -238,8 +237,7 @@
         [testimonialScroll setContentSize:CGSizeMake(testimonialScroll.bounds.size.width, testBody.frame.size.height)];
 
         NSArray *customerArray = [object objectForKey:@"field_testimonial_customer"];
-        NSMutableDictionary *customerDict = [[NSMutableDictionary alloc] init];
-        customerDict = customerArray[0];
+        NSMutableDictionary *customerDict = customerArray[0];
         NSString *tempCustomer = [NSString stringWithFormat:@"%@", [customerDict objectForKey:@"value"]];
         
         UILabel *customer = [[UILabel alloc] initWithFrame:CGRectMake(x, 550, background.bounds.size.width - 48, 35)];
@@ -252,8 +250,7 @@
         [pageScroll addSubview:customer];
         
         NSArray *subtitleArray = [object objectForKey:@"field_testimonial_subtitle"];
-        NSMutableDictionary *subtitleDict = [[NSMutableDictionary alloc] init];
-        subtitleDict = subtitleArray[0];
+        NSMutableDictionary *subtitleDict = subtitleArray[0];
         NSString *tempSubtitle = [NSString stringWithFormat:@"%@", [subtitleDict objectForKey:@"value"]];
         
         UILabel *subtitle = [[UILabel alloc] initWithFrame:CGRectMake(x, 595, 790, 45)];

@@ -90,6 +90,105 @@
     [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home"] forState:UIControlStateNormal];
     [self.view addSubview:homeButton];
     
+    //Navigation Bar content
+    UIView *navBar = [[UIView alloc] initWithFrame:CGRectMake(0, (background.bounds.size.height - 96), background.bounds.size.width, 96)];
+    [navBar setBackgroundColor:[UIColor colorWithRed:230.0f/255.0f green:230.0f/255.0f blue:230.0f/255.0f alpha:1.0]];
+    [background addSubview:navBar];
+    
+    UIButton *overviewButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [overviewButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (97.5f + 45), 10, 45, 45)];
+    [overviewButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
+    overviewButton.showsTouchWhenHighlighted = YES;
+    [overviewButton setBackgroundImage:[UIImage imageNamed:@"ico-overview"] forState:UIControlStateNormal];
+    [overviewButton setBackgroundColor:[UIColor clearColor]];
+    overviewButton.tag = 0;
+    [navBar addSubview:overviewButton];
+    
+    UILabel *overviewLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 160, navBar.bounds.size.height - 32, 80, 32)];
+    [overviewLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
+    overviewLabel.textColor = [UIColor blackColor];
+    overviewLabel.numberOfLines = 1;
+    overviewLabel.backgroundColor = [UIColor clearColor];
+    overviewLabel.textAlignment = NSTextAlignmentCenter;
+    overviewLabel.text = @"OVERVIEW";
+    [navBar addSubview:overviewLabel];
+    
+    UIButton *caseStudiesButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [caseStudiesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (17.5f + 45), 10, 45, 45)];
+    [caseStudiesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
+    caseStudiesButton.showsTouchWhenHighlighted = YES;
+    [caseStudiesButton setBackgroundImage:[UIImage imageNamed:@"ico-casestudy2"] forState:UIControlStateNormal];
+    caseStudiesButton.tag = 1;
+    [navBar addSubview:caseStudiesButton];
+    
+    UILabel *casestudyLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 80, navBar.bounds.size.height - 32, 80, 32)];
+    [casestudyLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
+    casestudyLabel.textColor = [UIColor blackColor];
+    casestudyLabel.numberOfLines = 1;
+    casestudyLabel.backgroundColor = [UIColor clearColor];
+    casestudyLabel.textAlignment = NSTextAlignmentCenter;
+    casestudyLabel.text = @"CASE STUDIES";
+    [navBar addSubview:casestudyLabel];
+    
+    UIButton *samplesButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [samplesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 17.5f, 10, 45, 45)];
+    [samplesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
+    samplesButton.showsTouchWhenHighlighted = YES;
+    [samplesButton setBackgroundImage:[UIImage imageNamed:@"ico-samples"] forState:UIControlStateNormal];
+    samplesButton.tag = 2;
+    [navBar addSubview:samplesButton];
+    
+    UILabel *samplesLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2), navBar.bounds.size.height - 32, 80, 32)];
+    [samplesLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
+    samplesLabel.textColor = [UIColor blackColor];
+    samplesLabel.numberOfLines = 1;
+    samplesLabel.backgroundColor = [UIColor clearColor];
+    samplesLabel.textAlignment = NSTextAlignmentCenter;
+    samplesLabel.text = @"SAMPLES";
+    [navBar addSubview:samplesLabel];
+    
+    UIButton *videoButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [videoButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 97.5f, 10, 45, 45)];
+    [videoButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
+    videoButton.showsTouchWhenHighlighted = YES;
+    [videoButton setBackgroundImage:[UIImage imageNamed:@"ico-video2"] forState:UIControlStateNormal];
+    videoButton.tag = 3;
+    [navBar addSubview:videoButton];
+    
+    UILabel *videosLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) + 80, navBar.bounds.size.height - 32, 80, 32)];
+    [videosLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
+    videosLabel.textColor = [UIColor blackColor];
+    videosLabel.numberOfLines = 1;
+    videosLabel.backgroundColor = [UIColor clearColor];
+    videosLabel.textAlignment = NSTextAlignmentCenter;
+    videosLabel.text = @"VIDEOS";
+    [navBar addSubview:videosLabel];
+    
+    //Set the color of the location indicator view
+    UIView *locationIndicator = [[UIView alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2), 0, 80, 5)];
+    if ([content.catagoryId isEqualToString:@"38"]) {
+        [locationIndicator setBackgroundColor:[UIColor yellowColor]];
+    }
+    else if ([content.catagoryId isEqualToString:@"40"]) {
+        [locationIndicator setBackgroundColor:[UIColor blueColor]];
+    }
+    else if ([content.catagoryId isEqualToString:@"41"]) {
+        [locationIndicator setBackgroundColor:[UIColor purpleColor]];
+    }
+    else if ([content.catagoryId isEqualToString:@"42"]) {
+        [locationIndicator setBackgroundColor:[UIColor greenColor]];
+    }
+    else if ([content.catagoryId isEqualToString:@"43"]) {
+        [locationIndicator setBackgroundColor:[UIColor orangeColor]];
+    }
+    else if ([content.catagoryId isEqualToString:@"44"]) {
+        [locationIndicator setBackgroundColor:[UIColor redColor]];
+    }
+    else {
+        
+    }
+    [navBar addSubview:locationIndicator];
+    
     //array used to hold nids for the current index of the sample
     nids = [NSMutableArray array];
     nodeTitles = [NSMutableArray array];
@@ -272,7 +371,7 @@
     [background addSubview:headerLabel];
 
     //UIScrollView used to hold the case study objects
-    pageScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 110, background.bounds.size.width, background.bounds.size.width - 110)];
+    pageScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 110, background.bounds.size.width, background.bounds.size.height - 210)];
     pageScroll.showsHorizontalScrollIndicator = NO;
     pageScroll.showsVerticalScrollIndicator = YES;
     pageScroll.pagingEnabled = YES;
@@ -394,105 +493,6 @@
         paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
         [background addSubview:paginationDots];
     }
-    
-    //Navigation Bar content
-    UIView *navBar = [[UIView alloc] initWithFrame:CGRectMake(0, (background.bounds.size.height - 96), background.bounds.size.width, 96)];
-    [navBar setBackgroundColor:[UIColor colorWithRed:230.0f/255.0f green:230.0f/255.0f blue:230.0f/255.0f alpha:1.0]];
-    [background addSubview:navBar];
-    
-    UIButton *overviewButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [overviewButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (97.5f + 45), 10, 45, 45)];
-    [overviewButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
-    overviewButton.showsTouchWhenHighlighted = YES;
-    [overviewButton setBackgroundImage:[UIImage imageNamed:@"ico-overview"] forState:UIControlStateNormal];
-    [overviewButton setBackgroundColor:[UIColor clearColor]];
-    overviewButton.tag = 0;
-    [navBar addSubview:overviewButton];
-    
-    UILabel *overviewLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 160, navBar.bounds.size.height - 32, 80, 32)];
-    [overviewLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
-    overviewLabel.textColor = [UIColor blackColor];
-    overviewLabel.numberOfLines = 1;
-    overviewLabel.backgroundColor = [UIColor clearColor];
-    overviewLabel.textAlignment = NSTextAlignmentCenter;
-    overviewLabel.text = @"OVERVIEW";
-    [navBar addSubview:overviewLabel];
-    
-    UIButton *caseStudiesButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [caseStudiesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) - (17.5f + 45), 10, 45, 45)];
-    [caseStudiesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
-    caseStudiesButton.showsTouchWhenHighlighted = YES;
-    [caseStudiesButton setBackgroundImage:[UIImage imageNamed:@"ico-casestudy2"] forState:UIControlStateNormal];
-    caseStudiesButton.tag = 1;
-    [navBar addSubview:caseStudiesButton];
-    
-    UILabel *casestudyLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 80, navBar.bounds.size.height - 32, 80, 32)];
-    [casestudyLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
-    casestudyLabel.textColor = [UIColor blackColor];
-    casestudyLabel.numberOfLines = 1;
-    casestudyLabel.backgroundColor = [UIColor clearColor];
-    casestudyLabel.textAlignment = NSTextAlignmentCenter;
-    casestudyLabel.text = @"CASE STUDIES";
-    [navBar addSubview:casestudyLabel];
-    
-    UIButton *samplesButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [samplesButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 17.5f, 10, 45, 45)];
-    [samplesButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
-    samplesButton.showsTouchWhenHighlighted = YES;
-    [samplesButton setBackgroundImage:[UIImage imageNamed:@"ico-samples"] forState:UIControlStateNormal];
-    samplesButton.tag = 2;
-    [navBar addSubview:samplesButton];
-    
-    UILabel *samplesLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2), navBar.bounds.size.height - 32, 80, 32)];
-    [samplesLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
-    samplesLabel.textColor = [UIColor blackColor];
-    samplesLabel.numberOfLines = 1;
-    samplesLabel.backgroundColor = [UIColor clearColor];
-    samplesLabel.textAlignment = NSTextAlignmentCenter;
-    samplesLabel.text = @"SAMPLES";
-    [navBar addSubview:samplesLabel];
-    
-    UIButton *videoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [videoButton setFrame:CGRectMake((navBar.bounds.size.width / 2) + 97.5f, 10, 45, 45)];
-    [videoButton addTarget:self action:@selector(navigateViewButton:)forControlEvents:UIControlEventTouchUpInside];
-    videoButton.showsTouchWhenHighlighted = YES;
-    [videoButton setBackgroundImage:[UIImage imageNamed:@"ico-video2"] forState:UIControlStateNormal];
-    videoButton.tag = 3;
-    [navBar addSubview:videoButton];
-    
-    UILabel *videosLabel = [[UILabel alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) + 80, navBar.bounds.size.height - 32, 80, 32)];
-    [videosLabel setFont:[UIFont fontWithName:@"Oswald" size:12.0]];
-    videosLabel.textColor = [UIColor blackColor];
-    videosLabel.numberOfLines = 1;
-    videosLabel.backgroundColor = [UIColor clearColor];
-    videosLabel.textAlignment = NSTextAlignmentCenter;
-    videosLabel.text = @"VIDEOS";
-    [navBar addSubview:videosLabel];
-    
-    //Set the color of the location indicator view
-    UIView *locationIndicator = [[UIView alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2), 0, 80, 5)];
-    if ([content.catagoryId isEqualToString:@"38"]) {
-        [locationIndicator setBackgroundColor:[UIColor yellowColor]];
-    }
-    else if ([content.catagoryId isEqualToString:@"40"]) {
-        [locationIndicator setBackgroundColor:[UIColor blueColor]];
-    }
-    else if ([content.catagoryId isEqualToString:@"41"]) {
-        [locationIndicator setBackgroundColor:[UIColor purpleColor]];
-    }
-    else if ([content.catagoryId isEqualToString:@"42"]) {
-        [locationIndicator setBackgroundColor:[UIColor greenColor]];
-    }
-    else if ([content.catagoryId isEqualToString:@"43"]) {
-        [locationIndicator setBackgroundColor:[UIColor orangeColor]];
-    }
-    else if ([content.catagoryId isEqualToString:@"44"]) {
-        [locationIndicator setBackgroundColor:[UIColor redColor]];
-    }
-    else {
-        
-    }
-    [navBar addSubview:locationIndicator];
     
     //update the button color
     [self updateFavoriteButtonColor];
@@ -628,7 +628,7 @@
 #pragma mark
 #pragma mark - Memory Management
 - (void)removeEverything {
-    for (UIView *v in [background subviews]) {
+    for (UIView *v in [pageScroll subviews]) {
         [v removeFromSuperview];
     }
     

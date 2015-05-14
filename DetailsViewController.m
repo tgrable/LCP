@@ -63,8 +63,7 @@
     [infoBar addSubview:titleLabel];
     
     NSArray *bodyArray = [contentObject objectForKey:@"body"];
-    NSMutableDictionary *bodyDict = [[NSMutableDictionary alloc] init];
-    bodyDict = bodyArray[1];
+    NSMutableDictionary *bodyDict = bodyArray[1];
     
     UIScrollView *summaryScroll = [[UIScrollView alloc] initWithFrame:CGRectMake((infoBar.bounds.size.width * 0.25) + 14, 0, infoBar.bounds.size.width * 0.60, self.view.bounds.size.height - 652)];
     summaryScroll.layer.borderWidth = 1.0f;

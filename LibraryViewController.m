@@ -141,6 +141,8 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
+    
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"samples"] isEqualToString:@"hasData"]) {
@@ -330,7 +332,7 @@
         //add the node title to be added for
         [nodeTitles addObject:object[@"title"]];
         
-        int btntag = ([[object objectForKey:@"field_term_reference"] isEqual:@"N/A"]) ? 0 : [[object objectForKey:@"field_term_reference"] integerValue];
+        int btntag = ([[object objectForKey:@"field_term_reference"] isEqual:@"N/A"]) ? 0 : [[object objectForKey:@"field_term_reference"] intValue];
         UIButton *detailsButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [detailsButton setFrame:CGRectMake(x, y, 199, 117)];
         [detailsButton addTarget:self action:@selector(showVideoDetails:)forControlEvents:UIControlEventTouchUpInside];
@@ -417,8 +419,7 @@
         [pageScroll addSubview:casestudyTittleLabel];
         
         NSArray *bodyArray = [object objectForKey:@"body"];
-        NSMutableDictionary *bodyDict = [[NSMutableDictionary alloc] init];
-        bodyDict = bodyArray[1];
+        NSMutableDictionary *bodyDict = bodyArray[1];
 
         NSString *temp = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];
         UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(39, y + 24, pageScroll.bounds.size.width - 237, 75)];

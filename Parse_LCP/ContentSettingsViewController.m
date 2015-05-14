@@ -504,7 +504,7 @@
 }
 
 -(void)buildPresentationView {
-    // TODO: add presentation layout
+    
     UILabel *companyNameLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 0, 200, 40)];
     companyNameLabel.textColor = [UIColor whiteColor];
     companyNameLabel.font = [UIFont fontWithName:@"Oswald" size:20];
@@ -655,7 +655,7 @@
         titleLabel.textAlignment = NSTextAlignmentLeft;
         titleLabel.text = [NSString stringWithFormat:@"%@", object[@"title"]];
         
-        BOOL switchVal;
+        BOOL switchVal = YES;
         if (![lcpContent objectForKey:[object objectForKey:@"nid"]]) {
             [lcpContent setObject:@"show" forKey:[object objectForKey:@"nid"]];
         }

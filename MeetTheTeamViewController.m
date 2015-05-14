@@ -108,6 +108,7 @@
 }
 
 - (void)viewWillAppear:(BOOL)animated {
+    [super viewWillAppear:animated];
     
     jobDescription = [[UIView alloc] initWithFrame:CGRectMake(36, 410, (background.bounds.size.width - (36 * 2)), 250)];
     [jobDescription setBackgroundColor:[UIColor clearColor]];
@@ -182,8 +183,7 @@
     int __block count = 1;
     for (PFObject *object in objects) {
         NSArray *gridLocationArray = [object objectForKey:@"field_grid_location"];
-        NSDictionary *gridLocationDict = [[NSMutableDictionary alloc] init];
-        gridLocationDict = gridLocationArray[0];
+        NSDictionary *gridLocationDict = gridLocationArray[0];
         
         //Sample Image
         PFFile *sampleFile = object[@"field_team_member_image_img"];
@@ -192,13 +192,11 @@
             LCPTeamMembers *tm = [[LCPTeamMembers alloc] init];
             
             NSArray *bioArray = [object objectForKey:@"body"];
-            NSDictionary *bioDict = [[NSMutableDictionary alloc] init];
-            bioDict = bioArray[1];
+            NSDictionary *bioDict = bioArray[1];
             tm.teamMemberBio = [bioDict objectForKey:@"value"];
             
             NSArray *titleArray = [object objectForKey:@"field_job_title"];
-            NSDictionary *titleDict = [[NSMutableDictionary alloc] init];
-            titleDict = titleArray[0];
+            NSDictionary *titleDict = titleArray[0];
             tm.teamMemberTitle = [titleDict objectForKey:@"value"];
             
             tm.teamMemberName = [object objectForKey:@"title"];

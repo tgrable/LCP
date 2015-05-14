@@ -8,8 +8,8 @@
 
 #import "ContentSettingsViewController.h"
 #import "LogoLoaderViewController.h"
-#import "BrandMeetsWorldViewController.h"
 #import "Reachability.h"
+#import "LCPContent.h"
 #import "ParseDownload.h"
 #import <Parse/Parse.h>
 
@@ -24,25 +24,29 @@
 @property (strong, nonatomic) UIButton *submitButton;
 @property NSMutableArray *favoritedNIDs;
 @property NSMutableArray *termsArray;
-@property NSMutableDictionary *posterDictionary;
+@property NSMutableDictionary *posterDictionary, *navIconDictionary, *navTermDictionary, *navTidsDictionary;
+@property NSMutableDictionary *lcpContent;
 
+@property (strong, nonatomic) LCPContent *content;
 @property (strong, nonatomic) SendEmail *emailObject;
 @property (strong, nonatomic) ParseDownload *parsedownload;
 
 @end
 
 @implementation ContentSettingsViewController
-@synthesize background, favoriteListView, formSlidView, loadingView;    //UIView
-@synthesize contentActivityIndicator;                                   //UIActivityIndicatorView
-@synthesize csContent, sContent, vContent, tContent;                    //UIScrollView
-@synthesize presentationContent, emailContent;                          //UIScrollView
-@synthesize contentSegController;                                       //UISegmentedControl
-@synthesize submitButton;                                               //UIButons
-@synthesize parsedownload, emailObject;                                 //Custom Classes
-@synthesize email, subject, companyNameTextField;                       //Email textfields
-@synthesize message;                                                    //Email textview
-@synthesize favoritedNIDs, termsArray;
-@synthesize posterDictionary;
+@synthesize background, favoriteListView, formSlidView, loadingView;                    //UIView
+@synthesize contentActivityIndicator;                                                   //UIActivityIndicatorView
+@synthesize csContent, sContent, vContent, tContent;                                    //UIScrollView
+@synthesize presentationContent, emailContent;                                          //UIScrollView
+@synthesize contentSegController;                                                       //UISegmentedControl
+@synthesize submitButton;                                                               //UIButons
+@synthesize parsedownload, emailObject;                                                 //Custom Classes
+@synthesize email, subject, companyNameTextField;                                       //Email textfields
+@synthesize message;                                                                    //Email textview
+@synthesize favoritedNIDs, termsArray;                                                  //NSMutableArray
+@synthesize posterDictionary, navIconDictionary, navTermDictionary, navTidsDictionary;  //NSMutableDictionary
+@synthesize lcpContent;                                                                 //NSMutableDictionary
+@synthesize content;                                                                    //LCPContent
 
 - (BOOL)prefersStatusBarHidden
 {
@@ -54,6 +58,8 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     [self.navigationController setNavigationBarHidden:YES animated:NO];
+    
+    //NSLog(@"%@", [[NSUserDefaults standardUserDefaults] dictionaryRepresentation]);
 
     //NSNotificationCenter reciever to redraw the view once the data have been downloaded from Parse & Rackspace
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(redrawView:) name:@"RefreshParseData" object:nil];
@@ -62,7 +68,72 @@
     emailObject = [[SendEmail alloc] init];
     parsedownload = [[ParseDownload alloc] init];
     posterDictionary = [[NSMutableDictionary alloc] init];
+    navIconDictionary = [[NSMutableDictionary alloc] init];
+    navTermDictionary = [[NSMutableDictionary alloc] init];
+    navTidsDictionary = [[NSMutableDictionary alloc] init];
+    
+    if (lcpContent == NULL) {
+        lcpContent = [[NSMutableDictionary alloc] init];
+    }
+    else {
+        lcpContent = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+    }
+    
+    
+    background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, (self.view.bounds.size.width - (36 * 2)), (self.view.bounds.size.height - (36 * 2)))];
+    [background setBackgroundColor:[UIColor colorWithRed:115.0f/255.0f green:115.0f/255.0f blue:115.0f/255.0f alpha:1.0]];
+    [background setUserInteractionEnabled:YES];
+    [self.view addSubview:background];
+    
+    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
+    logoButton.showsTouchWhenHighlighted = YES;
+    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
+    [self.view addSubview:logoButton];
+    
+    contentSegController = [[UISegmentedControl alloc]initWithItems:@[@"Presentation", @"Case Studies", @"Samples", @"Videos", @"Testimonials", @"Email"]];
+    contentSegController.frame = CGRectMake(190, 56, 700, 33);
+    [contentSegController addTarget:self action:@selector(segmentedControlValueDidChange:) forControlEvents:UIControlEventValueChanged];
+    [contentSegController setSelectedSegmentIndex:0];
+    [contentSegController setTintColor:[UIColor whiteColor]];
+    [self.view addSubview:contentSegController];
+    
+    UIButton *startButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [startButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
+    [startButton addTarget:self action:@selector(startPresentation:)forControlEvents:UIControlEventTouchUpInside];
+    startButton.showsTouchWhenHighlighted = YES;
+    [startButton setBackgroundImage:[UIImage imageNamed:@"ico-play"] forState:UIControlStateNormal];
+    startButton.layer.cornerRadius = (45/2);
+    startButton.layer.masksToBounds = YES;
+    startButton.backgroundColor = [UIColor clearColor];
+    [startButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [self.view addSubview:startButton];
+    
+    UIButton *clearLocalDataButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
+    [clearLocalDataButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
+    [clearLocalDataButton addTarget:self action:@selector(reloadEverything:)forControlEvents:UIControlEventTouchUpInside];
+    clearLocalDataButton.showsTouchWhenHighlighted = YES;
+    [clearLocalDataButton setBackgroundImage:[UIImage imageNamed:@"ico-refresh"] forState:UIControlStateNormal];
+    clearLocalDataButton.backgroundColor = [UIColor clearColor];
+    [clearLocalDataButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
+    [self.view addSubview:clearLocalDataButton];
+    
+    presentationContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, (background.bounds.size.height - 115))];
+    [presentationContent setBackgroundColor:[UIColor clearColor]];
+    [presentationContent setUserInteractionEnabled:YES];
+    presentationContent.showsVerticalScrollIndicator = YES;
+    [background addSubview:presentationContent];
+    
+    emailContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, (background.bounds.size.height - 115))];
+    [emailContent setBackgroundColor:[UIColor clearColor]];
+    [emailContent setUserInteractionEnabled:YES];
+    emailContent.showsVerticalScrollIndicator = YES;
+    emailContent.hidden = YES;
+    emailContent.tag = 212;
+    [background addSubview:emailContent];
 
+    [self buildPresentationView];
+    [self buildEmailView];
     [self drawViews];
     
     contentActivityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
@@ -229,9 +300,7 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
                         UIImage *posterImg = [[UIImage alloc] initWithData:imageData];
-                        [posterDictionary setObject:posterImg forKey:[objects[0] objectForKey:@"nid"]];
-                        
-                        NSLog(@"%@", posterDictionary);
+                        [posterDictionary setObject:posterImg forKey:[object objectForKey:@"nid"]];
                     }];
                 });
             }
@@ -239,21 +308,36 @@
     }];
 }
 
+- (void)fetchNavIcons {
+    
+    PFQuery *query = [PFQuery queryWithClassName:@"term"];
+    [query whereKey:@"parent" equalTo:@"0"];
+    [query fromLocalDatastore];
+    [query orderByAscending:@"weight"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                for (PFObject *object in objects) {
+                    PFFile *imageFile = [object objectForKey:@"field_button_image_img"];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
+                            UIImage *iconImg = [[UIImage alloc] initWithData:imageData];
+                            [navIconDictionary setObject:iconImg forKey:[object objectForKey:@"weight"]];
+                            [navTermDictionary setObject:[object objectForKey:@"name"] forKey:[object objectForKey:@"weight"]];
+                            [navTidsDictionary setObject:[object objectForKey:@"tid"] forKey:[object objectForKey:@"weight"]];
+                        }];
+                    });
+                }
+            }
+        }];
+    });
+}
+
+
 #pragma mark -
 #pragma mark - Build View
 - (void)drawViews {
     //First Page Summary View
-    
-    background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, (self.view.bounds.size.width - (36 * 2)), (self.view.bounds.size.height - (36 * 2)))];
-    [background setBackgroundColor:[UIColor colorWithRed:115.0f/255.0f green:115.0f/255.0f blue:115.0f/255.0f alpha:1.0]];
-    [background setUserInteractionEnabled:YES];
-    [self.view addSubview:background];
-    
-    presentationContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, (background.bounds.size.height - 115))];
-    [presentationContent setBackgroundColor:[UIColor clearColor]];
-    [presentationContent setUserInteractionEnabled:YES];
-    presentationContent.showsVerticalScrollIndicator = YES;
-    [background addSubview:presentationContent];
     
     csContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 105, background.bounds.size.width, (background.bounds.size.height - 115))];
     [csContent setBackgroundColor:[UIColor clearColor]];
@@ -283,14 +367,13 @@
     tContent.showsVerticalScrollIndicator = YES;
     [background addSubview:tContent];
     
-    emailContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 115, background.bounds.size.width, (background.bounds.size.height - 115))];
-    [emailContent setBackgroundColor:[UIColor clearColor]];
-    [emailContent setUserInteractionEnabled:YES];
-    emailContent.showsVerticalScrollIndicator = YES;
-    emailContent.hidden = YES;
-    emailContent.tag = 212;
-    [background addSubview:emailContent];
-    
+    [self fetchPosterImage];
+    [self fetchNavIcons];
+    [self fetchTerms];
+}
+
+- (void)buildEmailView {
+
     /*** Start of email views ***/
     
     UITapGestureRecognizer *tapAwayFromFormRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapEmailView:)];
@@ -403,41 +486,6 @@
     
     /*** /End of email views ***/
     
-    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
-    logoButton.showsTouchWhenHighlighted = YES;
-    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
-    [self.view addSubview:logoButton];
-    
-    contentSegController = [[UISegmentedControl alloc]initWithItems:@[@"Presentation", @"Case Studies", @"Samples", @"Videos", @"Testimonials", @"Email"]];
-    contentSegController.frame = CGRectMake(190, 56, 700, 33);
-    [contentSegController addTarget:self action:@selector(segmentedControlValueDidChange:) forControlEvents:UIControlEventValueChanged];
-    [contentSegController setSelectedSegmentIndex:0];
-    [contentSegController setTintColor:[UIColor whiteColor]];
-    [self.view addSubview:contentSegController];
-    
-    UIButton *startButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    [startButton setFrame:CGRectMake((self.view.bounds.size.width - 170), 0, 45, 45)];
-    [startButton addTarget:self action:@selector(startPresentation:)forControlEvents:UIControlEventTouchUpInside];
-    startButton.showsTouchWhenHighlighted = YES;
-    [startButton setBackgroundImage:[UIImage imageNamed:@"ico-play"] forState:UIControlStateNormal];
-    startButton.layer.cornerRadius = (45/2);
-    startButton.layer.masksToBounds = YES;
-    //[startButton setTitle:@"Start" forState:UIControlStateNormal];
-    startButton.backgroundColor = [UIColor clearColor];
-    [startButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [self.view addSubview:startButton];
-    
-    UIButton *clearLocalDataButton = [UIButton buttonWithType:UIButtonTypeRoundedRect];
-    [clearLocalDataButton setFrame:CGRectMake((self.view.bounds.size.width - 105), 0, 45, 45)];
-    [clearLocalDataButton addTarget:self action:@selector(reloadLocalDataStore:)forControlEvents:UIControlEventTouchUpInside];
-    clearLocalDataButton.showsTouchWhenHighlighted = YES;
-    //[clearLocalDataButton setTitle:@"Refresh Data" forState:UIControlStateNormal];
-    [clearLocalDataButton setBackgroundImage:[UIImage imageNamed:@"ico-refresh"] forState:UIControlStateNormal];
-    clearLocalDataButton.backgroundColor = [UIColor clearColor];
-    [clearLocalDataButton setTitleColor:[UIColor blackColor] forState:UIControlStateNormal];
-    [self.view addSubview:clearLocalDataButton];
-    
     /* Loading View */
     loadingView = [[UIView alloc] initWithFrame:CGRectMake(718, 334, 100, 100)];
     loadingView.alpha = 0.0;
@@ -445,20 +493,17 @@
     loadingView.layer.masksToBounds = YES;
     loadingView.backgroundColor = [UIColor blackColor];
     [background addSubview:loadingView];
-    
-    [self buildPresentationView];
-    [self fetchPosterImage];
-    [self fetchTerms];
 }
 
 //Once all data has been downloaded NSNotification is posted and this method is called to redraw the view.
 - (void)redrawView:(NSNotification *)notification {
     [self drawViews];
+    [self fetchPosterImage];
+    [self fetchNavIcons];
     [contentActivityIndicator stopAnimating];
 }
 
--(void)buildPresentationView
-{
+-(void)buildPresentationView {
     // TODO: add presentation layout
     UILabel *companyNameLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 0, 200, 40)];
     companyNameLabel.textColor = [UIColor whiteColor];
@@ -476,6 +521,86 @@
     [companyNameTextField setBorderStyle:UITextBorderStyleRoundedRect];
     [companyNameTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
     [presentationContent addSubview:companyNameTextField];
+    
+    UILabel *resetLCPContentLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 100, background.bounds.size.width, 40)];
+    resetLCPContentLabel.textColor = [UIColor whiteColor];
+    resetLCPContentLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    resetLCPContentLabel.numberOfLines = 1;
+    resetLCPContentLabel.backgroundColor = [UIColor clearColor];
+    resetLCPContentLabel.textAlignment = NSTextAlignmentLeft;
+    resetLCPContentLabel.text = @"Refresh LCP Content:";
+    [presentationContent addSubview:resetLCPContentLabel];
+    
+    UIButton *resetLCPContent = [[UIButton alloc] initWithFrame:CGRectMake(24, 150, 400, 50)];
+    resetLCPContent.backgroundColor = [UIColor clearColor];
+    [resetLCPContent setTitle:@"Refresh" forState:UIControlStateNormal];
+    [resetLCPContent.layer setBorderWidth:1.0f];
+    [resetLCPContent.layer setBorderColor:[UIColor whiteColor].CGColor];
+    [resetLCPContent addTarget:self action:@selector(reloadLocalDataStore:)forControlEvents:UIControlEventTouchUpInside];
+    resetLCPContent.showsTouchWhenHighlighted = YES;
+    [resetLCPContent setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    resetLCPContent.titleLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    [presentationContent addSubview:resetLCPContent];
+    
+    UILabel *resetLCPVideoLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 210, background.bounds.size.width, 40)];
+    resetLCPVideoLabel.textColor = [UIColor whiteColor];
+    resetLCPVideoLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    resetLCPVideoLabel.numberOfLines = 1;
+    resetLCPVideoLabel.backgroundColor = [UIColor clearColor];
+    resetLCPVideoLabel.textAlignment = NSTextAlignmentLeft;
+    resetLCPVideoLabel.text = @"Reload LCP Videos:";
+    [presentationContent addSubview:resetLCPVideoLabel];
+    
+    UIButton *resetLCPVideo = [[UIButton alloc] initWithFrame:CGRectMake(24, 260, 400, 50)];
+    resetLCPVideo.backgroundColor = [UIColor clearColor];
+    [resetLCPVideo setTitle:@"Refresh" forState:UIControlStateNormal];
+    [resetLCPVideo.layer setBorderWidth:1.0f];
+    [resetLCPVideo.layer setBorderColor:[UIColor whiteColor].CGColor];
+    [resetLCPVideo addTarget:self action:@selector(reloadVideoContent:)forControlEvents:UIControlEventTouchUpInside];
+    resetLCPVideo.showsTouchWhenHighlighted = YES;
+    [resetLCPVideo setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    resetLCPVideo.titleLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    [presentationContent addSubview:resetLCPVideo];
+    
+    UILabel *resetFavoritesLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 320, background.bounds.size.width, 40)];
+    resetFavoritesLabel.textColor = [UIColor whiteColor];
+    resetFavoritesLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    resetFavoritesLabel.numberOfLines = 1;
+    resetFavoritesLabel.backgroundColor = [UIColor clearColor];
+    resetFavoritesLabel.textAlignment = NSTextAlignmentLeft;
+    resetFavoritesLabel.text = @"Reset Previously Favorited Content:";
+    [presentationContent addSubview:resetFavoritesLabel];
+    
+    UIButton *resetFavButton = [[UIButton alloc] initWithFrame:CGRectMake(24, 370, 400, 50)];
+    resetFavButton.backgroundColor = [UIColor clearColor];
+    [resetFavButton setTitle:@"Reset" forState:UIControlStateNormal];
+    [resetFavButton.layer setBorderWidth:1.0f];
+    [resetFavButton.layer setBorderColor:[UIColor whiteColor].CGColor];
+    [resetFavButton addTarget:self action:@selector(resetAllFavoritedContent:)forControlEvents:UIControlEventTouchUpInside];
+    resetFavButton.showsTouchWhenHighlighted = YES;
+    [resetFavButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    resetFavButton.titleLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    [presentationContent addSubview:resetFavButton];
+    
+    UILabel *resetSelectedLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 430, background.bounds.size.width, 40)];
+    resetSelectedLabel.textColor = [UIColor whiteColor];
+    resetSelectedLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    resetSelectedLabel.numberOfLines = 1;
+    resetSelectedLabel.backgroundColor = [UIColor clearColor];
+    resetSelectedLabel.textAlignment = NSTextAlignmentLeft;
+    resetSelectedLabel.text = @"Reset Previously Selected Content:";
+    [presentationContent addSubview:resetSelectedLabel];
+    
+    UIButton *resetSelectedButton = [[UIButton alloc] initWithFrame:CGRectMake(24, 480, 400, 50)];
+    resetSelectedButton.backgroundColor = [UIColor clearColor];
+    [resetSelectedButton setTitle:@"Reset" forState:UIControlStateNormal];
+    [resetSelectedButton.layer setBorderWidth:1.0f];
+    [resetSelectedButton.layer setBorderColor:[UIColor whiteColor].CGColor];
+    [resetSelectedButton addTarget:self action:@selector(resetAllSelectedContent:)forControlEvents:UIControlEventTouchUpInside];
+    resetSelectedButton.showsTouchWhenHighlighted = YES;
+    [resetSelectedButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    resetSelectedButton.titleLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    [presentationContent addSubview:resetSelectedButton];
 }
 
 - (void)buildOptions:(NSArray *)objects forView:(NSString *)contentView withTerm:(NSString *)tagReference {
@@ -531,14 +656,11 @@
         titleLabel.text = [NSString stringWithFormat:@"%@", object[@"title"]];
         
         BOOL switchVal;
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        if ([defaults objectForKey:[object objectForKey:@"nid"]] == nil) {
-            [defaults setObject:@"show" forKey:[object objectForKey:@"nid"]];
-            [defaults synchronize];
-            switchVal = YES;
+        if (![lcpContent objectForKey:[object objectForKey:@"nid"]]) {
+            [lcpContent setObject:@"show" forKey:[object objectForKey:@"nid"]];
         }
         else {
-            if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+            if ([[lcpContent objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                 switchVal = YES;
             }
             else {
@@ -588,6 +710,10 @@
         y += 50;
         tempId = refId;
     }
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject:lcpContent forKey:@"lcpContent"];
+    [defaults synchronize];
 }
 
 
@@ -743,25 +869,24 @@
 }
 
 //refresh the email favorite list
--(void)refreshEmailList
-{
+-(void)refreshEmailList {
+
     /* remove all views attached to favoriteList */
     for(UIView *v in [favoriteListView subviews]){
         [v removeFromSuperview];
     }
-    
+
     //rebuild the favorited nid array
     //this is saved for when an email is sent
     [favoritedNIDs removeAllObjects];
     
     int yVal = 25;
-    
+
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSMutableDictionary *favoriteList = [defaults objectForKey:@"contentFavorites"];
     // make sure content is available
     if([favoriteList count] > 0){
         for(id key in favoriteList){
-            
             UILabel *messageLabel = [[UILabel alloc] initWithFrame:CGRectMake(0, yVal, 685, 24)];
             messageLabel.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:19.0];
             messageLabel.textColor = [UIColor whiteColor];
@@ -816,16 +941,15 @@
 #pragma mark
 #pragma mark - UISwitch
 - (void)changeSwitch:(UISwitch *)sender {
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    
     if ([sender isOn]) {
-        [defaults setObject:@"show" forKey:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
-        [defaults synchronize];
+        [lcpContent setObject:@"show" forKey:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
     }
     else {
-        [defaults setObject:@"hide" forKey:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
-        [defaults synchronize];
+        [lcpContent setObject:@"hide" forKey:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
     }
+    
+    [[NSUserDefaults standardUserDefaults] setObject:lcpContent forKey:@"lcpContent"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
 }
 
 #pragma mark
@@ -894,16 +1018,25 @@
 #pragma mark
 #pragma mark - Navigation
 -(void)startPresentation:(id)sender {
+    
+    content = [[LCPContent alloc] init];
+    content.navigationIcons = [NSDictionary dictionaryWithDictionary:navIconDictionary];
+    content.navigationTerms = [NSDictionary dictionaryWithDictionary:navTermDictionary];
+    content.navigationTids = [NSDictionary dictionaryWithDictionary:navTidsDictionary];
+    content.imgPoster = [posterDictionary objectForKey:@"202"];
+    
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    
+    //Splash screen backgroung image
     LogoLoaderViewController *lvc = (LogoLoaderViewController *)[storyboard instantiateViewControllerWithIdentifier:@"logoLoaderViewController"];
     lvc.companyName = [companyNameTextField.text uppercaseString];
-    lvc.backgroundImg = [posterDictionary objectForKey:@"202"];
-    //content.imgPoster = [posterDict objectForKey:[NSString stringWithFormat: @"%ld", (long)sender.tag]];
+    lvc.content = content;
+    
     [self.navigationController pushViewController:lvc animated:YES];
 }
 
 //Download all the data from parse and pin it to the local datastore
-- (void)reloadLocalDataStore:(UIButton *)sender {
+- (void)reloadLocalDataStore:(id)sender {
     [parsedownload downloadAndPinPFObjects];
     [self removeEverything];
     
@@ -914,10 +1047,51 @@
     }
 }
 
+- (void)reloadVideoContent:(id)sender {
+    [parsedownload downloadVideoFile:background forTerm:@""];
+}
+
+- (void)resetAllFavoritedContent:(id)sender {
+    NSLog(@"Reset All Favorited Content");
+    //get the defaults and pick the content favorites out from this defaults list
+    NSMutableDictionary *favoriteList = [[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] mutableCopy];
+    [favoriteList removeAllObjects];
+    [[NSUserDefaults standardUserDefaults] setObject:favoriteList forKey:@"contentFavorites"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    [self refreshEmailList];
+}
+
+- (void)resetAllSelectedContent:(id)sender {
+    NSLog(@"Reset All Selected Content");
+    //get the defaults and pick the content favorites out from this defaults list
+    [lcpContent removeAllObjects];
+    [[NSUserDefaults standardUserDefaults] setObject:lcpContent forKey:@"lcpContent"];
+    [[NSUserDefaults standardUserDefaults] synchronize];
+    
+    [self removeEverything];
+    [self drawViews];
+}
+
+- (void)reloadEverything:(id)sender {
+    [self resetAllFavoritedContent:@""];
+    [self reloadLocalDataStore:@""];
+    [self reloadVideoContent:@""];
+    [self resetAllSelectedContent:@""];
+}
+
 #pragma mark
 #pragma mark - Memory Management
 - (void)removeEverything {
-    for (UIView *v in [background subviews]) {
+    for (UIView *v in [csContent subviews]) {
+        [v removeFromSuperview];
+    }
+    for (UIView *v in [sContent subviews]) {
+        [v removeFromSuperview];
+    }
+    for (UIView *v in [vContent subviews]) {
+        [v removeFromSuperview];
+    }
+    for (UIView *v in [tContent subviews]) {
         [v removeFromSuperview];
     }
 }

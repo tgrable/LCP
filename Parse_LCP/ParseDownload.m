@@ -24,9 +24,9 @@
 
 @implementation ParseDownload
 
-@synthesize parseClassTypes;                        //NSArray
-@synthesize parseClassDictionary; //NSMutableDictionary
-@synthesize videoFileBeingDownloaded;               //BOOL
+@synthesize parseClassTypes;            //NSArray
+@synthesize parseClassDictionary;       //NSMutableDictionary
+@synthesize videoFileBeingDownloaded;   //BOOL
 
 #pragma mark
 #pragma mark - Public API
@@ -138,6 +138,7 @@
                     NSLog(@"%@", videoDataDict);
                     
                     if (vidCount == objects.count) {
+                        [self postNotificationToRefresh];
                         [videoActivityIndicator stopAnimating];
                         videoFileBeingDownloaded = NO;
                         NSLog(@"All vidoes have been downloaded.");

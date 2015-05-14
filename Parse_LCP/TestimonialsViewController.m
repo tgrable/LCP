@@ -105,11 +105,12 @@
         //Some testimonials may have be disabled in the app dashboard
         //Check which one are set to "show" and use those to build the view
         NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        NSMutableDictionary *lcpTestimonials = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
         
         //Add selected objects the the array
         for (PFObject *object in objects) {
-            if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+            //Add selected objects the the array
+            if ([[lcpTestimonials objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                 [selectedObjects addObject:object];
             }
         }
@@ -136,11 +137,12 @@
                         //Some testimonials may have be disabled in the app dashboard
                         //Check which one are set to "show" and use those to build the view
                         NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-                        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                        NSMutableDictionary *lcpTestimonials = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
                         
                         //Add selected objects the the array
                         for (PFObject *object in objects) {
-                            if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                            //Add selected objects the the array
+                            if ([[lcpTestimonials objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                                 [selectedObjects addObject:object];
                             }
                         }

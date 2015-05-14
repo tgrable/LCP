@@ -356,7 +356,7 @@
         VideoViewController *vvc = (VideoViewController *)[storyboard instantiateViewControllerWithIdentifier:@"videoViewController"];
         vvc.content = content;
         [self.navigationController pushViewController:vvc animated:YES];
-        [self removeEverything];
+        //[self removeEverything];
     }
 }
 

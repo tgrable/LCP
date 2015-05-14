@@ -61,7 +61,6 @@
     posterDict = [[NSMutableDictionary alloc] init];
     headerDict = [[NSMutableDictionary alloc] init];
     teamDict = [[NSMutableDictionary alloc] init];
-    content = [[LCPContent alloc] init];
     
     //UIView 36 pixels smaller than the device bounds used to hold the rest of the view objects
     background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, (self.view.bounds.size.width - (36 * 2)), (self.view.bounds.size.height - (36 * 2)))];
@@ -155,14 +154,21 @@
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
     [self.view addSubview:dashboardButton];
     
-    //NSUserDefaults used to check if data has been downloaded.
-    //If data has been downloaded pull from local datastore else fetch data from Parse.com
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"term"] isEqualToString:@"hasData"]) {
-        [self fetchDataFromLocalDataStore];
+    //If content.navigationIcons, content.navigationTerms, content.navigationTids all have data
+    //build the view with the content passed in else fetch the data from local datastore or Parse.com
+    if (content.navigationIcons != NULL && content.navigationTerms != NULL && content.navigationTids != NULL) {
+        [self buildViewWithLCPContentData];
     }
     else {
-        [self fetchDataFromParse];
+        //NSUserDefaults used to check if data has been downloaded.
+        //If data has been downloaded pull from local datastore else fetch data from Parse.com
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        if ([[defaults objectForKey:@"term"] isEqualToString:@"hasData"]) {
+            [self fetchDataFromLocalDataStore];
+        }
+        else {
+            [self fetchDataFromParse];
+        }
     }
 }
 
@@ -206,7 +212,8 @@
     //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"term"];
-       [query whereKey:@"parent" equalTo:@"0"];
+        [query whereKey:@"parent" equalTo:@"0"];
+        [query orderByAscending:@"weight"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 if (!error) {
@@ -239,8 +246,51 @@
 
 #pragma mark
 #pragma mark - Build View
+- (void)buildViewWithLCPContentData {
+    
+    //Build the view with the data passed in from the content dashboard
+    int count = 0;
+    int x = 0, y = -143;
+    
+    for (int i = 0; i < content.navigationIcons.count; i++) {
+        if (count % 2 == 0) {
+            x = 30;
+            y = y + 178;
+        }
+        else {
+            x = (190);
+        }
+        
+        dispatch_async(dispatch_get_main_queue(), ^{
+            //Create button image for navigation
+            UIButton *tempButton = [self navigationButtons:[content.navigationIcons objectForKey:[NSString stringWithFormat:@"%d", count]]
+                                                  andtitle:[content.navigationTerms objectForKey:[NSString stringWithFormat:@"%d", count]]
+                                                   andXPos:x
+                                                   andYPos:y
+                                                    andTag:[content.navigationTids objectForKey:[NSString stringWithFormat:@"%d", count]]];
+            [iconDict setObject:[content.navigationIcons objectForKey:[NSString stringWithFormat:@"%d", count]] forKey:[content.navigationTids objectForKey:[NSString stringWithFormat:@"%d", count]]];
+            [navContainer addSubview:tempButton];
+            
+            //UIlabel for navigation
+            UILabel *title = [[UILabel alloc] initWithFrame:CGRectMake(x, (y + 114), 100, 42)];
+            [title setFont:[UIFont fontWithName:@"Oswald" size:14.0]];
+            title.textColor = [UIColor blackColor];
+            title.backgroundColor = [UIColor clearColor];
+            title.textAlignment = NSTextAlignmentCenter;
+            title.numberOfLines = 0;
+            title.lineBreakMode = NSLineBreakByWordWrapping;
+            title.text = [content.navigationTerms objectForKey:[NSString stringWithFormat:@"%d", count]];
+            [navContainer addSubview:title];
+        });
+        count++;
+    }
+    [self addLibraryButtons];
+}
+
 - (void)buildView:(NSArray *)objects {
-    //Create the 3 X 2 grid of navigation buttons
+    
+    //Build the view with data fetched from the local datastore or Parse.com
+    //This method is more of a fail safe in case all the term data wasn't loaded in the app dashboard
     int count = 0;
     int x = 0, y = -143;
     
@@ -252,7 +302,7 @@
         else {
             x = (190);
         }
-        
+
         //Button Image
         PFFile *imageFile = object[@"field_button_image_img"];
         dispatch_async(dispatch_get_main_queue(), ^{
@@ -262,7 +312,11 @@
                     //Create button image for navigation
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
                     [iconDict setObject:btnImg forKey:object[@"tid"]];
-                    UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:y andTag:[object objectForKey:@"tid"]];
+                    UIButton *tempButton = [self navigationButtons:btnImg
+                                                          andtitle:[object objectForKey:@"name"]
+                                                           andXPos:x
+                                                           andYPos:y
+                                                            andTag:[object objectForKey:@"tid"]];
                     [navContainer addSubview:tempButton];
                     
                     //UIlabel for navigation
@@ -298,7 +352,10 @@
             }];
         });
     }
-    
+    [self addLibraryButtons];
+}
+
+- (void)addLibraryButtons {
     //Add video & case study library buttons and labels
     UIButton *videoLibraryButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [videoLibraryButton setFrame:CGRectMake((320 + 36), 36, 100, 100)];

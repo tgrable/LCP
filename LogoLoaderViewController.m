@@ -19,9 +19,9 @@
 
 @implementation LogoLoaderViewController
 
+@synthesize content;
 @synthesize logoView;           //UIView
 @synthesize companyName;        //NSString
-@synthesize backgroundImg;  //NSMutableDictionary
 
 - (BOOL)prefersStatusBarHidden {
     //Hide status bar
@@ -43,11 +43,9 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"splash_screen"] isEqualToString:@"hasData"]) {
         
-        NSLog(@"%@", backgroundImg);
-        
         //UIImageView used to hold the splash screen image
         UIImageView *splashImg = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, logoView.bounds.size.width, logoView.bounds.size.height)];
-        [splashImg setImage:backgroundImg];
+        [splashImg setImage:content.imgPoster];
         [logoView addSubview:splashImg];
         
         //UILable and NSString used to hold Presented to content
@@ -83,7 +81,6 @@
     // Dispose of any resources that can be recreated.
 }
 
-// TODO: look into getting the image before this view
 #pragma mark
 #pragma mark - Parse
 - (void)fetchDataFromParse {
@@ -140,8 +137,10 @@
     //Navigate into the app
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     BrandMeetsWorldViewController *bmwvc = (BrandMeetsWorldViewController *)[storyboard instantiateViewControllerWithIdentifier:@"brandMeetsWorldViewController"];
-    [self.navigationController pushViewController:bmwvc animated:YES];
+    bmwvc.content = content;
+    
     [self removeEverything];
+    [self.navigationController pushViewController:bmwvc animated:YES];
 }
 
 #pragma mark -

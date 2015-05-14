@@ -283,12 +283,12 @@
             //Some case studies may have be disabled in the app dashboard
             //Check which one are set to "show" and use those to build the view
             NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            NSMutableDictionary *lcpCaseStudy = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
             
             for (PFObject *object in objects) {
                 
                 //Add selected objects the the array
-                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                if ([[lcpCaseStudy objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                     [selectedObjects addObject:object];
                 }
                 content.termId = [object objectForKey:@"field_term_reference"];
@@ -323,11 +323,12 @@
                             //Some case studies may have be disabled in the app dashboard
                             //Check which one are set to "show" and use those to build the view
                             NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            NSMutableDictionary *lcpCaseStudy = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
                             
                             //Add selected objects the the array
                             for (PFObject *object in objects) {
-                                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                                //Add selected objects the the array
+                                if ([[lcpCaseStudy objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                                     [selectedObjects addObject:object];
                                 }
                             }
@@ -453,7 +454,6 @@
         [mediaColumnScroll setBackgroundColor:[UIColor clearColor]];
         [caseStudy addSubview:mediaColumnScroll];
         
-        NSLog(@"casestudyMediaObjects.count: %d", casestudyMediaObjects.count);
         int y = 0;
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"csMediaTermReferenceId = %@", [object objectForKey:@"field_term_reference"]];
         NSArray *filteredArray = [casestudyMediaObjects filteredArrayUsingPredicate:predicate];

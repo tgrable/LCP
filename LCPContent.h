@@ -20,6 +20,6 @@
 @property (strong, nonatomic) UIImage *imgIcon;
 @property (strong, nonatomic) UIImage *imgTest;
 @property (strong, nonatomic) UIImage *imgTeam;
-@property (strong, nonatomic) NSMutableArray *btnIcons;
+@property (strong, nonatomic) NSDictionary *navigationIcons, *navigationTerms, *navigationTids;
 
 @end

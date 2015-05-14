@@ -123,7 +123,6 @@
 
 //pick the current nid of the content and save it to the NSUserDefault
 -(void)setContentAsFavorite:(UIButton *)sender {
-    NSLog(@"%@", sender.titleLabel.text);
     if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[contentObject objectForKey:@"nid"]] == nil){
         [parsedownload addOrRemoveFavoriteNodeID:[contentObject objectForKey:@"nid"]
                                        nodeTitle:[contentObject objectForKey:@"title"]

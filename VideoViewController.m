@@ -16,23 +16,25 @@
 @property (strong, nonatomic) UIView *background;
 @property (strong, nonatomic) UIImageView *videoPoster;
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
-@property (strong, nonatomic) ParseDownload *parsedownload;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
 @property NSString *nid, *nodeTitle;
+
+@property (strong, nonatomic) ParseDownload *parsedownload;
 
 @end
 
 @implementation VideoViewController
 
-@synthesize content;
-@synthesize background;
-@synthesize videoPoster;
-@synthesize moviePlayerController;
-@synthesize favoriteContentButton;                   //UIButton
-@synthesize parsedownload;                           //ParseDownload
-@synthesize nid, nodeTitle;                        //NSMutableArrays
-@synthesize videoNid;
-@synthesize isFromVideoLibrary;
+@synthesize background;             //UIView
+@synthesize videoPoster;            //UIImageView
+@synthesize moviePlayerController;  //MPMoviePlayerController
+@synthesize favoriteContentButton;  //UIButton
+@synthesize nid, nodeTitle;         //NSMutableArray
+@synthesize videoNid;               //NSString
+@synthesize isFromVideoLibrary;     //BOOL
+
+@synthesize content;                //LCPContent
+@synthesize parsedownload;          //ParseDownload
 
 - (void)viewDidLoad {
     [super viewDidLoad];
@@ -74,62 +76,70 @@
     [vidQuery whereKey:@"field_term_reference" equalTo:videoId];
     [vidQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
-            if (objects.count > 0) {
-                //Create Poster image before video plays
-                nid = [objects[0] objectForKey:@"nid"];
-                nodeTitle = [objects[0] objectForKey:@"title"];
-                PFFile *imageFile = objects[0][@"field_poster_image_img"];
-                [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
-                    if (!error) {
-                        UIImage *poster = [[UIImage alloc] initWithData:imgData];
-                        
-                        //Extract the video file name from the rackspace url then build the local path
-                        //http://8f2161d9c4589de9f316-5aa980248e6d72557f77fd2618031fcc.r92.cf2.rackcdn.com/videos/BrandMeetsWorld.mp4
-                        NSString *videoName = [[objects[0] objectForKey:@"field_video"] componentsSeparatedByString:@"/videos/"][1];
-                        NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
-                        NSString *documentsDirectory = [paths objectAtIndex:0];
-                        NSString *fullpath = [documentsDirectory stringByAppendingPathComponent:videoName];
-                        NSURL *videoURL =[NSURL fileURLWithPath:fullpath];
+            NSMutableDictionary *lcpVideo = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+            
+            //Add selected objects the the array
+            for (PFObject *object in objects) {
 
-                        @autoreleasepool {
-                            moviePlayerController = nil;
-                            moviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL:videoURL];
-                            [moviePlayerController.view setFrame: CGRectMake(0, 0, 952, 696)];
-                            moviePlayerController.view.backgroundColor = [UIColor clearColor];
-                            moviePlayerController.view.tag = 22;
-                            [moviePlayerController prepareToPlay];
-                            moviePlayerController.shouldAutoplay = NO;
-                            [background addSubview:moviePlayerController.view];
-                        }
-                        
-                        videoPoster = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 952, 696)];
-                        [videoPoster setImage:poster];
-                        [videoPoster setUserInteractionEnabled:YES];
-                        videoPoster.alpha = 1.0f;
-                        videoPoster.tag = 50;
-                        [background addSubview:videoPoster];
-                        
-                        favoriteContentButton = [UIButton buttonWithType:UIButtonTypeCustom];
-                        [favoriteContentButton setFrame:CGRectMake((background.bounds.size.width - 124), 20, 24, 24)];
-                        [favoriteContentButton addTarget:self action:@selector(setContentAsFavorite:)forControlEvents:UIControlEventTouchUpInside];
-                        favoriteContentButton.showsTouchWhenHighlighted = YES;
-                        favoriteContentButton.tag = [nid integerValue];
-                        if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[objects[0] objectForKey:@"nid"]] != nil){
-                            [favoriteContentButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-active-white"] forState:UIControlStateNormal];
-                        }else{
-                            [favoriteContentButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-inactive-white"] forState:UIControlStateNormal];
-                        }
-                        [background addSubview:favoriteContentButton];
-                    }
+                //Create the video object
+                if ([[lcpVideo objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                     
-                    //Start video and fade out poster
-                    [UIView animateWithDuration:2.0f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
-                        [moviePlayerController play];
-                        videoPoster.alpha = 0.0;
-                    }completion:^(BOOL finished) {
+                    //Create Poster image before video plays
+                    nid = [objects[0] objectForKey:@"nid"];
+                    nodeTitle = [objects[0] objectForKey:@"title"];
+                    PFFile *imageFile = objects[0][@"field_poster_image_img"];
+                    [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
+                        if (!error) {
+                            UIImage *poster = [[UIImage alloc] initWithData:imgData];
+                            
+                            //Extract the video file name from the rackspace url then build the local path
+                            //http://8f2161d9c4589de9f316-5aa980248e6d72557f77fd2618031fcc.r92.cf2.rackcdn.com/videos/BrandMeetsWorld.mp4
+                            NSString *videoName = [[objects[0] objectForKey:@"field_video"] componentsSeparatedByString:@"/videos/"][1];
+                            NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
+                            NSString *documentsDirectory = [paths objectAtIndex:0];
+                            NSString *fullpath = [documentsDirectory stringByAppendingPathComponent:videoName];
+                            NSURL *videoURL =[NSURL fileURLWithPath:fullpath];
+                            
+                            @autoreleasepool {
+                                moviePlayerController = nil;
+                                moviePlayerController = [[MPMoviePlayerController alloc] initWithContentURL:videoURL];
+                                [moviePlayerController.view setFrame: CGRectMake(0, 0, 952, 696)];
+                                moviePlayerController.view.backgroundColor = [UIColor clearColor];
+                                moviePlayerController.view.tag = 22;
+                                [moviePlayerController prepareToPlay];
+                                moviePlayerController.shouldAutoplay = NO;
+                                [background addSubview:moviePlayerController.view];
+                            }
+                            
+                            videoPoster = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, 952, 696)];
+                            [videoPoster setImage:poster];
+                            [videoPoster setUserInteractionEnabled:YES];
+                            videoPoster.alpha = 1.0f;
+                            videoPoster.tag = 50;
+                            [background addSubview:videoPoster];
+                            
+                            favoriteContentButton = [UIButton buttonWithType:UIButtonTypeCustom];
+                            [favoriteContentButton setFrame:CGRectMake((background.bounds.size.width - 124), 20, 24, 24)];
+                            [favoriteContentButton addTarget:self action:@selector(setContentAsFavorite:)forControlEvents:UIControlEventTouchUpInside];
+                            favoriteContentButton.showsTouchWhenHighlighted = YES;
+                            favoriteContentButton.tag = [nid integerValue];
+                            if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[objects[0] objectForKey:@"nid"]] != nil){
+                                [favoriteContentButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-active-white"] forState:UIControlStateNormal];
+                            }else{
+                                [favoriteContentButton setBackgroundImage:[UIImage imageNamed:@"ico-fav-inactive-white"] forState:UIControlStateNormal];
+                            }
+                            [background addSubview:favoriteContentButton];
+                        }
                         
+                        //Start video and fade out poster
+                        [UIView animateWithDuration:2.0f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
+                            [moviePlayerController play];
+                            videoPoster.alpha = 0.0;
+                        }completion:^(BOOL finished) {
+                            
+                        }];
                     }];
-                }];
+                }
             }
         }
     }];

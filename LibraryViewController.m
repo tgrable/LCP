@@ -21,7 +21,6 @@
 @property (strong, nonatomic) UIScrollView *pageScroll;
 @property (strong, nonatomic) UIPageControl *caseStudyDots;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
-
 @property NSMutableArray *nids, *nodeTitles, *sampleObjects;
 
 @property (strong, nonatomic) SMPageControl *paginationDots;
@@ -37,7 +36,6 @@
 @synthesize pageScroll;                         //UIScrollView
 @synthesize caseStudyDots;                      //UIPageControl
 @synthesize favoriteContentButton;              //UIButton
-
 @synthesize nids, nodeTitles, sampleObjects;    //NSMutableArrays
 
 @synthesize paginationDots;                     //SMPageControll
@@ -134,7 +132,6 @@
     [allButton setTitleColor:[UIColor clearColor] forState:UIControlStateNormal];
     [navBar addSubview:allButton];
 
-    
     [self fetchTermsFromLocalDataStore];
     
     //array used to hold nids for the current index of the case study
@@ -229,13 +226,22 @@
                             [csDefaults synchronize];
                             
                             NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            NSMutableDictionary *lcpLibrary = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+                            
+                            //Add selected objects the the array
                             for (PFObject *object in objects) {
-                                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                                //Add selected objects the the array
+                                if ([[lcpLibrary objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                                     [selectedObjects addObject:object];
                                 }
                             }
-                            [self buildVideosView:selectedObjects];
+                            
+                            if ([contentType isEqualToString:@"video"]) {
+                                [self buildVideosView:selectedObjects];
+                            }
+                            else {
+                                [self buildCaseStudyView:selectedObjects];
+                            }
                         }
                     }];
                 }
@@ -262,12 +268,16 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            NSMutableDictionary *lcpLibrary = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+            
+            //Add selected objects the the array
             for (PFObject *object in objects) {
-                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                //Add selected objects the the array
+                if ([[lcpLibrary objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                     [selectedObjects addObject:object];
                 }
             }
+
             if ([contentType isEqualToString:@"video"]) {
                 [self buildVideosView:selectedObjects];
             }

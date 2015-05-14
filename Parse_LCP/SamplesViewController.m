@@ -181,11 +181,12 @@
             //Some samples may have be disabled in the app dashboard
             //Check which one are set to "show" and use those to build the view
             NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+            NSMutableDictionary *lcpSamples = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
             
             //Add selected objects the the array
             for (PFObject *object in objects) {
-                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                //Add selected objects the the array
+                if ([[lcpSamples objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                     [selectedObjects addObject:object];
                 }
             }
@@ -214,11 +215,12 @@
                             //Some samples may have be disabled in the app dashboard
                             //Check which one are set to "show" and use those to build the view
                             NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-                            NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                            NSMutableDictionary *lcpSamples = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
                             
                             //Add selected objects the the array
                             for (PFObject *object in objects) {
-                                if ([[defaults objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                                //Add selected objects the the array
+                                if ([[lcpSamples objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                                     [selectedObjects addObject:object];
                                 }
                             }
@@ -586,9 +588,9 @@
     if(sender.tag == 0){
         
         // Send the presenter to OverviewViewController
-        OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"overviewViewController"];
-        dvc.content = content;
-        [self.navigationController pushViewController:dvc animated:YES];
+        OverviewViewController *ovc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"overviewViewController"];
+        ovc.content = content;
+        [self.navigationController pushViewController:ovc animated:YES];
         [self removeEverything];
         
     } else if(sender.tag == 1) {

@@ -9,12 +9,11 @@
 #import "LCPContent.h"
 
 @implementation LCPContent
-@synthesize btnIcons;
 
 - (id) init {
     if (self = [super init])
     {
-        btnIcons = [[NSMutableArray alloc] initWithCapacity:6];
+
     }
     return self;
 }

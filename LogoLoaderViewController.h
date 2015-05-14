@@ -7,11 +7,12 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "LCPContent.h"
 
 @interface LogoLoaderViewController : UIViewController
 
 //The companyName property get set in ContentSettingsViewController
-@property (strong, nonatomic) UIImage *backgroundImg;
+@property (strong, nonatomic) LCPContent *content;
 @property (strong, nonatomic) NSString *companyName;
 
 @end

@@ -21,7 +21,7 @@
 @property (strong, nonatomic) UIScrollView *pageScroll;
 @property (strong, nonatomic) UIPageControl *caseStudyDots;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
-@property NSMutableArray *nids, *nodeTitles, *sampleObjects;
+@property NSMutableArray *nids, *nodeTitles, *sampleObjects, *filterArray;
 
 @property (strong, nonatomic) SMPageControl *paginationDots;
 @property (strong, nonatomic) ParseDownload *parsedownload;
@@ -30,16 +30,16 @@
 
 @implementation LibraryViewController
 
-@synthesize content;                            //LCPContent
-@synthesize contentType;
-@synthesize background, navBar, filterSelection;//UIView
-@synthesize pageScroll;                         //UIScrollView
-@synthesize caseStudyDots;                      //UIPageControl
-@synthesize favoriteContentButton;              //UIButton
-@synthesize nids, nodeTitles, sampleObjects;    //NSMutableArrays
+@synthesize content;                                        //LCPContent
+@synthesize contentType;                                    //NSString
+@synthesize background, navBar, filterSelection;            //UIView
+@synthesize pageScroll;                                     //UIScrollView
+@synthesize caseStudyDots;                                  //UIPageControl
+@synthesize favoriteContentButton;                          //UIButton
+@synthesize nids, nodeTitles, sampleObjects, filterArray;   //NSMutableArrays NSMutableArray *filterArray
 
-@synthesize paginationDots;                     //SMPageControll
-@synthesize parsedownload;                      //ParseDownload
+@synthesize paginationDots;                                 //SMPageControll
+@synthesize parsedownload;                                  //ParseDownload
 
 - (BOOL)prefersStatusBarHidden
 {
@@ -146,8 +146,8 @@
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"samples"] isEqualToString:@"hasData"]) {
-        NSArray *termArray = [NSArray array];
-        [self fetchDataFromLocalDataStore:termArray];
+        //NSArray *termArray = [NSArray array];
+        [self fetchDataFromLocalDataStore:filterArray];
         
     }
     else {
@@ -342,6 +342,15 @@
         detailsButton.tag = btntag;
         [pageScroll addSubview:detailsButton];
         
+        //Set the favorite icon if content has been favorited
+        if([nids count] > 0){
+            if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:[object objectForKey:@"nid"]] != nil){
+                UIImageView *favItem = [[UIImageView alloc] initWithFrame:CGRectMake(x + 165, 83 + y, 24, 24)];
+                favItem.image = [UIImage imageNamed:@"ico-fav-active"];
+                [pageScroll addSubview:favItem];
+            }
+        }
+        
         UILabel *tittleLabel = [[UILabel alloc] initWithFrame:CGRectMake(x, y + 117, 199, 57)];
         [tittleLabel setFont:[UIFont fontWithName:@"Oswald" size:14.0f]];
         tittleLabel.textColor = [UIColor blackColor];
@@ -500,6 +509,7 @@
 
 -(void)filterButtonPressed:(UIButton *)sender {
     if (sender.tag == 99) {
+        filterArray = [NSMutableArray array];
         NSArray *termArray = [NSArray array];
         [self fetchDataFromLocalDataStore:termArray];
     }
@@ -511,12 +521,12 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 if (!error) {
-                    NSMutableArray *tempArray = [[NSMutableArray alloc] init];
-                    [tempArray addObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
+                    filterArray = [NSMutableArray array];
+                    [filterArray addObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
                     for (PFObject *obj in objects) {
-                        [tempArray addObject:[obj objectForKey:@"tid"]];
+                        [filterArray addObject:[obj objectForKey:@"tid"]];
                     }
-                    [self fetchDataFromLocalDataStore:tempArray];
+                    [self fetchDataFromLocalDataStore:filterArray];
                 }
             }];
         });

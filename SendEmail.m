@@ -25,7 +25,7 @@
     self = [super init];
     
     if (self != nil){
-        // TODO FIX ME BEFORE DEPLOYING
+        // TODO: FIX ME BEFORE DEPLOYING
         url = @"http://dev-lcp-app.pantheon.io";
         returnData = [[NSMutableDictionary alloc] init];
         requestData = [[NSMutableDictionary alloc] init];

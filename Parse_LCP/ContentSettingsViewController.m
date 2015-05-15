@@ -72,14 +72,13 @@
     navTermDictionary = [[NSMutableDictionary alloc] init];
     navTidsDictionary = [[NSMutableDictionary alloc] init];
     
-    if (lcpContent == NULL) {
-        lcpContent = [[NSMutableDictionary alloc] init];
-    }
-    else {
+    if([[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] != nil) {
         lcpContent = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
     }
-    
-    
+    else {
+        lcpContent = [[NSMutableDictionary alloc] init];
+    }
+
     background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, (self.view.bounds.size.width - (36 * 2)), (self.view.bounds.size.height - (36 * 2)))];
     [background setBackgroundColor:[UIColor colorWithRed:115.0f/255.0f green:115.0f/255.0f blue:115.0f/255.0f alpha:1.0]];
     [background setUserInteractionEnabled:YES];

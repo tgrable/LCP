@@ -19,11 +19,11 @@
 
 @interface SendEmail : NSObject{
     NSString *url;
+    NSMutableDictionary *returnData, *requestData;
 }
 typedef void(^completeBlockValue)(BOOL completionFlag, NSString * passwordData);
 @property (weak, nonatomic) id <EmailDelegate> delegate;
-
-//expose the send email function
--(void)sendEmail:(NSMutableDictionary *)emailData;
+@property (strong) NSMutableDictionary *returnData, *requestData;
+-(void)getRequestToken;
 
 @end

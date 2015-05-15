@@ -10,34 +10,90 @@
 #import <Security/Security.h>
 #import "NSData+Base64Additions.h"
 
+#import "SendEmail.h"
+#import <Security/Security.h>
+#import "NSData+Base64Additions.h"
+
 //this is a local macro that sets up a class wide logging scheme
 #define ALog(fmt, ...) NSLog((@"%s [Line %d] " fmt), __PRETTY_FUNCTION__, __LINE__, ##__VA_ARGS__)
 
 @implementation SendEmail
+@synthesize returnData, requestData;
 
 - (id)init
 {
     self = [super init];
     
     if (self != nil){
-        url = @"";
+        // TODO FIX ME BEFORE DEPLOYING
+        url = @"http://dev-lcp-app.pantheon.io";
+        returnData = [[NSMutableDictionary alloc] init];
+        requestData = [[NSMutableDictionary alloc] init];
     }
     return self;
 }
 
--(void)sendEmail:(NSDictionary *)emailData
+-(void)getRequestToken
 {
-    NSMutableDictionary *returnData = [[NSMutableDictionary alloc] init];
-    NSString *email = [emailData objectForKey:@"email"];
-    NSString *message = [emailData objectForKey:@"message"];
-    NSString *subject = [emailData objectForKey:@"subject"];
+    [returnData removeAllObjects];
+    
+    
+    AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
+    manager.responseSerializer = [AFHTTPResponseSerializer serializer];
+    NSString *formattedURL = [NSString stringWithFormat:@"%@/application/token/trekkadmin", url];
+    [manager GET:formattedURL parameters:nil success:^(AFHTTPRequestOperation *operation, id responseObject) {
+        
+        NSMutableDictionary *json = [NSJSONSerialization JSONObjectWithData:responseObject options:0 error:nil];
+        if ([json objectForKey:@"token"] != nil) {
+            [requestData setObject:[json objectForKey:@"token"] forKey:@"token"];
+            [requestData setObject:[json objectForKey:@"date_stamp"] forKey:@"date_stamp"];
+            
+            if ([requestData objectForKey:@"token"] != nil && [requestData objectForKey:@"date_stamp"] != nil) {
+                //send the user email
+                [self sendEmail];
+            } else {
+                dispatch_async(dispatch_get_main_queue(), ^{
+                    [returnData setValue:@"There was an issue authenticating your request" forKey:@"error"];
+                    [_delegate emailResponse:returnData withFlag:NO];
+                });
+            }
+        } else {
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [returnData setValue:@"There was an issue authenticating your request" forKey:@"error"];
+                [_delegate emailResponse:returnData withFlag:NO];
+            });
+        }
+    } failure:^(AFHTTPRequestOperation *operation, NSError *error) {
+        ALog(@"Error: %@", error);
+        //error
+        dispatch_async(dispatch_get_main_queue(), ^{
+            [returnData setValue:[error description] forKey:@"error"];
+            [_delegate emailResponse:returnData withFlag:NO];
+        });
+    }];
+}
+
+-(void)sendEmail
+{
+    [returnData removeAllObjects];
+    NSString *email = [requestData objectForKey:@"email"];
+    NSString *message = [requestData objectForKey:@"message"];
+    NSString *subject = [requestData objectForKey:@"subject"];
+    NSString *token = [requestData objectForKey:@"token"];
+    NSString *date_stamp = [requestData objectForKey:@"date_stamp"];
     NSString *nidList = @"";
+    
+    NSString *data_key = [NSString stringWithFormat:@"data_%@", token];
+    NSString *message_key = [NSString stringWithFormat:@"message_%@", token];
+    NSString *subject_key = [NSString stringWithFormat:@"subject_%@", token];
+    NSString *nids_key = [NSString stringWithFormat:@"nids_%@", token];
+    
     int i = 0;
-    for(NSString *nid in [emailData objectForKey:@"favorites"]){
-        if(i > 0){
-          nidList = [NSString stringWithFormat:@"%@,%@", nidList, nid];
-        }else{
-          nidList = [NSString stringWithFormat:@"%@,",nid];
+    for (NSString *nid in [requestData objectForKey:@"favorites"]) {
+        if (i > 0) {
+            nidList = [NSString stringWithFormat:@"%@,%@", nidList, nid];
+        } else {
+            nidList = [NSString stringWithFormat:@"%@,",nid];
         }
         i++;
     }
@@ -49,19 +105,28 @@
     subject = [self base64EncodeString:subject];
     
     [self encryptEmail:email complete:^(BOOL completeFlag, NSString *emailData){
-        if(completeFlag){
-            ALog(@"YES");
-            //url = [NSString stringWithFormat:@"http://cae.trekkweb.com/data/api/user/login/%@/%@", username, passwordData];
-            ALog(@"URL %@", url);
+        if (completeFlag) {
+            NSString *formattedURL = [NSString stringWithFormat:@"%@/application/email", url];
             
             AFHTTPRequestOperationManager *manager = [AFHTTPRequestOperationManager manager];
             manager.requestSerializer.timeoutInterval = 60;
+            manager.responseSerializer = [AFHTTPResponseSerializer serializer];
             manager.requestSerializer.cachePolicy = NSURLRequestReloadIgnoringLocalAndRemoteCacheData;
-            NSDictionary *parameters = @{@"data": emailData, @"message": message, @"subject": subject, @"nids": nidList };
+            NSDictionary *parameters = @{
+                                         data_key: emailData,
+                                         message_key: message,
+                                         subject_key: subject,
+                                         nids_key: nidList,
+                                         @"date_stamp": date_stamp,
+                                         @"token": token
+                                         };
+            //ALog(@"Parameters %@", parameters);
             
-            [manager POST:url parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+            [manager POST:formattedURL parameters:parameters success:^(AFHTTPRequestOperation *operation, id responseObject) {
+                NSMutableDictionary *json = [NSJSONSerialization JSONObjectWithData:responseObject options:0 error:nil];
+                ALog(@"Response %@", json);
+                
                 dispatch_async(dispatch_get_main_queue(), ^{
-                    ALog(@"JSON: %@", responseObject);
                     [_delegate emailResponse:responseObject withFlag:YES];
                 });
                 
@@ -72,14 +137,14 @@
                     [_delegate emailResponse:returnData withFlag:NO];
                 });
             }];
-        }else{
+        } else {
             ALog(@"Your email did not encrypt correctly");
             //error
             dispatch_async(dispatch_get_main_queue(), ^{
                 [returnData setValue:@"Your email did not encrypt correctly" forKey:@"error"];
                 [_delegate emailResponse:returnData withFlag:NO];
             });
-
+            
         }
     }];
     
@@ -133,9 +198,9 @@
     free(cipherBuffer);
     
     
-    if([encryptedString length] > 0){
+    if ([encryptedString length] > 0) {
         doneBlock(YES, encryptedString);
-    }else{
+    } else {
         doneBlock(NO, encryptedString);
     }
 }

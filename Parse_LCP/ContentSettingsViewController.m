@@ -15,7 +15,7 @@
 
 @interface ContentSettingsViewController ()
 @property (strong, nonatomic) UIView *background, *favoriteListView, *formSlidView, *loadingView;
-@property (strong, nonatomic) UIActivityIndicatorView *contentActivityIndicator;
+@property (strong, nonatomic) UIActivityIndicatorView *contentActivityIndicator, *activityIndicator;
 @property (strong, nonatomic) UIScrollView *csContent, *sContent, *vContent, *tContent;
 @property (strong, nonatomic) UIScrollView *presentationContent, *emailContent;
 @property (nonatomic) UISegmentedControl *contentSegController;
@@ -35,7 +35,7 @@
 
 @implementation ContentSettingsViewController
 @synthesize background, favoriteListView, formSlidView, loadingView;                    //UIView
-@synthesize contentActivityIndicator;                                                   //UIActivityIndicatorView
+@synthesize contentActivityIndicator, activityIndicator;                                //UIActivityIndicatorView
 @synthesize csContent, sContent, vContent, tContent;                                    //UIScrollView
 @synthesize presentationContent, emailContent;                                          //UIScrollView
 @synthesize contentSegController;                                                       //UISegmentedControl
@@ -65,7 +65,9 @@
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(redrawView:) name:@"RefreshParseData" object:nil];
 
     termsArray = [[NSMutableArray alloc] init];
+    favoritedNIDs = [NSMutableArray array];
     emailObject = [[SendEmail alloc] init];
+    emailObject.delegate = self;
     parsedownload = [[ParseDownload alloc] init];
     posterDictionary = [[NSMutableDictionary alloc] init];
     navIconDictionary = [[NSMutableDictionary alloc] init];
@@ -486,12 +488,19 @@
     /*** /End of email views ***/
     
     /* Loading View */
-    loadingView = [[UIView alloc] initWithFrame:CGRectMake(718, 334, 100, 100)];
+    loadingView = [[UIView alloc] initWithFrame:CGRectMake(462, 250, 100, 100)];
     loadingView.alpha = 0.0;
     loadingView.layer.cornerRadius = 5;
     loadingView.layer.masksToBounds = YES;
     loadingView.backgroundColor = [UIColor blackColor];
     [background addSubview:loadingView];
+    
+    activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    activityIndicator.frame = CGRectMake(32.0, 32.0, 35.0, 35.0);
+    [activityIndicator setColor:[UIColor whiteColor]];
+    activityIndicator.alpha = 1.0;
+    [activityIndicator startAnimating];
+    [loadingView addSubview:activityIndicator];
 }
 
 //Once all data has been downloaded NSNotification is posted and this method is called to redraw the view.
@@ -828,15 +837,13 @@
                         [self moveFormFieldBackIntoPosition];
                         [self.view endEditing:NO];
                         
-                        NSMutableDictionary *emailValues = [[NSMutableDictionary alloc] init];
-                        [emailValues setValue:email.text forKey:@"email"];
-                        [emailValues setValue:subject.text forKey:@"subject"];
-                        [emailValues setValue:message.text forKey:@"message"];
-                        [emailValues setValue:favoritedNIDs forKey:@"favorites"];
-                        
-                        //go out to the server if the user wants to log in
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [emailObject sendEmail:emailValues];
+                        [emailObject.requestData removeAllObjects];
+                        [emailObject.requestData setObject:email.text forKey:@"email"];
+                        [emailObject.requestData setObject:subject.text forKey:@"subject"];
+                        [emailObject.requestData setObject:message.text forKey:@"message"];
+                        [emailObject.requestData setObject:favoritedNIDs forKey:@"favorites"];
+                        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_HIGH, 0), ^{
+                            [emailObject getRequestToken];
                         });
                     }else{
                         [self displayMessage:@"Please connect to the internet to send an email"];

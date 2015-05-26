@@ -36,7 +36,7 @@
 @synthesize pageScroll;                                     //UIScrollView
 @synthesize caseStudyDots;                                  //UIPageControl
 @synthesize favoriteContentButton;                          //UIButton
-@synthesize nids, nodeTitles, sampleObjects, filterArray;   //NSMutableArrays NSMutableArray *filterArray
+@synthesize nids, nodeTitles, sampleObjects, filterArray;   //NSMutableArrays
 
 @synthesize paginationDots;                                 //SMPageControll
 @synthesize parsedownload;                                  //ParseDownload
@@ -148,7 +148,6 @@
     if ([[defaults objectForKey:@"samples"] isEqualToString:@"hasData"]) {
         //NSArray *termArray = [NSArray array];
         [self fetchDataFromLocalDataStore:filterArray];
-        
     }
     else {
         [self fetchDataFromParse];
@@ -311,7 +310,7 @@
     CGFloat pageWidth = pageScroll.bounds.size.width;
     //display the appropriate dot when scrolled
     NSInteger pageNumber = floor((pageScroll.contentOffset.x - pageWidth / 2) / pageWidth) + 1;
-    caseStudyDots.currentPage = pageNumber;
+    paginationDots.currentPage = pageNumber;
     
     //update the button color
     [self updateFavoriteButtonColor];
@@ -321,7 +320,7 @@
 #pragma mark - Build Views
 - (void)buildVideosView:(NSArray *)objects {
     
-    int x = 24, y = 48, count = 1, subcount = 1;
+    int x = 0, y = 48, count = 1, subcount = 1;
     int multiplier = 1, offset = 0;
     
     for (PFObject *object in objects){
@@ -367,20 +366,20 @@
                 subcount++;
             }
             else {
-                x = 24 + offset, y = 174 + 43;
+                x = 0 + offset, y = 174 + 43;
                 subcount = 1;
             }
         }
         else {
             offset += background.bounds.size.width;
-            x = 24 + offset, y = 48;
+            x = 0 + offset, y = 48;
             multiplier++;
             subcount = 1;
             count = 0;
         }
         count++;
         
-        [pageScroll setContentSize:CGSizeMake((background.bounds.size.width * multiplier), 400)];
+        [pageScroll setContentSize:CGSizeMake((pageScroll.bounds.size.width * multiplier), 400)];
     }
     
     UIView *hDivider = [[UIView alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 144, background.bounds.size.width, 1)];

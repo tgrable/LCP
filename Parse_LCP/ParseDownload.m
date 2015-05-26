@@ -115,7 +115,11 @@
         if (!error) {
             NSMutableDictionary *videoDataDict = [[NSMutableDictionary alloc] init];
             int __block vidCount = 0;
+            
+            NSOperationQueue *operationQueue = [[NSOperationQueue alloc] init];
+            
             for (PFObject *object in objects) {
+                
                 NSLog(@"%@", [object objectForKey:@"field_video"]);
                 NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@",[object objectForKey:@"field_video"]]]];
                 AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
@@ -124,7 +128,6 @@
                 NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
                 NSString *path = [[paths objectAtIndex:0] stringByAppendingPathComponent:videoName];
                 operation.outputStream = [NSOutputStream outputStreamToFileAtPath:path append:NO];
-                
                 [operation setCompletionBlockWithSuccess:^(AFHTTPRequestOperation *operation, id responseObject) {
                     NSLog(@"Successfully downloaded file to %@", path);
                     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -150,11 +153,15 @@
                     NSLog(@"Error: %@", error);
                 }];
                 [operation setDownloadProgressBlock:^(NSUInteger bytesRead, long long totalBytesRead, long long totalBytesExpectedToRead) {
-                    [videoActivityIndicator startAnimating];
                     NSLog(@"Download = %f", (float)totalBytesRead / totalBytesExpectedToRead);
                     
                 }];
-                [operation start];
+                
+                // Add the operation to a queue
+                // It will start once added
+                [videoActivityIndicator startAnimating];
+                operationQueue.maxConcurrentOperationCount = 2;
+                [operationQueue addOperation:operation];
             }
         }
     }];

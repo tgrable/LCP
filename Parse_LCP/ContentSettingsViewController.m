@@ -704,7 +704,7 @@
             [vContent addSubview:mySwitch];
             [vContent addSubview:catagoryLabel];
             [vContent addSubview:lineView];
-            [vContent setContentSize:CGSizeMake(background.bounds.size.width, (95 * objects.count))];
+            [vContent setContentSize:CGSizeMake(background.bounds.size.width, (105 * objects.count))];
         }
         else if ([contentView isEqualToString:@"testimonials"]) {
             [tContent addSubview:spaceView];

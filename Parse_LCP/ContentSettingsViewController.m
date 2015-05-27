@@ -1064,8 +1064,7 @@
         }
     }
     else {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"You are not currently connected to the internt." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
-        [alert show];
+        [self displayMessage:@"You are not currently connected to the internt."];
     }
 }
 
@@ -1081,8 +1080,7 @@
         }
     }
     else {
-        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"You are not currently connected to the internt." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
-        [alert show];
+        [self displayMessage:@"You are not currently connected to the internt."];
     }
 }
 

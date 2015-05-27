@@ -199,6 +199,10 @@
             }
         }];
     }
+    else {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"You are not currently connected to the internt." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
+        [alert show];
+    }
 }
 
 - (void)clearLocalDataStore:(NSString *)forParseClassType{

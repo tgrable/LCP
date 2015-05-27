@@ -59,6 +59,8 @@
     [super viewDidLoad];
     [self.navigationController setNavigationBarHidden:YES animated:NO];
     
+    //NSLog(@"[Reachability reachabilityForLocalWiFi]: %hhd", [self wifiConnection]);
+    
     //NSLog(@"%@", [[NSUserDefaults standardUserDefaults] dictionaryRepresentation]);
 
     //NSNotificationCenter reciever to redraw the view once the data have been downloaded from Parse & Rackspace
@@ -290,9 +292,10 @@
 }
 
 - (void)fetchPosterImage {
-    
+
     PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
     query.limit = 1;
+    [query fromLocalDatastore];
     [query orderByAscending:@"updatedAt"];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
@@ -727,9 +730,14 @@
 
 #pragma mark
 #pragma mark - Reachability
-- (BOOL)connected
-{
+- (BOOL)connected {
     Reachability *reachability = [Reachability reachabilityForInternetConnection];
+    NetworkStatus networkStatus = [reachability currentReachabilityStatus];
+    return networkStatus != NotReachable;
+}
+
+- (BOOL)wifiConnection {
+    Reachability *reachability = [Reachability reachabilityForLocalWiFi];
     NetworkStatus networkStatus = [reachability currentReachabilityStatus];
     return networkStatus != NotReachable;
 }
@@ -1041,24 +1049,45 @@
     [self.navigationController pushViewController:lvc animated:YES];
 }
 
+#pragma mark
+#pragma mark - Reload Content
 //Download all the data from parse and pin it to the local datastore
 - (void)reloadLocalDataStore:(id)sender {
-    [parsedownload downloadAndPinPFObjects];
-    [self removeEverything];
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
-        [background addSubview:contentActivityIndicator];
-        [contentActivityIndicator startAnimating];
+    if ([self connected]) {
+        [parsedownload downloadAndPinPFObjects];
+        [self removeEverything];
+        
+        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+        if ([[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
+            [background addSubview:contentActivityIndicator];
+            [contentActivityIndicator startAnimating];
+        }
+    }
+    else {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"You are not currently connected to the internt." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
+        [alert show];
     }
 }
 
 - (void)reloadVideoContent:(id)sender {
-    [parsedownload downloadVideoFile:background forTerm:@""];
+    if ([self connected]) {
+        if ([self wifiConnection]) {
+            [parsedownload downloadVideoFile:background forTerm:@""];
+        }
+        else {
+            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"You are not currently connected to wifi." delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
+            [alert addButtonWithTitle:@"Download Anyway"];
+            [alert show];
+        }
+    }
+    else {
+        UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"You are not currently connected to the internt." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
+        [alert show];
+    }
 }
 
 - (void)resetAllFavoritedContent:(id)sender {
-    NSLog(@"Reset All Favorited Content");
+    
     //get the defaults and pick the content favorites out from this defaults list
     NSMutableDictionary *favoriteList = [[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] mutableCopy];
     [favoriteList removeAllObjects];
@@ -1068,7 +1097,7 @@
 }
 
 - (void)resetAllSelectedContent:(id)sender {
-    NSLog(@"Reset All Selected Content");
+    
     //get the defaults and pick the content favorites out from this defaults list
     [lcpContent removeAllObjects];
     [[NSUserDefaults standardUserDefaults] setObject:lcpContent forKey:@"lcpContent"];
@@ -1083,6 +1112,14 @@
     [self reloadLocalDataStore:@""];
     [self reloadVideoContent:@""];
     [self resetAllSelectedContent:@""];
+}
+
+#pragma mark
+#pragma mark - UIAlert method and delegate method
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
+    if(buttonIndex == 1) {
+        [parsedownload downloadVideoFile:background forTerm:@""];
+    }
 }
 
 #pragma mark

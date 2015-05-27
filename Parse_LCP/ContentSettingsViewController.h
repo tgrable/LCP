@@ -9,6 +9,6 @@
 #import <UIKit/UIKit.h>
 #import "SendEmail.h"
 
-@interface ContentSettingsViewController : UIViewController<UIScrollViewDelegate, UITextFieldDelegate, UITextViewDelegate, EmailDelegate>
+@interface ContentSettingsViewController : UIViewController<UIScrollViewDelegate, UITextFieldDelegate, UITextViewDelegate, UIAlertViewDelegate, EmailDelegate>
 
 @end

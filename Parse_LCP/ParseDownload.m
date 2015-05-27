@@ -18,7 +18,6 @@
 
 @property (strong, nonatomic) NSArray *parseClassTypes;
 @property (strong, nonatomic) NSMutableDictionary *parseClassDictionary;
-@property BOOL videoFileBeingDownloaded;
 
 @end
 

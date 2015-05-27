@@ -1057,8 +1057,7 @@
         [parsedownload downloadAndPinPFObjects];
         [self removeEverything];
         
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        if ([[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
+        if (!parsedownload.videoFileBeingDownloaded) {
             [background addSubview:contentActivityIndicator];
             [contentActivityIndicator startAnimating];
         }
@@ -1106,10 +1105,10 @@
 }
 
 - (void)reloadEverything:(id)sender {
-    [self resetAllFavoritedContent:@""];
-    [self reloadLocalDataStore:@""];
     [self reloadVideoContent:@""];
+    [self resetAllFavoritedContent:@""];
     [self resetAllSelectedContent:@""];
+    [self reloadLocalDataStore:@""];
 }
 
 #pragma mark

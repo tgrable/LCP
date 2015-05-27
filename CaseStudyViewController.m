@@ -745,5 +745,6 @@
     for (UIView *v in [pageScroll subviews]) {
         [v removeFromSuperview];
     }
+    [paginationDots removeFromSuperview];
 }
 @end

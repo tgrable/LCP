@@ -320,7 +320,7 @@
 #pragma mark - Build Views
 - (void)buildVideosView:(NSArray *)objects {
     
-    int x = 0, y = 48, count = 1, subcount = 1;
+    int x = 0, y = 48, count = 1, subcount = 1, totalCount = 1;
     int multiplier = 1, offset = 0;
     
     for (PFObject *object in objects){
@@ -373,12 +373,17 @@
         else {
             offset += background.bounds.size.width;
             x = 0 + offset, y = 48;
-            multiplier++;
             subcount = 1;
             count = 0;
         }
         count++;
         
+        if (totalCount > 8) {
+            multiplier++;
+            totalCount = 1;
+        }
+        NSLog(@"totalCount: %d", totalCount);
+        totalCount++;
         [pageScroll setContentSize:CGSizeMake((pageScroll.bounds.size.width * multiplier), 400)];
     }
     

@@ -11,6 +11,8 @@
 
 @interface ParseDownload : NSObject
 
+@property BOOL videoFileBeingDownloaded;
+
 - (void)downloadAndPinPFObjects;
 - (void)downloadAndPinIndividualParseClass:(NSString *)parseClass;
 

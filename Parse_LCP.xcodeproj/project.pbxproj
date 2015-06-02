@@ -852,7 +852,7 @@
 				TargetAttributes = {
 					4FDE35D91A72FBAE000052E9 = {
 						CreatedOnToolsVersion = 6.1.1;
-						DevelopmentTeam = BS4LR4L547;
+						DevelopmentTeam = 477HKM2JBJ;
 					};
 					4FDE35F21A72FBAE000052E9 = {
 						CreatedOnToolsVersion = 6.1.1;
@@ -1188,14 +1188,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Tim Grable (VHV4QQZC66)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Tim Grable (VHV4QQZC66)";
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = Parse_LCP/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "5737a980-e3cb-4f4a-8005-fe0662db4148";
 				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Debug;
@@ -1204,14 +1204,14 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "iPhone Developer";
-				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Tim Grable (VHV4QQZC66)";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer: Tim Grable (VHV4QQZC66)";
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = Parse_LCP/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
-				PROVISIONING_PROFILE = "";
+				PROVISIONING_PROFILE = "5737a980-e3cb-4f4a-8005-fe0662db4148";
 				TARGETED_DEVICE_FAMILY = 2;
 			};
 			name = Release;

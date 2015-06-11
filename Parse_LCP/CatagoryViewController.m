@@ -10,6 +10,7 @@
 #import "OverviewViewController.h"
 #import "MeetTheTeamViewController.h"
 #import "TestimonialsViewController.h"
+#import "PDFViewController.h"
 #import "Reachability.h"
 #import "SMPageControl.h"
 #import "ParseDownload.h"
@@ -64,11 +65,13 @@
     [background setUserInteractionEnabled:YES];
     [self.view addSubview:background];
 
-    /******** Logo and setting navigation buttons ********/
-    //UIImageView used to hold LCP logo
-    UIImageView *logo = [[UIImageView alloc] initWithFrame:CGRectMake(60, 6.5f, 70, 23)];
-    logo.image = [UIImage imageNamed:@"logo"];
-    [self.view addSubview:logo];
+    /******** Logo and setting navigation buttons ********/    
+    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
+    [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
+    logoButton.showsTouchWhenHighlighted = YES;
+    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
+    [self.view addSubview:logoButton];
     
     //UIButton used to navigate back to content dashboard
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -427,6 +430,12 @@
     // Send the presenter back to the dashboard
     [self.navigationController popToRootViewControllerAnimated:YES];
     [self removeEverything];
+}
+
+- (void)hiddenSection:(id)sender {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    PDFViewController *pvc = (PDFViewController *)[storyboard instantiateViewControllerWithIdentifier:@"pdfViewController"];
+    [self.navigationController pushViewController:pvc animated:YES];
 }
 
 #pragma mark

@@ -9,6 +9,7 @@
 #import "LibraryViewController.h"
 #import "VideoViewController.h"
 #import "CaseStudyViewController.h"
+#import "PDFViewController.h"
 #import "Reachability.h"
 #import "SMPageControl.h"
 #import "NSString+HTML.h"
@@ -41,8 +42,7 @@
 @synthesize paginationDots;                                 //SMPageControll
 @synthesize parsedownload;                                  //ParseDownload
 
-- (BOOL)prefersStatusBarHidden
-{
+- (BOOL)prefersStatusBarHidden {
     return YES;
 }
 
@@ -65,10 +65,12 @@
     [self.view addSubview:background];
     
     /******** Logo and setting navigation buttons ********/
-    //UIImageView used to hold LCP logo
-    UIImageView *logo = [[UIImageView alloc] initWithFrame:CGRectMake(60, 6.5f, 70, 23)];
-    logo.image = [UIImage imageNamed:@"logo"];
-    [self.view addSubview:logo];
+    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
+    [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
+    logoButton.showsTouchWhenHighlighted = YES;
+    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
+    [self.view addSubview:logoButton];
     
     //UIButton used to navigate back to content dashboard
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -256,7 +258,6 @@
 }
 
 //Query the local datastore to build the views
-//- (void)fetchDataFromLocalDataStore:(NSString *)key {
 - (void)fetchDataFromLocalDataStore:(NSArray *)termArray {
     //Query the Local Datastore
     PFQuery *query = [PFQuery queryWithClassName:contentType];
@@ -476,8 +477,7 @@
             [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
                 if (!error) {
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
-                    if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad && [[UIScreen mainScreen] respondsToSelector:@selector(scale)] && [UIScreen mainScreen].scale > 1)
-                    {
+                    if(UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad && [[UIScreen mainScreen] respondsToSelector:@selector(scale)] && [UIScreen mainScreen].scale > 1) {
                         UIButton *tempButton = [self navigationButtons:btnImg andtitle:[object objectForKey:@"name"] andXPos:x andYPos:15 andTag:[object objectForKey:@"tid"]];
                         [navBar addSubview:tempButton];
                     }
@@ -620,6 +620,11 @@
     [self removeEverything];
 }
 
+- (void)hiddenSection:(id)sender {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    PDFViewController *pvc = (PDFViewController *)[storyboard instantiateViewControllerWithIdentifier:@"pdfViewController"];
+    [self.navigationController pushViewController:pvc animated:YES];
+}
 
 #pragma mark
 #pragma mark - Memory Management

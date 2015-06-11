@@ -13,19 +13,29 @@
 #import "ParseDownload.h"
 #import <Parse/Parse.h>
 
-@interface ContentSettingsViewController ()
+@interface ContentSettingsViewController () {
+    bool isCompanyLogoSelected;
+    bool isContentSelected, isContentFavorited, lastObj;
+    int senderTag;
+}
+
 @property (strong, nonatomic) UIView *background, *favoriteListView, *formSlidView, *loadingView;
+@property (strong, nonatomic) UIImageView *contentSelectedFlag, *contentFavoritedFlag;
 @property (strong, nonatomic) UIActivityIndicatorView *contentActivityIndicator, *activityIndicator;
-@property (strong, nonatomic) UIScrollView *csContent, *sContent, *vContent, *tContent;
+@property (strong, nonatomic) UIScrollView *pContent ,*csContent, *sContent, *vContent, *tContent;
 @property (strong, nonatomic) UIScrollView *presentationContent, *emailContent;
 @property (nonatomic) UISegmentedControl *contentSegController;
 @property (strong, nonatomic) UITextField *email, *subject, *companyNameTextField;
 @property (strong, nonatomic) UITextView *message;
 @property (strong, nonatomic) UIButton *submitButton;
+@property (strong, nonatomic) UIImage *companyLogo;
+@property (strong, nonatomic) UILabel *currentlySelectedItemsLabel, *currentlyFavoritedItemsLabel;
 @property NSMutableArray *favoritedNIDs;
 @property NSMutableArray *termsArray;
+@property NSMutableArray *companyLogoArray;
 @property NSMutableDictionary *posterDictionary, *navIconDictionary, *navTermDictionary, *navTidsDictionary;
 @property NSMutableDictionary *lcpContent;
+@property NSString *alertButtonPressed;
 
 @property (strong, nonatomic) LCPContent *content;
 @property (strong, nonatomic) SendEmail *emailObject;
@@ -35,21 +45,24 @@
 
 @implementation ContentSettingsViewController
 @synthesize background, favoriteListView, formSlidView, loadingView;                    //UIView
+@synthesize contentSelectedFlag, contentFavoritedFlag;
 @synthesize contentActivityIndicator, activityIndicator;                                //UIActivityIndicatorView
-@synthesize csContent, sContent, vContent, tContent;                                    //UIScrollView
+@synthesize pContent, csContent, sContent, vContent, tContent;                          //UIScrollView
 @synthesize presentationContent, emailContent;                                          //UIScrollView
 @synthesize contentSegController;                                                       //UISegmentedControl
+@synthesize currentlySelectedItemsLabel, currentlyFavoritedItemsLabel;
 @synthesize submitButton;                                                               //UIButons
+@synthesize companyLogo;
 @synthesize parsedownload, emailObject;                                                 //Custom Classes
 @synthesize email, subject, companyNameTextField;                                       //Email textfields
 @synthesize message;                                                                    //Email textview
-@synthesize favoritedNIDs, termsArray;                                                  //NSMutableArray
+@synthesize favoritedNIDs, termsArray, companyLogoArray;                                //NSMutableArray
 @synthesize posterDictionary, navIconDictionary, navTermDictionary, navTidsDictionary;  //NSMutableDictionary
 @synthesize lcpContent;                                                                 //NSMutableDictionary
+@synthesize alertButtonPressed;                                                         //NSString
 @synthesize content;                                                                    //LCPContent
 
-- (BOOL)prefersStatusBarHidden
-{
+- (BOOL)prefersStatusBarHidden {
     return YES;
 }
 
@@ -59,10 +72,6 @@
     [super viewDidLoad];
     [self.navigationController setNavigationBarHidden:YES animated:NO];
     
-    //NSLog(@"[Reachability reachabilityForLocalWiFi]: %hhd", [self wifiConnection]);
-    
-    //NSLog(@"%@", [[NSUserDefaults standardUserDefaults] dictionaryRepresentation]);
-
     //NSNotificationCenter reciever to redraw the view once the data have been downloaded from Parse & Rackspace
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(redrawView:) name:@"RefreshParseData" object:nil];
 
@@ -78,6 +87,7 @@
     
     if([[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] != nil) {
         lcpContent = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+        
     }
     else {
         lcpContent = [[NSMutableDictionary alloc] init];
@@ -149,6 +159,8 @@
     [super viewWillAppear:animated];
     //build email view is executed here so that the list is always refreshed
     [self refreshEmailList];
+    [self checkIfContentIsFavorited];
+    [self checkIfContentIsSelected];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -169,8 +181,6 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                         if (succeded) {
-                            
-                            NSLog(@"Fetch: %@", forParseClassType);
                             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                             [defaults setObject:@"hasData" forKey:forParseClassType];
                             [defaults synchronize];
@@ -337,11 +347,86 @@
     });
 }
 
+- (void)fetchCompanyLogos {
+    PFQuery *query = [PFQuery queryWithClassName:@"company_logo"];
+    [query fromLocalDatastore];
+    [query orderByAscending:@"title"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                int y = -50, count = 0;
+                companyLogoArray = [NSMutableArray arrayWithCapacity:objects.count];
+                for (int i = 0; i < objects.count; i++) {
+                    [companyLogoArray addObject:[NSNull null]];
+                }
+
+                for (PFObject *object in objects) {
+                    NSArray *imgArray = [object objectForKey:@"field_image"];
+                    NSDictionary *imgDict = imgArray[2];
+                    
+                    [self buildCompanyLogoItems:y += 50 withPFObject:object andTag:count];
+                    y +=  ([[imgDict objectForKey:@"height"] intValue] + 10);
+                    count++;
+                    
+                    if (count == objects.count) {
+                        [pContent setContentSize:CGSizeMake(400, y + 50)];
+                    }
+                }
+            }
+        }];
+    });
+}
+
+- (void)buildCompanyLogoItems:(int)atLocation withPFObject:(PFObject *)object andTag:(int)count {
+
+    int __block y = atLocation;
+    int __block arrayIndex = count;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        PFFile *imageFile = [object objectForKey:@"field_image_img"];
+        [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
+            if (!error) {
+                UIButton *selectLogoButton = [[UIButton alloc] initWithFrame:CGRectMake(0, y, 40, 40)];
+                selectLogoButton.backgroundColor = [UIColor clearColor];
+                selectLogoButton.tag = count;
+                [selectLogoButton.layer setBorderWidth:2.0f];
+                [selectLogoButton.layer setBorderColor:[UIColor whiteColor].CGColor];
+                [selectLogoButton addTarget:self action:@selector(setCompanyLogo:)forControlEvents:UIControlEventTouchUpInside];
+                selectLogoButton.showsTouchWhenHighlighted = YES;
+                [selectLogoButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                selectLogoButton.titleLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+                [pContent addSubview:selectLogoButton];
+                
+                UILabel *companyLogoLabel = [[UILabel alloc] initWithFrame:CGRectMake(50, y, 400, 50)];
+                companyLogoLabel.textColor = [UIColor whiteColor];
+                companyLogoLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+                companyLogoLabel.numberOfLines = 1;
+                companyLogoLabel.backgroundColor = [UIColor clearColor];
+                companyLogoLabel.textAlignment = NSTextAlignmentLeft;
+                companyLogoLabel.text = [object objectForKey:@"title"];
+                [pContent addSubview:companyLogoLabel];
+                
+                UIImage *logoImage = [[UIImage alloc] initWithData:imgData];
+                [companyLogoArray insertObject:logoImage atIndex:arrayIndex];
+                
+                UIImageView *logoImageView = [[UIImageView alloc] initWithImage:logoImage];
+                logoImageView.frame = CGRectMake(0, y += 50, logoImage.size.width, logoImage.size.height);
+                [pContent addSubview:logoImageView];
+            }
+        }];
+    });
+}
 
 #pragma mark -
 #pragma mark - Build View
 - (void)drawViews {
     //First Page Summary View
+    
+    pContent = [[UIScrollView alloc] initWithFrame:CGRectMake(24, 150, 400, (presentationContent.bounds.size.height - 160))];
+    [pContent setBackgroundColor:[UIColor clearColor]];
+    [pContent setUserInteractionEnabled:YES];
+    pContent.showsVerticalScrollIndicator = YES;
+    pContent.hidden = NO;
+    [presentationContent addSubview:pContent];
     
     csContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 105, background.bounds.size.width, (background.bounds.size.height - 115))];
     [csContent setBackgroundColor:[UIColor clearColor]];
@@ -373,6 +458,7 @@
     
     [self fetchPosterImage];
     [self fetchNavIcons];
+    [self fetchCompanyLogos];
     [self fetchTerms];
 }
 
@@ -533,7 +619,17 @@
     [companyNameTextField setAutocorrectionType:UITextAutocorrectionTypeNo];
     [presentationContent addSubview:companyNameTextField];
     
-    UILabel *resetLCPContentLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 100, background.bounds.size.width, 40)];
+    UILabel *companyLogoLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 100, 200, 40)];
+    companyLogoLabel.textColor = [UIColor whiteColor];
+    companyLogoLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    companyLogoLabel.numberOfLines = 1;
+    companyLogoLabel.backgroundColor = [UIColor clearColor];
+    companyLogoLabel.textAlignment = NSTextAlignmentLeft;
+    companyLogoLabel.text = @"Select Company Logo:";
+    [presentationContent addSubview:companyLogoLabel];
+
+   
+    UILabel *resetLCPContentLabel = [[UILabel alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 24, 0, background.bounds.size.width, 40)];
     resetLCPContentLabel.textColor = [UIColor whiteColor];
     resetLCPContentLabel.font = [UIFont fontWithName:@"Oswald" size:20];
     resetLCPContentLabel.numberOfLines = 1;
@@ -542,7 +638,7 @@
     resetLCPContentLabel.text = @"Refresh LCP Content:";
     [presentationContent addSubview:resetLCPContentLabel];
     
-    UIButton *resetLCPContent = [[UIButton alloc] initWithFrame:CGRectMake(24, 150, 400, 50)];
+    UIButton *resetLCPContent = [[UIButton alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 24, 50, 400, 50)];
     resetLCPContent.backgroundColor = [UIColor clearColor];
     [resetLCPContent setTitle:@"Refresh" forState:UIControlStateNormal];
     [resetLCPContent.layer setBorderWidth:1.0f];
@@ -553,7 +649,7 @@
     resetLCPContent.titleLabel.font = [UIFont fontWithName:@"Oswald" size:20];
     [presentationContent addSubview:resetLCPContent];
     
-    UILabel *resetLCPVideoLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 210, background.bounds.size.width, 40)];
+    UILabel *resetLCPVideoLabel = [[UILabel alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 24, 100, background.bounds.size.width, 40)];
     resetLCPVideoLabel.textColor = [UIColor whiteColor];
     resetLCPVideoLabel.font = [UIFont fontWithName:@"Oswald" size:20];
     resetLCPVideoLabel.numberOfLines = 1;
@@ -562,7 +658,7 @@
     resetLCPVideoLabel.text = @"Reload LCP Videos:";
     [presentationContent addSubview:resetLCPVideoLabel];
     
-    UIButton *resetLCPVideo = [[UIButton alloc] initWithFrame:CGRectMake(24, 260, 400, 50)];
+    UIButton *resetLCPVideo = [[UIButton alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 24, 150, 400, 50)];
     resetLCPVideo.backgroundColor = [UIColor clearColor];
     [resetLCPVideo setTitle:@"Refresh" forState:UIControlStateNormal];
     [resetLCPVideo.layer setBorderWidth:1.0f];
@@ -573,7 +669,7 @@
     resetLCPVideo.titleLabel.font = [UIFont fontWithName:@"Oswald" size:20];
     [presentationContent addSubview:resetLCPVideo];
     
-    UILabel *resetFavoritesLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 320, background.bounds.size.width, 40)];
+    UILabel *resetFavoritesLabel = [[UILabel alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 24, 210, background.bounds.size.width, 40)];
     resetFavoritesLabel.textColor = [UIColor whiteColor];
     resetFavoritesLabel.font = [UIFont fontWithName:@"Oswald" size:20];
     resetFavoritesLabel.numberOfLines = 1;
@@ -582,7 +678,7 @@
     resetFavoritesLabel.text = @"Reset Previously Favorited Content:";
     [presentationContent addSubview:resetFavoritesLabel];
     
-    UIButton *resetFavButton = [[UIButton alloc] initWithFrame:CGRectMake(24, 370, 400, 50)];
+    UIButton *resetFavButton = [[UIButton alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 24, 260, 400, 50)];
     resetFavButton.backgroundColor = [UIColor clearColor];
     [resetFavButton setTitle:@"Reset" forState:UIControlStateNormal];
     [resetFavButton.layer setBorderWidth:1.0f];
@@ -593,7 +689,7 @@
     resetFavButton.titleLabel.font = [UIFont fontWithName:@"Oswald" size:20];
     [presentationContent addSubview:resetFavButton];
     
-    UILabel *resetSelectedLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 430, background.bounds.size.width, 40)];
+    UILabel *resetSelectedLabel = [[UILabel alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 24, 320, background.bounds.size.width, 40)];
     resetSelectedLabel.textColor = [UIColor whiteColor];
     resetSelectedLabel.font = [UIFont fontWithName:@"Oswald" size:20];
     resetSelectedLabel.numberOfLines = 1;
@@ -602,7 +698,7 @@
     resetSelectedLabel.text = @"Reset Previously Selected Content:";
     [presentationContent addSubview:resetSelectedLabel];
     
-    UIButton *resetSelectedButton = [[UIButton alloc] initWithFrame:CGRectMake(24, 480, 400, 50)];
+    UIButton *resetSelectedButton = [[UIButton alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 24, 370, 400, 50)];
     resetSelectedButton.backgroundColor = [UIColor clearColor];
     [resetSelectedButton setTitle:@"Reset" forState:UIControlStateNormal];
     [resetSelectedButton.layer setBorderWidth:1.0f];
@@ -612,6 +708,79 @@
     [resetSelectedButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
     resetSelectedButton.titleLabel.font = [UIFont fontWithName:@"Oswald" size:20];
     [presentationContent addSubview:resetSelectedButton];
+    
+    UIView *selectedContentDivider = [[UIView alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 24, 450, 400, 2)];
+    [selectedContentDivider setBackgroundColor:[UIColor whiteColor]];
+    [presentationContent addSubview:selectedContentDivider];
+    
+    currentlyFavoritedItemsLabel = [[UILabel alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 60, 460, 400, 40)];
+    currentlyFavoritedItemsLabel.textColor = [UIColor whiteColor];
+    currentlyFavoritedItemsLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    currentlyFavoritedItemsLabel.numberOfLines = 1;
+    currentlyFavoritedItemsLabel.backgroundColor = [UIColor clearColor];
+    currentlyFavoritedItemsLabel.textAlignment = NSTextAlignmentLeft;
+    currentlyFavoritedItemsLabel.text = @"You currently have favorited items";
+    
+    contentFavoritedFlag = [[UIImageView alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 24, 470, 25, 25)];
+    contentFavoritedFlag.image = [UIImage imageNamed:@"flag"];
+    
+    currentlySelectedItemsLabel = [[UILabel alloc] init];
+    currentlySelectedItemsLabel.textColor = [UIColor whiteColor];
+    currentlySelectedItemsLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    currentlySelectedItemsLabel.numberOfLines = 1;
+    currentlySelectedItemsLabel.backgroundColor = [UIColor clearColor];
+    currentlySelectedItemsLabel.textAlignment = NSTextAlignmentLeft;
+    currentlySelectedItemsLabel.text = @"You currently have selected items";
+    
+    contentSelectedFlag = [[UIImageView alloc] init];
+    contentSelectedFlag.image = [UIImage imageNamed:@"flag"];
+}
+
+- (void)checkIfContentIsFavorited {
+    NSMutableDictionary *templcpFav = [[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] mutableCopy];
+    
+    if (templcpFav.count > 0) {
+        isContentFavorited = YES;
+        [presentationContent addSubview:currentlyFavoritedItemsLabel];
+        [presentationContent addSubview:contentFavoritedFlag];
+    }
+    else {
+        isContentFavorited = NO;
+        [currentlyFavoritedItemsLabel removeFromSuperview];
+        [contentFavoritedFlag removeFromSuperview];
+    }
+}
+
+- (void)checkIfContentIsSelected {
+    NSMutableDictionary *templcpContent = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+    
+    for (id key in templcpContent) {
+        if ([[templcpContent objectForKey:key] isEqualToString:@"hide"]) {
+            isContentSelected = YES;
+            break;
+        }
+        else {
+            isContentSelected = NO;
+        }
+    }
+    
+    if (isContentSelected) {
+        if (isContentFavorited) {
+            [currentlySelectedItemsLabel setFrame:CGRectMake((background.bounds.size.width / 2) + 60, 510, 400, 40)];
+            [contentSelectedFlag setFrame:CGRectMake((background.bounds.size.width / 2) + 24, 520, 25, 25)];
+        }
+        else {
+            [currentlySelectedItemsLabel setFrame:CGRectMake((background.bounds.size.width / 2) + 60, 460, 400, 40)];
+            [contentSelectedFlag setFrame:CGRectMake((background.bounds.size.width / 2) + 24, 470, 25, 25)];
+        }
+        
+        [presentationContent addSubview:currentlySelectedItemsLabel];
+        [presentationContent addSubview:contentSelectedFlag];
+    }
+    else {
+        [currentlySelectedItemsLabel removeFromSuperview];
+        [contentSelectedFlag removeFromSuperview];
+    }
 }
 
 - (void)buildOptions:(NSArray *)objects forView:(NSString *)contentView withTerm:(NSString *)tagReference {
@@ -727,6 +896,38 @@
     [defaults synchronize];
 }
 
+- (void)setCompanyLogo:(UIButton *)sender {
+    for (UIView *b in [pContent subviews]) {
+        if ([b isKindOfClass:[UIButton class]]) {
+            [b setBackgroundColor:[UIColor clearColor]];
+        }
+    }
+    // FIXME: I don't like that this here.
+    for (int i = 0; i < companyLogoArray.count; i++) {
+        if ([companyLogoArray[i] isKindOfClass:[NSNull class]]) {
+            [companyLogoArray removeObjectAtIndex:i];
+        }
+    }
+    
+    if (isCompanyLogoSelected) {
+        if (senderTag == sender.tag) {
+            isCompanyLogoSelected = NO;
+            companyLogo = nil;
+        }
+        else {
+            isCompanyLogoSelected = YES;
+            senderTag = sender.tag;
+            companyLogo = [companyLogoArray objectAtIndex:sender.tag];
+            [sender setBackgroundColor:[UIColor whiteColor]];
+        }
+    }
+    else {
+        isCompanyLogoSelected = YES;
+        senderTag = sender.tag;
+        companyLogo = [companyLogoArray objectAtIndex:sender.tag];
+        [sender setBackgroundColor:[UIColor whiteColor]];
+    }
+}
 
 #pragma mark
 #pragma mark - Reachability
@@ -831,9 +1032,7 @@
     return YES;
 }
 //email submission functionality
--(void)submitEmail:(id)sender
-{
-    
+-(void)submitEmail:(id)sender {
     //check to make sure values are present and the email is valid
     if([email.text length] > 0){
         if([subject.text length] > 0){
@@ -929,8 +1128,7 @@
     [emailContent setContentSize:CGSizeMake(background.bounds.size.width, (favoriteListView.frame.size.height + 490))];
 }
 
--(void)emailResponse:(NSMutableDictionary *)emailData withFlag:(BOOL)flag
-{
+- (void)emailResponse:(NSMutableDictionary *)emailData withFlag:(BOOL)flag {
     loadingView.alpha = 0.0;
     if(flag){
         [self displayMessage:@"Your email was sent successfully"];
@@ -941,15 +1139,6 @@
     }else{
         [self displayMessage:[emailData objectForKey:@"error"]];
     }
-}
-
-#pragma
-#pragma mark - Display Message
--(void)displayMessage:(NSString *)displayMessage
-{
-    UIAlertView *error = [[UIAlertView alloc] initWithTitle:@"ALERT" message: displayMessage
-                                                   delegate: self cancelButtonTitle: @"Ok" otherButtonTitles: nil];
-    [error show];
 }
 
 #pragma mark
@@ -971,6 +1160,8 @@
 - (void)segmentedControlValueDidChange:(UISegmentedControl *)sender {
     
     if (sender.selectedSegmentIndex == 0) {
+        [self checkIfContentIsSelected];
+        [self checkIfContentIsFavorited];
         presentationContent.hidden = NO;
         csContent.hidden = YES;
         sContent.hidden = YES;
@@ -1044,6 +1235,7 @@
     //Splash screen backgroung image
     LogoLoaderViewController *lvc = (LogoLoaderViewController *)[storyboard instantiateViewControllerWithIdentifier:@"logoLoaderViewController"];
     lvc.companyName = [companyNameTextField.text uppercaseString];
+    lvc.companyLogo = companyLogo;
     lvc.content = content;
     
     [self.navigationController pushViewController:lvc animated:YES];
@@ -1053,21 +1245,14 @@
 #pragma mark - Reload Content
 //Download all the data from parse and pin it to the local datastore
 - (void)reloadLocalDataStore:(id)sender {
-    if ([self connected]) {
-        [parsedownload downloadAndPinPFObjects];
-        [self removeEverything];
-        
-        if (!parsedownload.videoFileBeingDownloaded) {
-            [background addSubview:contentActivityIndicator];
-            [contentActivityIndicator startAnimating];
-        }
-    }
-    else {
-        [self displayMessage:@"You are not currently connected to the internt."];
-    }
+    alertButtonPressed = @"reloadLocalDataStore";
+    [self displayDownLoadMessage:@"If you have deleted any content from the website plaese use the 'Remove and Reload Content' button. Otherwise use the 'Reload Content' button to overwrite the exisiting content."
+                   andMessageOne:@"Remove and Reload Content"
+                   andMessageTwo:@"Reload Content"];
 }
 
 - (void)reloadVideoContent:(id)sender {
+    alertButtonPressed = @"reloadVideoContent";
     if ([self connected]) {
         if ([self wifiConnection]) {
             [parsedownload downloadVideoFile:background forTerm:@""];
@@ -1091,6 +1276,9 @@
     [[NSUserDefaults standardUserDefaults] setObject:favoriteList forKey:@"contentFavorites"];
     [[NSUserDefaults standardUserDefaults] synchronize];
     [self refreshEmailList];
+    [self checkIfContentIsFavorited];
+    
+    [self displayMessage:@"All previously favorited content has now been reset."];
 }
 
 - (void)resetAllSelectedContent:(id)sender {
@@ -1102,26 +1290,86 @@
     
     [self removeEverything];
     [self drawViews];
+    
+    isContentSelected = NO;
+    [self checkIfContentIsSelected];
+    
+    [self displayMessage:@"All previously selected content has now been reset."];
 }
 
 - (void)reloadEverything:(id)sender {
-    [self reloadVideoContent:@""];
-    [self resetAllFavoritedContent:@""];
-    [self resetAllSelectedContent:@""];
-    [self reloadLocalDataStore:@""];
+    alertButtonPressed = @"reloadEverything";
+    [self displayDownLoadMessage:@"Are you sure you want to reset and reload everything? This can take a while depending on your internet connection."
+                   andMessageOne:@"Yes"
+                   andMessageTwo:@""];
 }
 
+#pragma
+#pragma mark - Display Message
+- (void)displayMessage:(NSString *)displayMessage {
+    UIAlertView *error = [[UIAlertView alloc] initWithTitle:@"ALERT" message: displayMessage
+                                                   delegate: self cancelButtonTitle: @"Ok" otherButtonTitles: nil];
+    [error show];
+}
+
+- (void)displayDownLoadMessage:(NSString *)downloadMessage andMessageOne:(NSString *)msg1 andMessageTwo:(NSString *)msg2 {
+    UIAlertView *dlMessage = [[UIAlertView alloc] initWithTitle:@"ALERT" message: downloadMessage
+                                                       delegate: self cancelButtonTitle: @"Cancel" otherButtonTitles: nil];
+    [dlMessage addButtonWithTitle:msg1];
+    if (msg2.length > 0) {
+        [dlMessage addButtonWithTitle:msg2];
+    }
+    [dlMessage show];
+}
 #pragma mark
 #pragma mark - UIAlert method and delegate method
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex {
-    if(buttonIndex == 1) {
-        [parsedownload downloadVideoFile:background forTerm:@""];
+    
+    //If there is an internet connection
+    if ([self connected]) {
+        
+        //Reload LCP Content
+        if ([alertButtonPressed isEqualToString:@"reloadLocalDataStore"]) {
+            
+            if (buttonIndex == 1) {
+                [parsedownload unpinAllPFObjects];
+            }
+            
+            if (buttonIndex != 0) {
+                [parsedownload downloadAndPinPFObjects];
+                [self removeEverything];
+                
+                if (!parsedownload.videoFileBeingDownloaded) {
+                    [background addSubview:contentActivityIndicator];
+                    [contentActivityIndicator startAnimating];
+                }
+            }
+        }
+        else if ([alertButtonPressed isEqualToString:@"reloadVideoContent"]) {
+            if(buttonIndex == 1) {
+                [parsedownload downloadVideoFile:background forTerm:@""];
+            }
+        }
+        else if ([alertButtonPressed isEqualToString:@"reloadEverything"]) {
+            if(buttonIndex == 1) {
+                [self reloadVideoContent:@""];
+                [self resetAllFavoritedContent:@""];
+                [self resetAllSelectedContent:@""];
+                [self reloadLocalDataStore:@""];
+            }
+        }
+    }
+    else {
+        [self displayMessage:@"You are not currently connected to the internt."];
     }
 }
 
 #pragma mark
 #pragma mark - Memory Management
 - (void)removeEverything {
+    for (UIView *v in [pContent subviews]) {
+        [v removeFromSuperview];
+    }
     for (UIView *v in [csContent subviews]) {
         [v removeFromSuperview];
     }

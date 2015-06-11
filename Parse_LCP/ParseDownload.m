@@ -30,7 +30,7 @@
 #pragma mark
 #pragma mark - Public API
 - (void)downloadAndPinPFObjects {
-    parseClassTypes = @[@"term", @"splash_screen", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member",@"testimonials"];
+    parseClassTypes = @[@"term", @"splash_screen", @"company_logo", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member", @"testimonials"];
     parseClassDictionary = [[NSMutableDictionary alloc] init];
     count = 0;
     for (NSString *parseClass in parseClassTypes) {
@@ -43,13 +43,12 @@
 }
 
 - (void)unpinAllPFObjects {
-    parseClassTypes = @[@"term", @"splash_screen", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member",@"testimonials"];
+    parseClassTypes = @[@"term", @"splash_screen", @"company_logo", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member", @"testimonials"];
     for (NSString *parseClass in parseClassTypes) {
         [self clearLocalDataStore:parseClass];
     }
 }
-- (BOOL)checkForValidEmail:(NSString *)email
-{
+- (BOOL)checkForValidEmail:(NSString *)email {
     BOOL stricterFilter = YES;
     NSString *stricterFilterString = @"[A-Z0-9a-z\\._%+-]+@([A-Za-z0-9-]+\\.)+[A-Za-z]{2,4}";
     NSString *laxString = @".+@([A-Za-z0-9]+\\.)+[A-Za-z]{2}[A-Za-z]*";

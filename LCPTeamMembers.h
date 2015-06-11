@@ -14,6 +14,7 @@
 @property (strong, nonatomic) NSString *teamMemberName;
 @property (strong, nonatomic) NSString *teamMemberTitle;
 @property (strong, nonatomic) NSString *teamMemberBio;
+@property (strong, nonatomic) NSString *teamMemberCatagoryId;
 @property (strong, nonatomic) UIImage *teamMemberPhoto;
 @property (strong, nonatomic) NSString *btnTag;
 @property (strong, nonatomic) NSNumber *sortOrder;

@@ -14,5 +14,6 @@
 //The companyName property get set in ContentSettingsViewController
 @property (strong, nonatomic) LCPContent *content;
 @property (strong, nonatomic) NSString *companyName;
+@property (strong, nonatomic) UIImage *companyLogo;
 
 @end

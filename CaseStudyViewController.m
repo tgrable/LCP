@@ -13,6 +13,7 @@
 #import "SamplesViewController.h"
 #import "VideoViewController.h"
 #import "DetailsViewController.h"
+#import "PDFViewController.h"
 
 #import "LCPCaseStudyMedia.h"
 #import "Reachability.h"
@@ -81,10 +82,12 @@
     [headerImgView addSubview:headerLabel];
     
     /******** Logo and setting navigation buttons ********/
-    //UIImageView used to hold LCP logo
-    UIImageView *logo = [[UIImageView alloc] initWithFrame:CGRectMake(60, 6.5f, 70, 23)];
-    logo.image = [UIImage imageNamed:@"logo"];
-    [self.view addSubview:logo];
+    UIButton *logoButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [logoButton setFrame:CGRectMake(60, 6.5f, 70, 23)];
+    [logoButton addTarget:self action:@selector(hiddenSection:)forControlEvents:UIControlEventTouchUpInside];
+    logoButton.showsTouchWhenHighlighted = YES;
+    [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
+    [self.view addSubview:logoButton];
     
     //UIButton used to navigate back to content dashboard
     UIButton *dashboardButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -737,6 +740,12 @@
         [self.navigationController pushViewController:dvc animated:YES];
         [self removeEverything];
     }];
+}
+
+- (void)hiddenSection:(id)sender {
+    UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
+    PDFViewController *pvc = (PDFViewController *)[storyboard instantiateViewControllerWithIdentifier:@"pdfViewController"];
+    [self.navigationController pushViewController:pvc animated:YES];
 }
 
 #pragma mark

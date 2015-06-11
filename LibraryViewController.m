@@ -112,7 +112,7 @@
     headerLabel.text = [[NSString stringWithFormat:@"%@ library", pageTitle] uppercaseString];
     [background addSubview:headerLabel];
     
-    pageScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(24, 110, background.bounds.size.width - 48, background.bounds.size.height - 206)];
+    pageScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 110, background.bounds.size.width, background.bounds.size.height - 206)];
     pageScroll.showsHorizontalScrollIndicator = NO;
     pageScroll.showsVerticalScrollIndicator = YES;
     pageScroll.pagingEnabled = YES;
@@ -321,11 +321,10 @@
 #pragma mark - Build Views
 - (void)buildVideosView:(NSArray *)objects {
     
-    int x = 0, y = 48, count = 1, subcount = 1, totalCount = 1;
+    int x = 24, y = 48, count = 1, subcount = 1, totalCount = 1;
     int multiplier = 1, offset = 0;
     
     for (PFObject *object in objects){
-        
         //add the nid for the object to nid array
         [nids addObject:object[@"nid"]];
         
@@ -363,17 +362,17 @@
         
         if (count < 8) {
             if (subcount < 4) {
-                x += 235 + offset;
+                x += 235;
                 subcount++;
             }
             else {
-                x = 0 + offset, y = 174 + 43;
+                x = 24 + offset, y = 174 + 43;
                 subcount = 1;
             }
         }
         else {
             offset += background.bounds.size.width;
-            x = 0 + offset, y = 48;
+            x = offset + 24, y = 48;
             subcount = 1;
             count = 0;
         }
@@ -383,7 +382,7 @@
             multiplier++;
             totalCount = 1;
         }
-        NSLog(@"totalCount: %d", totalCount);
+
         totalCount++;
         [pageScroll setContentSize:CGSizeMake((pageScroll.bounds.size.width * multiplier), 400)];
     }

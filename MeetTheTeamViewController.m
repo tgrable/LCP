@@ -279,7 +279,6 @@
 
 //Layout the team members in the scroll view
 - (void)buldGrid:(NSArray *)teamMemberObjects {
-    NSLog(@"buldGrid");
     
     jobDescription = [[UIView alloc] initWithFrame:CGRectMake(36, 410, (background.bounds.size.width - (36 * 2)), 190)];
     [jobDescription setBackgroundColor:[UIColor clearColor]];

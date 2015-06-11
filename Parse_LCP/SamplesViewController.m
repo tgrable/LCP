@@ -356,7 +356,6 @@
 #pragma mark -
 #pragma mark - Build Views
 - (void)buildSamplesView:(NSArray *)objects {
-    
     //UIImageView used to hold header image and text
     UIImageView *headerImgView = [[UIImageView alloc] initWithFrame:CGRectMake(0, 0, background.bounds.size.width, 110)];
     headerImgView.image = [UIImage imageNamed:@"hdr-casestudy"];
@@ -382,8 +381,8 @@
     pageScroll.delegate = self;
     pageScroll.backgroundColor = [UIColor clearColor];
     [background addSubview:pageScroll];
-    
-    int x = 24, y = 48, count = 1, subcount = 1;
+
+    int x = 24, y = 48, count = 1, subcount = 1, totalCount = 1;
     int multiplier = 1, offset = 0;
     
     for (PFObject *object in objects){
@@ -464,7 +463,7 @@
         //Create the four column two row grid with pagination
         if (count < 8) {
             if (subcount < 4) {
-                x += 235 + offset;
+                x += 235;
                 subcount++;
             }
             else {
@@ -474,13 +473,19 @@
         }
         else {
             offset += background.bounds.size.width;
-            x = 24 + offset, y = 48;
-            multiplier++;
+            x = offset + 24, y = 48;
             subcount = 1;
             count = 0;
         }
         count++;
-        [pageScroll setContentSize:CGSizeMake((background.bounds.size.width * multiplier), 400)];
+        
+        if (totalCount > 8) {
+            multiplier++;
+            totalCount = 1;
+        }
+        
+        totalCount++;
+        [pageScroll setContentSize:CGSizeMake((pageScroll.bounds.size.width * multiplier), 400)];
     }
     
     UIView *hDivider = [[UIView alloc] initWithFrame:CGRectMake(0, background.bounds.size.height - 144, background.bounds.size.width, 1)];

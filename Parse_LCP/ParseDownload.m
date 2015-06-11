@@ -30,7 +30,7 @@
 #pragma mark
 #pragma mark - Public API
 - (void)downloadAndPinPFObjects {
-    parseClassTypes = @[@"term", @"splash_screen", @"company_logo", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member", @"testimonials"];
+    parseClassTypes = @[@"term", @"splash_screen", @"company_logo", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"pdf_slide_deck", @"team_member", @"testimonials"];
     parseClassDictionary = [[NSMutableDictionary alloc] init];
     count = 0;
     for (NSString *parseClass in parseClassTypes) {
@@ -43,11 +43,16 @@
 }
 
 - (void)unpinAllPFObjects {
-    parseClassTypes = @[@"term", @"splash_screen", @"company_logo", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"team_member", @"testimonials"];
+    parseClassTypes = @[@"term", @"splash_screen", @"company_logo", @"overview" ,@"case_study", @"case_study_media", @"samples", @"video", @"pdf_slide_deck", @"team_member", @"testimonials"];
     for (NSString *parseClass in parseClassTypes) {
         [self clearLocalDataStore:parseClass];
     }
 }
+
+- (void)unpinIndividualParseClass:(NSString *)parseClass {
+    [self clearLocalDataStore:parseClass];
+}
+
 - (BOOL)checkForValidEmail:(NSString *)email {
     BOOL stricterFilter = YES;
     NSString *stricterFilterString = @"[A-Z0-9a-z\\._%+-]+@([A-Za-z0-9-]+\\.)+[A-Za-z]{2,4}";
@@ -88,10 +93,6 @@
     });
 }
 
-- (void)unpinIndividualParseClass:(NSString *)parseClass {
-    [self clearLocalDataStore:parseClass];
-}
-
 #pragma mark
 #pragma mark - AFNetworking
 - (void)downloadVideoFile:(UIView *)view forTerm:(NSString *)termId {
@@ -99,7 +100,9 @@
     UIActivityIndicatorView *videoActivityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle:
                                                    UIActivityIndicatorViewStyleWhiteLarge];
     
-    [videoActivityIndicator setCenter:CGPointMake(view.frame.size.width/2.0, view.frame.size.height/2.0)];
+    [videoActivityIndicator setCenter:CGPointMake(150, 20)];
+    videoActivityIndicator.transform = CGAffineTransformMakeScale(0.65, 0.65);
+    [videoActivityIndicator setColor:[UIColor blackColor]];
     videoActivityIndicator.hidesWhenStopped = YES;
 
     [view addSubview:videoActivityIndicator];

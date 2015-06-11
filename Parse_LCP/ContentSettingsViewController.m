@@ -22,7 +22,7 @@
 @property (strong, nonatomic) UIView *background, *favoriteListView, *formSlidView, *loadingView;
 @property (strong, nonatomic) UIImageView *contentSelectedFlag, *contentFavoritedFlag;
 @property (strong, nonatomic) UIActivityIndicatorView *contentActivityIndicator, *activityIndicator;
-@property (strong, nonatomic) UIScrollView *pContent ,*csContent, *sContent, *vContent, *tContent;
+@property (strong, nonatomic) UIScrollView *pContent ,*csContent, *sContent, *vContent, *tContent, *pdfContent;
 @property (strong, nonatomic) UIScrollView *presentationContent, *emailContent;
 @property (nonatomic) UISegmentedControl *contentSegController;
 @property (strong, nonatomic) UITextField *email, *subject, *companyNameTextField;
@@ -31,8 +31,7 @@
 @property (strong, nonatomic) UIImage *companyLogo;
 @property (strong, nonatomic) UILabel *currentlySelectedItemsLabel, *currentlyFavoritedItemsLabel;
 @property NSMutableArray *favoritedNIDs;
-@property NSMutableArray *termsArray;
-@property NSMutableArray *companyLogoArray;
+@property NSMutableArray *termsArray, *companyLogoArray, *pdfNIDs;
 @property NSMutableDictionary *posterDictionary, *navIconDictionary, *navTermDictionary, *navTidsDictionary;
 @property NSMutableDictionary *lcpContent;
 @property NSString *alertButtonPressed;
@@ -47,7 +46,7 @@
 @synthesize background, favoriteListView, formSlidView, loadingView;                    //UIView
 @synthesize contentSelectedFlag, contentFavoritedFlag;
 @synthesize contentActivityIndicator, activityIndicator;                                //UIActivityIndicatorView
-@synthesize pContent, csContent, sContent, vContent, tContent;                          //UIScrollView
+@synthesize pContent, csContent, sContent, vContent, tContent, pdfContent;              //UIScrollView
 @synthesize presentationContent, emailContent;                                          //UIScrollView
 @synthesize contentSegController;                                                       //UISegmentedControl
 @synthesize currentlySelectedItemsLabel, currentlyFavoritedItemsLabel;
@@ -56,7 +55,7 @@
 @synthesize parsedownload, emailObject;                                                 //Custom Classes
 @synthesize email, subject, companyNameTextField;                                       //Email textfields
 @synthesize message;                                                                    //Email textview
-@synthesize favoritedNIDs, termsArray, companyLogoArray;                                //NSMutableArray
+@synthesize favoritedNIDs, termsArray, companyLogoArray, pdfNIDs;                       //NSMutableArray
 @synthesize posterDictionary, navIconDictionary, navTermDictionary, navTidsDictionary;  //NSMutableDictionary
 @synthesize lcpContent;                                                                 //NSMutableDictionary
 @synthesize alertButtonPressed;                                                         //NSString
@@ -104,8 +103,8 @@
     [logoButton setBackgroundImage:[UIImage imageNamed:@"logo"] forState:UIControlStateNormal];
     [self.view addSubview:logoButton];
     
-    contentSegController = [[UISegmentedControl alloc]initWithItems:@[@"Presentation", @"Case Studies", @"Samples", @"Videos", @"Testimonials", @"Email"]];
-    contentSegController.frame = CGRectMake(190, 56, 700, 33);
+    contentSegController = [[UISegmentedControl alloc]initWithItems:@[@"Presentation", @"Case Studies", @"Samples", @"Videos", @"Testimonials", @"PDF Slides", @"Email"]];
+    contentSegController.frame = CGRectMake(60, 56, self.view.bounds.size.width - 120, 33);
     [contentSegController addTarget:self action:@selector(segmentedControlValueDidChange:) forControlEvents:UIControlEventValueChanged];
     [contentSegController setSelectedSegmentIndex:0];
     [contentSegController setTintColor:[UIColor whiteColor]];
@@ -150,8 +149,9 @@
     [self drawViews];
     
     contentActivityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    contentActivityIndicator.frame = CGRectMake((background.frame.size.width / 2), (background.frame.size.height / 2), 35.0, 35.0);
-    [contentActivityIndicator setColor:[UIColor whiteColor]];
+    contentActivityIndicator.frame = CGRectMake(145, 7, 26, 26);
+    contentActivityIndicator.transform = CGAffineTransformMakeScale(0.65, 0.65);
+    [contentActivityIndicator setColor:[UIColor blackColor]];
     contentActivityIndicator.hidesWhenStopped = YES;
 }
 
@@ -184,7 +184,9 @@
                             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                             [defaults setObject:@"hasData" forKey:forParseClassType];
                             [defaults synchronize];
-                            
+                            if ([forParseClassType isEqualToString:@"pdf_slide_deck"]) {
+                                [self createpdfNIDArray:objects];
+                            }
                             [self buildOptions:objects forView:forParseClassType withTerm:tagReference];
                         }
                     }];
@@ -210,6 +212,9 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
+                if ([forParseClassType isEqualToString:@"pdf_slide_deck"]) {
+                    [self createpdfNIDArray:objects];
+                }
                 [self buildOptions:objects forView:forParseClassType withTerm:tagReference];
             }
             else {
@@ -273,7 +278,7 @@
 - (void)fetchRemainingObjectsFromParse {
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSArray *parseClasses = @[@"case_study", @"samples", @"video", @"testimonials"];
+    NSArray *parseClasses = @[@"case_study", @"samples", @"video", @"testimonials", @"pdf_slide_deck"];
 
     for (NSString *parseClass in parseClasses) {
         if ([[defaults objectForKey:parseClass] isEqualToString:@"hasData"]) {
@@ -285,7 +290,7 @@
     }
     
     if (![[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
-        [parsedownload downloadVideoFile:background forTerm:@""];
+        [parsedownload downloadVideoFile:self.view forTerm:@""];
     }
     if (![[defaults objectForKey:@"overview"] isEqualToString:@"hasData"]) {
         [parsedownload downloadAndPinIndividualParseClass:@"overview"];
@@ -299,10 +304,12 @@
     if (![[defaults objectForKey:@"splash_screen"] isEqualToString:@"hasData"]) {
         [parsedownload downloadAndPinIndividualParseClass:@"splash_screen"];
     }
+    if (![[defaults objectForKey:@"company_logo"] isEqualToString:@"hasData"]) {
+        [parsedownload downloadAndPinIndividualParseClass:@"company_logo"];
+    }
 }
 
 - (void)fetchPosterImage {
-
     PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
     query.limit = 1;
     [query fromLocalDatastore];
@@ -323,7 +330,6 @@
 }
 
 - (void)fetchNavIcons {
-    
     PFQuery *query = [PFQuery queryWithClassName:@"term"];
     [query whereKey:@"parent" equalTo:@"0"];
     [query fromLocalDatastore];
@@ -377,50 +383,10 @@
     });
 }
 
-- (void)buildCompanyLogoItems:(int)atLocation withPFObject:(PFObject *)object andTag:(int)count {
-
-    int __block y = atLocation;
-    int __block arrayIndex = count;
-    dispatch_async(dispatch_get_main_queue(), ^{
-        PFFile *imageFile = [object objectForKey:@"field_image_img"];
-        [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
-            if (!error) {
-                UIButton *selectLogoButton = [[UIButton alloc] initWithFrame:CGRectMake(0, y, 40, 40)];
-                selectLogoButton.backgroundColor = [UIColor clearColor];
-                selectLogoButton.tag = count;
-                [selectLogoButton.layer setBorderWidth:2.0f];
-                [selectLogoButton.layer setBorderColor:[UIColor whiteColor].CGColor];
-                [selectLogoButton addTarget:self action:@selector(setCompanyLogo:)forControlEvents:UIControlEventTouchUpInside];
-                selectLogoButton.showsTouchWhenHighlighted = YES;
-                [selectLogoButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-                selectLogoButton.titleLabel.font = [UIFont fontWithName:@"Oswald" size:20];
-                [pContent addSubview:selectLogoButton];
-                
-                UILabel *companyLogoLabel = [[UILabel alloc] initWithFrame:CGRectMake(50, y, 400, 50)];
-                companyLogoLabel.textColor = [UIColor whiteColor];
-                companyLogoLabel.font = [UIFont fontWithName:@"Oswald" size:20];
-                companyLogoLabel.numberOfLines = 1;
-                companyLogoLabel.backgroundColor = [UIColor clearColor];
-                companyLogoLabel.textAlignment = NSTextAlignmentLeft;
-                companyLogoLabel.text = [object objectForKey:@"title"];
-                [pContent addSubview:companyLogoLabel];
-                
-                UIImage *logoImage = [[UIImage alloc] initWithData:imgData];
-                [companyLogoArray insertObject:logoImage atIndex:arrayIndex];
-                
-                UIImageView *logoImageView = [[UIImageView alloc] initWithImage:logoImage];
-                logoImageView.frame = CGRectMake(0, y += 50, logoImage.size.width, logoImage.size.height);
-                [pContent addSubview:logoImageView];
-            }
-        }];
-    });
-}
-
 #pragma mark -
 #pragma mark - Build View
 - (void)drawViews {
     //First Page Summary View
-    
     pContent = [[UIScrollView alloc] initWithFrame:CGRectMake(24, 150, 400, (presentationContent.bounds.size.height - 160))];
     [pContent setBackgroundColor:[UIColor clearColor]];
     [pContent setUserInteractionEnabled:YES];
@@ -455,6 +421,13 @@
     tContent.hidden = YES;
     tContent.showsVerticalScrollIndicator = YES;
     [background addSubview:tContent];
+    
+    pdfContent = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 105, background.bounds.size.width, (background.bounds.size.height - 115))];
+    [pdfContent setBackgroundColor:[UIColor clearColor]];
+    [pdfContent setUserInteractionEnabled:YES];
+    pdfContent.hidden = YES;
+    pdfContent.showsVerticalScrollIndicator = YES;
+    [background addSubview:pdfContent];
     
     [self fetchPosterImage];
     [self fetchNavIcons];
@@ -594,6 +567,7 @@
 
 //Once all data has been downloaded NSNotification is posted and this method is called to redraw the view.
 - (void)redrawView:(NSNotification *)notification {
+    [self removeEverything];
     [self drawViews];
     [self fetchPosterImage];
     [self fetchNavIcons];
@@ -736,53 +710,6 @@
     contentSelectedFlag.image = [UIImage imageNamed:@"flag"];
 }
 
-- (void)checkIfContentIsFavorited {
-    NSMutableDictionary *templcpFav = [[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] mutableCopy];
-    
-    if (templcpFav.count > 0) {
-        isContentFavorited = YES;
-        [presentationContent addSubview:currentlyFavoritedItemsLabel];
-        [presentationContent addSubview:contentFavoritedFlag];
-    }
-    else {
-        isContentFavorited = NO;
-        [currentlyFavoritedItemsLabel removeFromSuperview];
-        [contentFavoritedFlag removeFromSuperview];
-    }
-}
-
-- (void)checkIfContentIsSelected {
-    NSMutableDictionary *templcpContent = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
-    
-    for (id key in templcpContent) {
-        if ([[templcpContent objectForKey:key] isEqualToString:@"hide"]) {
-            isContentSelected = YES;
-            break;
-        }
-        else {
-            isContentSelected = NO;
-        }
-    }
-    
-    if (isContentSelected) {
-        if (isContentFavorited) {
-            [currentlySelectedItemsLabel setFrame:CGRectMake((background.bounds.size.width / 2) + 60, 510, 400, 40)];
-            [contentSelectedFlag setFrame:CGRectMake((background.bounds.size.width / 2) + 24, 520, 25, 25)];
-        }
-        else {
-            [currentlySelectedItemsLabel setFrame:CGRectMake((background.bounds.size.width / 2) + 60, 460, 400, 40)];
-            [contentSelectedFlag setFrame:CGRectMake((background.bounds.size.width / 2) + 24, 470, 25, 25)];
-        }
-        
-        [presentationContent addSubview:currentlySelectedItemsLabel];
-        [presentationContent addSubview:contentSelectedFlag];
-    }
-    else {
-        [currentlySelectedItemsLabel removeFromSuperview];
-        [contentSelectedFlag removeFromSuperview];
-    }
-}
-
 - (void)buildOptions:(NSArray *)objects forView:(NSString *)contentView withTerm:(NSString *)tagReference {
     int y = 0;
     
@@ -837,7 +764,13 @@
         
         BOOL switchVal = YES;
         if (![lcpContent objectForKey:[object objectForKey:@"nid"]]) {
-            [lcpContent setObject:@"show" forKey:[object objectForKey:@"nid"]];
+            if ([contentView isEqualToString:@"pdf_slide_deck"]) {
+                [lcpContent setObject:@"hide" forKey:[object objectForKey:@"nid"]];
+                switchVal = NO;
+            }
+            else {
+                [lcpContent setObject:@"show" forKey:[object objectForKey:@"nid"]];
+            }
         }
         else {
             if ([[lcpContent objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
@@ -886,6 +819,14 @@
             [tContent addSubview:lineView];
             [tContent setContentSize:CGSizeMake(background.bounds.size.width, (95 * objects.count))];
         }
+        else if ([contentView isEqualToString:@"pdf_slide_deck"]) {
+            [pdfContent addSubview:spaceView];
+            [pdfContent addSubview:titleLabel];
+            [pdfContent addSubview:mySwitch];
+            [pdfContent addSubview:catagoryLabel];
+            [pdfContent addSubview:lineView];
+            [pdfContent setContentSize:CGSizeMake(background.bounds.size.width, (95 * objects.count))];
+        }
         
         y += 50;
         tempId = refId;
@@ -894,6 +835,99 @@
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     [defaults setObject:lcpContent forKey:@"lcpContent"];
     [defaults synchronize];
+}
+
+- (void)buildCompanyLogoItems:(int)atLocation withPFObject:(PFObject *)object andTag:(int)count {
+    
+    int __block y = atLocation;
+    int __block arrayIndex = count;
+    dispatch_async(dispatch_get_main_queue(), ^{
+        PFFile *imageFile = [object objectForKey:@"field_image_img"];
+        [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
+            if (!error) {
+                UIButton *selectLogoButton = [[UIButton alloc] initWithFrame:CGRectMake(0, y, 40, 40)];
+                selectLogoButton.backgroundColor = [UIColor clearColor];
+                selectLogoButton.tag = count;
+                [selectLogoButton.layer setBorderWidth:2.0f];
+                [selectLogoButton.layer setBorderColor:[UIColor whiteColor].CGColor];
+                [selectLogoButton addTarget:self action:@selector(setCompanyLogo:)forControlEvents:UIControlEventTouchUpInside];
+                selectLogoButton.showsTouchWhenHighlighted = YES;
+                [selectLogoButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+                selectLogoButton.titleLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+                [pContent addSubview:selectLogoButton];
+                
+                UILabel *companyLogoLabel = [[UILabel alloc] initWithFrame:CGRectMake(50, y, 400, 50)];
+                companyLogoLabel.textColor = [UIColor whiteColor];
+                companyLogoLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+                companyLogoLabel.numberOfLines = 1;
+                companyLogoLabel.backgroundColor = [UIColor clearColor];
+                companyLogoLabel.textAlignment = NSTextAlignmentLeft;
+                companyLogoLabel.text = [object objectForKey:@"title"];
+                [pContent addSubview:companyLogoLabel];
+                
+                UIImage *logoImage = [[UIImage alloc] initWithData:imgData];
+                [companyLogoArray insertObject:logoImage atIndex:arrayIndex];
+                
+                UIImageView *logoImageView = [[UIImageView alloc] initWithImage:logoImage];
+                logoImageView.frame = CGRectMake(0, y += 50, logoImage.size.width, logoImage.size.height);
+                [pContent addSubview:logoImageView];
+            }
+        }];
+    });
+}
+
+-(void)createpdfNIDArray:(NSArray *)objects {
+    pdfNIDs = [NSMutableArray array];
+    for (PFObject *object in objects) {
+        [pdfNIDs addObject:[object objectForKey:@"nid"]];
+    }
+}
+
+- (void)checkIfContentIsFavorited {
+    NSMutableDictionary *templcpFav = [[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] mutableCopy];
+    
+    if (templcpFav.count > 0) {
+        isContentFavorited = YES;
+        [presentationContent addSubview:currentlyFavoritedItemsLabel];
+        [presentationContent addSubview:contentFavoritedFlag];
+    }
+    else {
+        isContentFavorited = NO;
+        [currentlyFavoritedItemsLabel removeFromSuperview];
+        [contentFavoritedFlag removeFromSuperview];
+    }
+}
+
+- (void)checkIfContentIsSelected {
+    NSMutableDictionary *templcpContent = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+    
+    for (id key in templcpContent) {
+        if ([[templcpContent objectForKey:key] isEqualToString:@"hide"]) {
+            isContentSelected = YES;
+            break;
+        }
+        else {
+            isContentSelected = NO;
+        }
+    }
+    
+    if (isContentSelected) {
+        if (isContentFavorited) {
+            [currentlySelectedItemsLabel setFrame:CGRectMake((background.bounds.size.width / 2) + 60, 510, 400, 40)];
+            [contentSelectedFlag setFrame:CGRectMake((background.bounds.size.width / 2) + 24, 520, 25, 25)];
+        }
+        else {
+            [currentlySelectedItemsLabel setFrame:CGRectMake((background.bounds.size.width / 2) + 60, 460, 400, 40)];
+            [contentSelectedFlag setFrame:CGRectMake((background.bounds.size.width / 2) + 24, 470, 25, 25)];
+        }
+        
+        [presentationContent addSubview:currentlySelectedItemsLabel];
+        [presentationContent addSubview:contentSelectedFlag];
+    }
+    else {
+        [currentlySelectedItemsLabel removeFromSuperview];
+        [contentSelectedFlag removeFromSuperview];
+    }
 }
 
 - (void)setCompanyLogo:(UIButton *)sender {
@@ -1144,6 +1178,19 @@
 #pragma mark
 #pragma mark - UISwitch
 - (void)changeSwitch:(UISwitch *)sender {
+    
+    if ([pdfNIDs containsObject:[NSString stringWithFormat:@"%d", sender.tag]]) {
+        for (UIView *v in [pdfContent subviews]) {
+            if ([v isKindOfClass:[UISwitch class]]) {
+                UISwitch *temp = (UISwitch *)v;
+                if (temp.tag != sender.tag) {
+                    [temp setOn:NO animated:YES];
+                    [lcpContent setObject:@"hide" forKey:[NSString stringWithFormat:@"%ld", (long)temp.tag]];
+                }
+            }
+        }
+    }
+    
     if ([sender isOn]) {
         [lcpContent setObject:@"show" forKey:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
     }
@@ -1167,6 +1214,7 @@
         sContent.hidden = YES;
         vContent.hidden = YES;
         tContent.hidden = YES;
+        pdfContent.hidden = YES;
         emailContent.hidden = YES;
         [self.view bringSubviewToFront:presentationContent];
     }
@@ -1176,6 +1224,7 @@
         sContent.hidden = YES;
         vContent.hidden = YES;
         tContent.hidden = YES;
+        pdfContent.hidden = YES;
         emailContent.hidden = YES;
         [self.view bringSubviewToFront:csContent];
     }
@@ -1185,6 +1234,7 @@
         sContent.hidden = NO;
         vContent.hidden = YES;
         tContent.hidden = YES;
+        pdfContent.hidden = YES;
         emailContent.hidden = YES;
         [self.view bringSubviewToFront:sContent];
     }
@@ -1194,6 +1244,7 @@
         sContent.hidden = YES;
         vContent.hidden = NO;
         tContent.hidden = YES;
+        pdfContent.hidden = YES;
         emailContent.hidden = YES;
         [self.view bringSubviewToFront:vContent];
     }
@@ -1203,6 +1254,7 @@
         sContent.hidden = YES;
         vContent.hidden = YES;
         tContent.hidden = NO;
+        pdfContent.hidden = YES;
         emailContent.hidden = YES;
         [self.view bringSubviewToFront:tContent];
     }
@@ -1212,6 +1264,17 @@
         sContent.hidden = YES;
         vContent.hidden = YES;
         tContent.hidden = YES;
+        pdfContent.hidden = NO;
+        emailContent.hidden = YES;
+        [self.view bringSubviewToFront:emailContent];
+    }
+    else if (sender.selectedSegmentIndex == 6){
+        presentationContent.hidden = YES;
+        csContent.hidden = YES;
+        sContent.hidden = YES;
+        vContent.hidden = YES;
+        tContent.hidden = YES;
+        pdfContent.hidden = YES;
         emailContent.hidden = NO;
         [self.view bringSubviewToFront:emailContent];
     }
@@ -1253,19 +1316,9 @@
 
 - (void)reloadVideoContent:(id)sender {
     alertButtonPressed = @"reloadVideoContent";
-    if ([self connected]) {
-        if ([self wifiConnection]) {
-            [parsedownload downloadVideoFile:background forTerm:@""];
-        }
-        else {
-            UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"You are not currently connected to wifi." delegate:self cancelButtonTitle:@"Cancel" otherButtonTitles:nil];
-            [alert addButtonWithTitle:@"Download Anyway"];
-            [alert show];
-        }
-    }
-    else {
-        [self displayMessage:@"You are not currently connected to the internt."];
-    }
+    [self displayDownLoadMessage:@"Are you sure you want to reload all the videos? This can take a while depending on your internet connection."
+                   andMessageOne:@"Yes, Reload Video Content"
+                   andMessageTwo:@""];
 }
 
 - (void)resetAllFavoritedContent:(id)sender {
@@ -1340,7 +1393,7 @@
                 [self removeEverything];
                 
                 if (!parsedownload.videoFileBeingDownloaded) {
-                    [background addSubview:contentActivityIndicator];
+                    [self.view addSubview:contentActivityIndicator];
                     [contentActivityIndicator startAnimating];
                 }
             }

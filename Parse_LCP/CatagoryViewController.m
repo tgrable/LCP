@@ -254,8 +254,10 @@
     //Load the navigation buttons
     for (PFObject *object in objects) {
         int weight = [[object objectForKey:@"weight"] intValue];
-        [btnTitleArray replaceObjectAtIndex:weight withObject:[object objectForKey:@"name"]];
-        [btnTagArray replaceObjectAtIndex:weight withObject:[object objectForKey:@"tid"]];
+        //[btnTitleArray replaceObjectAtIndex:weight withObject:[object objectForKey:@"name"]];
+        //[btnTagArray replaceObjectAtIndex:weight withObject:[object objectForKey:@"tid"]];
+        [btnTitleArray setObject:[object objectForKey:@"name"] atIndexedSubscript:weight];
+        [btnTagArray setObject:[object objectForKey:@"tid"] atIndexedSubscript:weight];
         
         if (count == (objects.count - 1)) {
             [self timerCountdown];
@@ -267,9 +269,15 @@
 //The images get downloaded from the local datastore at different times. The empty array is created and filled with NSNull objects
 //so we can insert the button images at specific locations based on the weight.
 - (void)createEmptyButtonArrays:(long int)arrayCount {
+    /*
     btnImageArray = [[NSMutableArray alloc] init];
     btnTitleArray = [[NSMutableArray alloc] init];
     btnTagArray = [[NSMutableArray alloc] init];
+    */
+    btnImageArray = [NSMutableArray array];
+    btnTitleArray = [NSMutableArray array];
+    btnTagArray = [NSMutableArray array];
+     
     index = (arrayCount - 1);
     
     for(int i = 0; i < arrayCount; i++) {
@@ -293,8 +301,10 @@
         yVal = (index - 8) * 54;
     }
     
+    
     //Create the navigation buttons
-    if (![[btnImageArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTagArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTitleArray objectAtIndex:index] isKindOfClass:[NSNull class]]) {
+    //if (![[btnImageArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTagArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTitleArray objectAtIndex:index] isKindOfClass:[NSNull class]]) {
+    if (![[btnTagArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTitleArray objectAtIndex:index] isKindOfClass:[NSNull class]]) {
         UIButton *customButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [customButton setFrame:CGRectMake(20, -40, 280, 44)];
         [customButton addTarget:self action:@selector(navigationButtonClick:)forControlEvents:UIControlEventTouchUpInside];

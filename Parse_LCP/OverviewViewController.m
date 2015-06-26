@@ -260,7 +260,7 @@
 #pragma mark - Build Views
 - (void)buildSummaryView:(NSArray *)objects {
     for(PFObject *object in objects) {
-        
+      
         //UIlabel used to hold the Overview title
         content.lblTitle = object[@"title"];
         UILabel *summaryLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 65, summaryView.bounds.size.width - 48, 80)];
@@ -279,9 +279,17 @@
         
         //Body content comimg in from Parse.com looks like an array of dictionary values
         /*[{"summary":"<p>As the number of marketing channels continues to grow, a content management system (CMS) has quickly become a must-have for marketers. A CMS provides a central repository for content deployed across print, web, social media, mobile and more. With a user-friendly interface and automated workflow, the CMS provides a collaborative environment for creation, editing, approval, publishing and storage of all your company’s digital assets.</p>\r\n"},{"value":"<p>As the number of marketing channels continues to grow, a content management system (CMS) has quickly become a must-have for marketers. A CMS provides a central repository for content deployed across print, web, social media, mobile and more. With a user-friendly interface and automated workflow, the CMS provides a collaborative environment for creation, editing, approval, publishing and storage of all your company’s digital assets.</p>\r\n"},{"format":"filtered_html"}]*/
-        NSArray *bodyArray = [object objectForKey:@"body"];
-        NSMutableDictionary *bodyDict = bodyArray[1];
         
+        NSArray *bodyArray = [object objectForKey:@"body"];
+        //NSMutableDictionary *bodyDict = bodyArray[1];
+        NSString *bodyString = @"Not Available";
+        for (NSDictionary *obj in bodyArray) {
+            if([obj objectForKey:@"value"] != nil) {
+                bodyString = [obj objectForKey:@"value"];
+                break;
+            }
+        }
+
         //UILabel used to hold the body copy content
         UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 24, summaryScroll.bounds.size.width - (24 * 2), summaryScroll.bounds.size.height - 48)];
         myLabel.numberOfLines = 0;
@@ -289,7 +297,7 @@
         style.minimumLineHeight = 30.0f;
         style.maximumLineHeight = 30.0f;
         NSDictionary *attributtes = @{NSParagraphStyleAttributeName : style,};
-        myLabel.attributedText = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@",[bodyDict objectForKey:@"value"]].stringByConvertingHTMLToPlainText attributes:attributtes];
+        myLabel.attributedText = [[NSAttributedString alloc] initWithString:[NSString stringWithFormat:@"%@",bodyString].stringByConvertingHTMLToPlainText attributes:attributtes];
         myLabel.font = [UIFont fontWithName:@"AktivGrotesk-Regular" size:26.0];
         myLabel.textColor = [UIColor whiteColor];
         [myLabel sizeToFit];

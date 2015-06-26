@@ -115,6 +115,7 @@
     cLogo = [[UIImageView alloc] initWithFrame:CGRectMake(36, 500, companyLogo.size.width, companyLogo.size.height)];
     [cLogo setUserInteractionEnabled:YES];
     [cLogo setImage:companyLogo];
+    //cLogo.contentMode = UIViewContentModeScaleAspectFit;
     [logoView addSubview:cLogo];
     
     //UITapGesture used to navigate into the app

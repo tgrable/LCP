@@ -625,10 +625,18 @@
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
                     
                     NSArray *bodyArray = [object objectForKey:@"body"];
-                    NSMutableDictionary *bodyDict = bodyArray[1];
+                    
+                    NSString *bodyString = @"Not Available";
+                    //NSMutableDictionary *bodyDict = bodyArray[1];
+                    for(NSDictionary *obj in bodyArray) {
+                        if ([obj objectForKey:@"value"]) {
+                            bodyString = [obj objectForKey:@"value"];
+                            break;
+                        }
+                    }
 
                     csMedia.csMediaTitle = object[@"title"];
-                    csMedia.csMediaBody = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];
+                    csMedia.csMediaBody = [NSString stringWithFormat:@"%@", bodyString];
                     csMedia.csMediaNodeId = object[@"nid"];
                     csMedia.csMediaTermReferenceId = object[@"field_term_reference"];
                     csMedia.csMediaImage = btnImg;
@@ -735,6 +743,7 @@
     [query fromLocalDatastore];
     [query whereKey:@"nid" equalTo:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        
         dvc.contentObject = objects[0];
         dvc.contentType = @"Case Study Media";
         [self.navigationController pushViewController:dvc animated:YES];

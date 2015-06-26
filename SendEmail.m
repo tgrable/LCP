@@ -155,7 +155,7 @@
     
     NSData *inputData = [email dataUsingEncoding:NSUTF8StringEncoding];
     const void *bytes = [inputData bytes];
-    int length = [inputData length];
+    int length = (int)[inputData length];
     uint8_t *plainText = malloc(length);
     memcpy(plainText, bytes, length);
     

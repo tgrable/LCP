@@ -212,7 +212,14 @@
         }];
         
         NSArray *bodyArray = [object objectForKey:@"body"];
-        NSMutableDictionary *bodyDict = bodyArray[1];
+        //NSMutableDictionary *bodyDict = bodyArray[1];
+        NSString *bodyString = @" Not Available";
+        for (NSDictionary *obj in bodyArray) {
+            if ([obj objectForKey:@"value"]) {
+                bodyString = [obj objectForKey:@"value"];
+                break;
+            }
+        }
         
         UIView *testimonialView = [[UIView alloc] initWithFrame:CGRectMake(x, 210, pageScroll.bounds.size.width - 48, 315)];
         testimonialView.layer.borderWidth = 1.0f;
@@ -223,7 +230,7 @@
         [testimonialScroll setBackgroundColor:[UIColor clearColor]];
         [testimonialView addSubview:testimonialScroll];
         
-        NSString *temp = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];
+        NSString *temp = [NSString stringWithFormat:@"%@", bodyString];
         UILabel *testBody = [[UILabel alloc] initWithFrame:CGRectMake(24, 24, testimonialScroll.bounds.size.width - 48, 267)];
         testBody.numberOfLines = 0;
         NSMutableParagraphStyle *testBodyStyle  = [[NSMutableParagraphStyle alloc] init];

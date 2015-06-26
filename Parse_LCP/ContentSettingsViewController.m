@@ -272,6 +272,7 @@
                 [self displayMessage:errorMsg];
             }
         }];
+        
     }
 }
 
@@ -368,9 +369,18 @@
 
                 for (PFObject *object in objects) {
                     NSArray *imgArray = [object objectForKey:@"field_image"];
-                    NSDictionary *imgDict = imgArray[2];
+                    //NSDictionary *imgDict = imgArray[2];
+                    NSDictionary *imgDict = [NSDictionary dictionary];
+                    for (NSDictionary *object in imgArray) {
+                        if ([object objectForKey:@"height"] != nil) {
+                            imgDict = [object copy];
+                            break;
+                        }
+                    }
                     
-                    [self buildCompanyLogoItems:y += 50 withPFObject:object andTag:count];
+                    [self buildCompanyLogoItems:(y += 50) withPFObject:object andTag:count];
+                    NSLog(@"Height %@", [imgDict objectForKey:@"height"]);
+                    NSLog(@"Value %d", ([[imgDict objectForKey:@"height"] intValue] + 10));
                     y +=  ([[imgDict objectForKey:@"height"] intValue] + 10);
                     count++;
                     
@@ -840,6 +850,7 @@
 - (void)buildCompanyLogoItems:(int)atLocation withPFObject:(PFObject *)object andTag:(int)count {
     
     int __block y = atLocation;
+    NSLog(@"Y %d", y);
     int __block arrayIndex = count;
     dispatch_async(dispatch_get_main_queue(), ^{
         PFFile *imageFile = [object objectForKey:@"field_image_img"];
@@ -950,14 +961,14 @@
         }
         else {
             isCompanyLogoSelected = YES;
-            senderTag = sender.tag;
+            senderTag = (int)sender.tag;
             companyLogo = [companyLogoArray objectAtIndex:sender.tag];
             [sender setBackgroundColor:[UIColor whiteColor]];
         }
     }
     else {
         isCompanyLogoSelected = YES;
-        senderTag = sender.tag;
+        senderTag = (int)sender.tag;
         companyLogo = [companyLogoArray objectAtIndex:sender.tag];
         [sender setBackgroundColor:[UIColor whiteColor]];
     }

@@ -395,7 +395,6 @@
                 if ([[lcpCaseStudy objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                     [selectedObjects addObject:object];
                 }
-                content.termId = [object objectForKey:@"field_term_reference"];
             }
             [self buildCaseStudyView:selectedObjects];
         }];
@@ -512,7 +511,14 @@
         [caseStudy addSubview:bodyColumn];
 
         NSArray *bodyArray = [object objectForKey:@"body"];
-        NSMutableDictionary *bodyDict = bodyArray[1];
+        //NSMutableDictionary *bodyDict = bodyArray[1];
+        NSString *bodyString = @"Not Available";
+        for(NSDictionary *obj in bodyArray) {
+            if ([obj objectForKey:@"value"]) {
+                bodyString = [obj objectForKey:@"value"];
+                break;
+            }
+        }
         
         UIScrollView *bodyScroll = [[UIScrollView alloc] init];
         if (!isIndividualCaseStudy) {
@@ -524,7 +530,7 @@
         [bodyScroll setBackgroundColor:[UIColor clearColor]];
         [bodyColumn addSubview:bodyScroll];
 
-        NSString *temp = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];
+        NSString *temp = [NSString stringWithFormat:@"%@", bodyString];
         UILabel *myLabel = [[UILabel alloc] init];
         if (!isIndividualCaseStudy) {
             [myLabel setFrame:CGRectMake(0, 0, 556, 355)];
@@ -708,7 +714,6 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     
     if(sender.tag == 0) {
-        
         // Send the presenter to OverviewViewController
         OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"overviewViewController"];
         dvc.content = content;

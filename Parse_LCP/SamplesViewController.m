@@ -594,7 +594,6 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     
     if(sender.tag == 0){
-        
         // Send the presenter to OverviewViewController
         OverviewViewController *ovc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"overviewViewController"];
         ovc.content = content;

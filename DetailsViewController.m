@@ -63,7 +63,14 @@
     [infoBar addSubview:titleLabel];
     
     NSArray *bodyArray = [contentObject objectForKey:@"body"];
-    NSMutableDictionary *bodyDict = bodyArray[1];
+    NSString *bodyString = @"Not Available";
+    //NSMutableDictionary *bodyDict = bodyArray[1];
+    for(NSDictionary *obj in bodyArray) {
+        if ([obj objectForKey:@"value"]) {
+            bodyString = [obj objectForKey:@"value"];
+            break;
+        }
+    }
     
     UIScrollView *summaryScroll = [[UIScrollView alloc] initWithFrame:CGRectMake((infoBar.bounds.size.width * 0.25) + 14, 0, infoBar.bounds.size.width * 0.60, self.view.bounds.size.height - 652)];
     summaryScroll.layer.borderWidth = 1.0f;
@@ -71,7 +78,7 @@
     summaryScroll.backgroundColor = [UIColor clearColor];
     [infoBar addSubview:summaryScroll];
     
-    NSString *introText = [NSString stringWithFormat:@"%@",[bodyDict objectForKey:@"value"]];
+    NSString *introText = [NSString stringWithFormat:@"%@", bodyString];
     UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 0, summaryScroll.bounds.size.width - (24 * 2), summaryScroll.bounds.size.height - 48)];
     myLabel.numberOfLines = 0;
     NSMutableParagraphStyle *style  = [[NSMutableParagraphStyle alloc] init];

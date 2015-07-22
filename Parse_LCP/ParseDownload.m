@@ -128,7 +128,7 @@
             
             NSOperationQueue *operationQueue = [[NSOperationQueue alloc] init];
             
-            vidDownload.text = [NSString stringWithFormat:@"%d / %d VIDEOS DOWNLOADED", vidCount, objects.count];
+            vidDownload.text = [NSString stringWithFormat:@"%d / %lu VIDEOS DOWNLOADED", vidCount, (unsigned long)objects.count];
             
             
             for (PFObject *object in objects) {
@@ -154,7 +154,7 @@
                     vidCount++;
                     
                     NSLog(@"%@", videoDataDict);
-                    vidDownload.text = [NSString stringWithFormat:@"%d / %d VIDEOS DOWNLOADED", vidCount, objects.count];
+                    vidDownload.text = [NSString stringWithFormat:@"%d / %lu VIDEOS DOWNLOADED", vidCount, (unsigned long)objects.count];
                     
                     if (vidCount == objects.count) {
                         [self postNotificationToRefresh];

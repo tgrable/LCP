@@ -124,7 +124,8 @@
     
     //Check if the company logo size and location have been set
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    int x, y, w, h;
+    int x, y;
+    long w, h;
     CGPoint logoLocation;
     
     //Check is company logo size has been set

@@ -492,7 +492,7 @@
     [self removeEverything];
 }
 
-- (void)setFilterSelectionView:(int)sectionCatagoryId {
+- (void)setFilterSelectionView:(long)sectionCatagoryId {
     if (sectionCatagoryId == 44) {
         [filterSelection setFrame:CGRectMake((navBar.bounds.size.width / 2) - 242, 0, 80, 5)];
     }

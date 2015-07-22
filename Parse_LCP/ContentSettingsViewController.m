@@ -945,7 +945,7 @@
             [b setBackgroundColor:[UIColor clearColor]];
         }
     }
-    // FIXME: I don't like that this here.
+    
     for (int i = 0; i < companyLogoArray.count; i++) {
         if ([companyLogoArray[i] isKindOfClass:[NSNull class]]) {
             [companyLogoArray removeObjectAtIndex:i];
@@ -1197,7 +1197,7 @@
 #pragma mark - UISwitch
 - (void)changeSwitch:(UISwitch *)sender {
     
-    if ([pdfNIDs containsObject:[NSString stringWithFormat:@"%d", sender.tag]]) {
+    if ([pdfNIDs containsObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]]) {
         for (UIView *v in [pdfContent subviews]) {
             if ([v isKindOfClass:[UISwitch class]]) {
                 UISwitch *temp = (UISwitch *)v;

@@ -69,11 +69,12 @@
 - (void)fetchVideoFromLocalDataStore {
     
     NSString *videoId = isFromVideoLibrary ? videoNid : content.termId;
+    NSString *whereKey = isFromVideoLibrary ? @"nid" : @"field_term_reference";
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not query the local datastore for what ever term data exists
     PFQuery *vidQuery = [PFQuery queryWithClassName:@"video"];
     [vidQuery fromLocalDatastore];
-    [vidQuery whereKey:@"field_term_reference" equalTo:videoId];
+    [vidQuery whereKey:whereKey equalTo:videoId];
     [vidQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
             NSMutableDictionary *lcpVideo = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];

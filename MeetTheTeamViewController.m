@@ -19,7 +19,7 @@
 
 @property (strong, nonatomic) UIView *background, *jobDescription, *pagination, *navBar, *filterSelection;
 @property (strong, nonatomic) UIScrollView *teamScroll;
-@property (strong, nonatomic) NSMutableArray *teamMemberArray, *buttons, *filterArray;
+@property (strong, nonatomic) NSMutableArray *teamMemberArray, *buttons, *filterArray, *childTerms;
 @property (strong, nonatomic) SMPageControl *paginationDots;
 
 @end
@@ -28,7 +28,7 @@
 @synthesize content;                                                            //LCPContent
 @synthesize background, jobDescription, pagination, navBar, filterSelection;    //UIView
 @synthesize teamScroll;                                                         //UIScrollView
-@synthesize teamMemberArray, buttons, filterArray;                              //NSMutableArray
+@synthesize teamMemberArray, buttons, filterArray, childTerms;                  //NSMutableArray
 @synthesize paginationDots;                                                     //UIPageControl
 
 - (BOOL)prefersStatusBarHidden {
@@ -126,18 +126,51 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    //NSUserDefaults to check if data has been downloaded.
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"team_member"] isEqualToString:@"hasData"]) {
-        [self fetchDataFromLocalDataStore];
-    }
-    else {
-        [self fetchDataFromParse];
-    }
+    childTerms = [NSMutableArray array];
+    [self fetchChildTermsFromLocalDataStore];
 }
 
 #pragma mark
 #pragma mark - Parse
+//Query the terms to get child as well as parent
+- (void)fetchChildTermsFromLocalDataStore {
+    // Query the Local Datastore for term data
+    PFQuery *query = [PFQuery queryWithClassName:@"term"];
+    [query whereKey:@"parent" equalTo:content.catagoryId];
+    [query fromLocalDatastore];
+    [query orderByAscending:@"weight"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                for (PFObject *object in objects) {
+                    [childTerms addObject:[object objectForKey:@"tid"]];
+                }
+                
+                //Check if data has been downloaded and pinned to local datastore.
+                //If data has been downloaded pull from local datastore
+                [self checkLocalDataStoreforData];
+            }
+        }];
+    });
+}
+
+- (void)checkLocalDataStoreforData {
+    PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
+    [query fromLocalDatastore];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    [self fetchDataFromLocalDataStore];
+                }
+                else {
+                    [self fetchDataFromParse];
+                }
+            }
+        }];
+    });
+}
+
 //Query the local datastore to build the views
 - (void)fetchDataFromLocalDataStore {
     
@@ -147,7 +180,10 @@
     PFQuery *catagoryQuery = [PFQuery queryWithClassName:@"team_member"];
     [catagoryQuery whereKey:@"field_term_reference" equalTo:content.catagoryId];
     
-    PFQuery *query = [PFQuery orQueryWithSubqueries:@[executiveQuery, catagoryQuery]];
+    PFQuery *childQuery = [PFQuery queryWithClassName:@"team_member"];
+    [childQuery whereKey:@"field_term_reference" containedIn:childTerms];
+    
+    PFQuery *query = [PFQuery orQueryWithSubqueries:@[executiveQuery, catagoryQuery, childQuery]];
     [query fromLocalDatastore];
     [query orderByAscending:@"createdAt"];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
@@ -169,16 +205,6 @@
     [query orderByAscending:@"createdAt"];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-            NSMutableDictionary *lcpLibrary = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
-            
-            //Add selected objects the the array
-            for (PFObject *object in objects) {
-                //Add selected objects the the array
-                if ([[lcpLibrary objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
-                    [selectedObjects addObject:object];
-                }
-            }
             [self buildImgArray:objects];
         }];
     });
@@ -250,8 +276,15 @@
             LCPTeamMembers *tm = [[LCPTeamMembers alloc] init];
             
             NSArray *bioArray = [object objectForKey:@"body"];
-            NSDictionary *bioDict = bioArray[1];
-            tm.teamMemberBio = [bioDict objectForKey:@"value"];
+            NSString *bodyString = @"Not Available";
+            //NSMutableDictionary *bodyDict = bodyArray[1];
+            for(NSDictionary *obj in bioArray) {
+                if ([obj objectForKey:@"value"]) {
+                    bodyString = [obj objectForKey:@"value"];
+                    break;
+                }
+            }
+            tm.teamMemberBio = bodyString;
             
             NSArray *titleArray = [object objectForKey:@"field_job_title"];
             NSDictionary *titleDict = titleArray[0];

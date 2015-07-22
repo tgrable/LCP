@@ -164,15 +164,10 @@
         [self buildViewWithLCPContentData];
     }
     else {
-        //NSUserDefaults used to check if data has been downloaded.
-        //If data has been downloaded pull from local datastore else fetch data from Parse.com
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        if ([[defaults objectForKey:@"term"] isEqualToString:@"hasData"]) {
-            [self fetchDataFromLocalDataStore];
-        }
-        else {
-            [self fetchDataFromParse];
-        }
+        
+        //Check if data has been downloaded and pinned to local datastore.
+        //If data has been downloaded pull from local datastore
+        [self checkLocalDataStoreforData];
     }
 }
 
@@ -191,6 +186,23 @@
 
 #pragma mark
 #pragma mark - Parse
+- (void)checkLocalDataStoreforData {
+    PFQuery *query = [PFQuery queryWithClassName:@"term"];
+    [query fromLocalDatastore];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    [self fetchDataFromLocalDataStore];
+                }
+                else {
+                    [self fetchDataFromParse];
+                }
+            }
+        }];
+    });
+}
+
 //Query the local datastore to build the views
 - (void)fetchDataFromLocalDataStore {
 

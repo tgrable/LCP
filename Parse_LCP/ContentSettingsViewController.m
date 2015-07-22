@@ -78,6 +78,7 @@
     favoritedNIDs = [NSMutableArray array];
     emailObject = [[SendEmail alloc] init];
     emailObject.delegate = self;
+    content = [[LCPContent alloc] init];
     parsedownload = [[ParseDownload alloc] init];
     posterDictionary = [[NSMutableDictionary alloc] init];
     navIconDictionary = [[NSMutableDictionary alloc] init];
@@ -208,7 +209,7 @@
 - (void)fetchDataFromLocalDataStore:(NSString *)forParseClassType andSortedBy:(NSString *)tagReference {
     PFQuery *query = [PFQuery queryWithClassName:forParseClassType];
     [query fromLocalDatastore];
-    [query orderByAscending:tagReference];
+    //[query orderByAscending:tagReference];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
@@ -379,8 +380,6 @@
                     }
                     
                     [self buildCompanyLogoItems:(y += 50) withPFObject:object andTag:count];
-                    NSLog(@"Height %@", [imgDict objectForKey:@"height"]);
-                    NSLog(@"Value %d", ([[imgDict objectForKey:@"height"] intValue] + 10));
                     y +=  ([[imgDict objectForKey:@"height"] intValue] + 10);
                     count++;
                     
@@ -850,7 +849,6 @@
 - (void)buildCompanyLogoItems:(int)atLocation withPFObject:(PFObject *)object andTag:(int)count {
     
     int __block y = atLocation;
-    NSLog(@"Y %d", y);
     int __block arrayIndex = count;
     dispatch_async(dispatch_get_main_queue(), ^{
         PFFile *imageFile = [object objectForKey:@"field_image_img"];
@@ -972,6 +970,15 @@
         companyLogo = [companyLogoArray objectAtIndex:sender.tag];
         [sender setBackgroundColor:[UIColor whiteColor]];
     }
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if ([defaults objectForKey:@"logosize"]) {
+        [defaults removeObjectForKey:@"logosize"];
+    }
+    if ([defaults objectForKey:@"touchLocation"]) {
+        [defaults removeObjectForKey:@"touchLocation"];
+    }
+    [defaults synchronize];
 }
 
 #pragma mark
@@ -1297,8 +1304,7 @@
 #pragma mark
 #pragma mark - Navigation
 -(void)startPresentation:(id)sender {
-    
-    content = [[LCPContent alloc] init];
+
     content.navigationIcons = [NSDictionary dictionaryWithDictionary:navIconDictionary];
     content.navigationTerms = [NSDictionary dictionaryWithDictionary:navTermDictionary];
     content.navigationTids = [NSDictionary dictionaryWithDictionary:navTidsDictionary];
@@ -1411,7 +1417,7 @@
         }
         else if ([alertButtonPressed isEqualToString:@"reloadVideoContent"]) {
             if(buttonIndex == 1) {
-                [parsedownload downloadVideoFile:background forTerm:@""];
+                [parsedownload downloadVideoFile:self.view forTerm:@""];
             }
         }
         else if ([alertButtonPressed isEqualToString:@"reloadEverything"]) {

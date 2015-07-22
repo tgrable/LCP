@@ -145,15 +145,9 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    //NSUserDefaults to check if data has been downloaded.
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"samples"] isEqualToString:@"hasData"]) {
-        //NSArray *termArray = [NSArray array];
-        [self fetchDataFromLocalDataStore:filterArray];
-    }
-    else {
-        [self fetchDataFromParse];
-    }
+    //Check if data has been downloaded and pinned to local datastore.
+    //If data has been downloaded pull from local datastore
+    [self checkLocalDataStoreforData];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -214,6 +208,23 @@
 
 #pragma mark
 #pragma mark - Parse
+- (void)checkLocalDataStoreforData {
+    PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
+    [query fromLocalDatastore];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    [self fetchDataFromLocalDataStore:filterArray];
+                }
+                else {
+                    [self fetchDataFromParse];
+                }
+            }
+        }];
+    });
+}
+
 - (void)fetchDataFromParse {
     
     if ([self connected]) {
@@ -331,14 +342,14 @@
         //add the node title to be added for
         [nodeTitles addObject:object[@"title"]];
         
-        int btntag = ([[object objectForKey:@"field_term_reference"] isEqual:@"N/A"]) ? 0 : [[object objectForKey:@"field_term_reference"] intValue];
+        //int btntag = ([[object objectForKey:@"field_term_reference"] isEqual:@"N/A"]) ? 0 : [[object objectForKey:@"field_term_reference"] intValue];
         UIButton *detailsButton = [UIButton buttonWithType:UIButtonTypeCustom];
         [detailsButton setFrame:CGRectMake(x, y, 199, 117)];
         [detailsButton addTarget:self action:@selector(showVideoDetails:)forControlEvents:UIControlEventTouchUpInside];
         detailsButton.showsTouchWhenHighlighted = YES;
         [detailsButton setBackgroundColor:[UIColor clearColor]];
         [detailsButton setBackgroundImage:[UIImage imageNamed:@"tmb-video"] forState:UIControlStateNormal];
-        detailsButton.tag = btntag;
+        detailsButton.tag = [[object objectForKey:@"nid"] intValue];
         [pageScroll addSubview:detailsButton];
         
         //Set the favorite icon if content has been favorited
@@ -432,9 +443,16 @@
         [pageScroll addSubview:casestudyTittleLabel];
         
         NSArray *bodyArray = [object objectForKey:@"body"];
-        NSMutableDictionary *bodyDict = bodyArray[1];
+        NSString *bodyString = @"Not Available";
+        //NSMutableDictionary *bodyDict = bodyArray[1];
+        for(NSDictionary *obj in bodyArray) {
+            if ([obj objectForKey:@"value"]) {
+                bodyString = [obj objectForKey:@"value"];
+                break;
+            }
+        }
 
-        NSString *temp = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];
+        NSString *temp = [NSString stringWithFormat:@"%@", bodyString];
         UILabel *myLabel = [[UILabel alloc] initWithFrame:CGRectMake(39, y + 24, pageScroll.bounds.size.width - 237, 75)];
         myLabel.numberOfLines = 0;
         NSMutableParagraphStyle *style  = [[NSMutableParagraphStyle alloc] init];

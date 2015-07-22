@@ -228,36 +228,9 @@
         content = [[LCPContent alloc] init];
     }
     
-    //NSUserDefaults to check if data has been downloaded.
+    //Check if data has been downloaded and pinned to local datastore.
     //If data has been downloaded pull from local datastore
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
-        
-        if (isIndividualCaseStudy) {
-            PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
-            [query fromLocalDatastore];
-            [query whereKey:@"nid" equalTo:nodeId];
-            dispatch_async(dispatch_get_main_queue(), ^{
-                [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-                    if (!error) {
-                        if (objects.count > 0) {
-                            for (PFObject *object in objects) {
-                                content.termId = [object objectForKey:@"field_term_reference"];
-                            }
-                            
-                            [self fetchCaseStudyMediaFromLocalDataStore];
-                        }
-                    }
-                }];
-            });
-        }
-        else {
-            [self fetchCaseStudyMediaFromLocalDataStore];
-        }
-    }
-    else {
-        [self fetchDataFromParse];
-    }
+    [self checkLocalDataStoreforData];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -303,6 +276,44 @@
 
 #pragma mark
 #pragma mark - Parse
+- (void)checkLocalDataStoreforData {
+    PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
+    [query fromLocalDatastore];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    if (isIndividualCaseStudy) {
+                        PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
+                        [query fromLocalDatastore];
+                        [query whereKey:@"nid" equalTo:nodeId];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                                if (!error) {
+                                    if (objects.count > 0) {
+                                        for (PFObject *object in objects) {
+                                            content.termId = [object objectForKey:@"field_term_reference"];
+                                        }
+                                        
+                                        [self fetchCaseStudyMediaFromLocalDataStore];
+                                    }
+                                }
+                            }];
+                        });
+                    }
+                    else {
+                        [self fetchCaseStudyMediaFromLocalDataStore];
+                    }
+
+                }
+                else {
+                    [self fetchDataFromParse];
+                }
+            }
+        }];
+    });
+}
+
 //Query the local datastore for Case_Study_Media to build the views
 - (void)fetchCaseStudyMediaFromLocalDataStore {
     
@@ -395,7 +406,6 @@
                 if ([[lcpCaseStudy objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                     [selectedObjects addObject:object];
                 }
-                content.termId = [object objectForKey:@"field_term_reference"];
             }
             [self buildCaseStudyView:selectedObjects];
         }];
@@ -512,7 +522,14 @@
         [caseStudy addSubview:bodyColumn];
 
         NSArray *bodyArray = [object objectForKey:@"body"];
-        NSMutableDictionary *bodyDict = bodyArray[1];
+        //NSMutableDictionary *bodyDict = bodyArray[1];
+        NSString *bodyString = @"Not Available";
+        for(NSDictionary *obj in bodyArray) {
+            if ([obj objectForKey:@"value"]) {
+                bodyString = [obj objectForKey:@"value"];
+                break;
+            }
+        }
         
         UIScrollView *bodyScroll = [[UIScrollView alloc] init];
         if (!isIndividualCaseStudy) {
@@ -524,7 +541,7 @@
         [bodyScroll setBackgroundColor:[UIColor clearColor]];
         [bodyColumn addSubview:bodyScroll];
 
-        NSString *temp = [NSString stringWithFormat:@"%@", [bodyDict objectForKey:@"value"]];
+        NSString *temp = [NSString stringWithFormat:@"%@", bodyString];
         UILabel *myLabel = [[UILabel alloc] init];
         if (!isIndividualCaseStudy) {
             [myLabel setFrame:CGRectMake(0, 0, 556, 355)];
@@ -708,7 +725,6 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     
     if(sender.tag == 0) {
-        
         // Send the presenter to OverviewViewController
         OverviewViewController *dvc = (OverviewViewController *)[storyboard instantiateViewControllerWithIdentifier:@"overviewViewController"];
         dvc.content = content;

@@ -106,6 +106,15 @@
     videoActivityIndicator.hidesWhenStopped = YES;
 
     [view addSubview:videoActivityIndicator];
+    
+    UILabel *vidDownload = [[UILabel alloc] initWithFrame:CGRectMake(175, 3, 175, 36)];
+    [vidDownload setFont:[UIFont fontWithName:@"Oswald" size:16.0]];
+    vidDownload.textColor = [UIColor blackColor];
+    vidDownload.numberOfLines = 1;
+    vidDownload.backgroundColor = [UIColor clearColor];
+    vidDownload.textAlignment = NSTextAlignmentCenter;
+    [view addSubview:vidDownload];
+    
     videoFileBeingDownloaded = YES;
     
     PFQuery *query = [PFQuery queryWithClassName:@"video"];
@@ -119,7 +128,11 @@
             
             NSOperationQueue *operationQueue = [[NSOperationQueue alloc] init];
             
+            vidDownload.text = [NSString stringWithFormat:@"%d / %d VIDEOS DOWNLOADED", vidCount, objects.count];
+            
+            
             for (PFObject *object in objects) {
+                
                 
                 NSLog(@"%@", [object objectForKey:@"field_video"]);
                 NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@",[object objectForKey:@"field_video"]]]];
@@ -139,7 +152,9 @@
                     [defaults setObject:videoDataDict forKey:@"VideoDataDictionary"];
                     [defaults synchronize];
                     vidCount++;
+                    
                     NSLog(@"%@", videoDataDict);
+                    vidDownload.text = [NSString stringWithFormat:@"%d / %d VIDEOS DOWNLOADED", vidCount, objects.count];
                     
                     if (vidCount == objects.count) {
                         [self postNotificationToRefresh];
@@ -228,6 +243,7 @@
 - (void)postNotificationToRefresh {
     [[NSNotificationCenter defaultCenter] postNotificationName:@"RefreshParseData" object:nil userInfo:nil];
 }
+
 #pragma mark
 #pragma mark - Reachability
 - (BOOL)connected

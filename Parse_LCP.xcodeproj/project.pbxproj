@@ -25,6 +25,7 @@
 		4F1243A61B20F02C002DA8A2 /* flag.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F1243A41B20F02C002DA8A2 /* flag.png */; };
 		4F1243A71B20F02C002DA8A2 /* flag@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F1243A51B20F02C002DA8A2 /* flag@2x.png */; };
 		4F2573271A9E3366003EFAB8 /* ContentSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F2573261A9E3366003EFAB8 /* ContentSettingsViewController.m */; };
+		4F2669CD1B5EE2AC00D320AD /* master-lcp-team-img.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F2669CC1B5EE2AC00D320AD /* master-lcp-team-img.png */; };
 		4F28C2DF1AE5361E00995D67 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F28C2DE1AE5361E00995D67 /* Bolts.framework */; };
 		4F28C2E21AE5362500995D67 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F28C2E01AE5362500995D67 /* Parse.framework */; };
 		4F28C2E31AE5362500995D67 /* ParseCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F28C2E11AE5362500995D67 /* ParseCrashReporting.framework */; };
@@ -208,6 +209,7 @@
 		4F1243A51B20F02C002DA8A2 /* flag@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flag@2x.png"; sourceTree = "<group>"; };
 		4F2573251A9E3366003EFAB8 /* ContentSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContentSettingsViewController.h; sourceTree = "<group>"; };
 		4F2573261A9E3366003EFAB8 /* ContentSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ContentSettingsViewController.m; sourceTree = "<group>"; };
+		4F2669CC1B5EE2AC00D320AD /* master-lcp-team-img.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "master-lcp-team-img.png"; sourceTree = "<group>"; };
 		4F28C2DE1AE5361E00995D67 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Bolts.framework; sourceTree = "<group>"; };
 		4F28C2E01AE5362500995D67 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parse.framework; sourceTree = "<group>"; };
 		4F28C2E11AE5362500995D67 /* ParseCrashReporting.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ParseCrashReporting.framework; sourceTree = "<group>"; };
@@ -594,6 +596,7 @@
 		4FCC5BF41A8BC76800292D6B /* images */ = {
 			isa = PBXGroup;
 			children = (
+				4F2669CC1B5EE2AC00D320AD /* master-lcp-team-img.png */,
 				4F1243A41B20F02C002DA8A2 /* flag.png */,
 				4F1243A51B20F02C002DA8A2 /* flag@2x.png */,
 				4F76BA621B029EBF001E0F5E /* poster.png */,
@@ -938,6 +941,7 @@
 				4F9BDF341AF3D61E00D6C595 /* hdr-samples@2x.png in Resources */,
 				4F9BDF221AF3D4E600D6C595 /* ico-back.png in Resources */,
 				4F394FA31AF81DF200F2BB8F /* btn-done-white@2x.png in Resources */,
+				4F2669CD1B5EE2AC00D320AD /* master-lcp-team-img.png in Resources */,
 				4FCC5BE81A8BC5EC00292D6B /* Icon-76@2x.png in Resources */,
 				4F1243A71B20F02C002DA8A2 /* flag@2x.png in Resources */,
 				2C9EE2681B0036EE003705DD /* bmwposter.png in Resources */,
@@ -1218,7 +1222,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = Parse_LCP/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
@@ -1234,7 +1238,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = Parse_LCP/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 8.1;
+				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";

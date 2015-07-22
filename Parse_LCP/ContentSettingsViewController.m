@@ -970,6 +970,15 @@
         companyLogo = [companyLogoArray objectAtIndex:sender.tag];
         [sender setBackgroundColor:[UIColor whiteColor]];
     }
+    
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    if ([defaults objectForKey:@"logosize"]) {
+        [defaults removeObjectForKey:@"logosize"];
+    }
+    if ([defaults objectForKey:@"touchLocation"]) {
+        [defaults removeObjectForKey:@"touchLocation"];
+    }
+    [defaults synchronize];
 }
 
 #pragma mark

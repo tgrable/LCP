@@ -228,6 +228,7 @@
 - (void)postNotificationToRefresh {
     [[NSNotificationCenter defaultCenter] postNotificationName:@"RefreshParseData" object:nil userInfo:nil];
 }
+
 #pragma mark
 #pragma mark - Reachability
 - (BOOL)connected

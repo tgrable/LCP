@@ -147,7 +147,7 @@
     
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"samples"] isEqualToString:@"hasData"]) {
+    if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
         //NSArray *termArray = [NSArray array];
         [self fetchDataFromLocalDataStore:filterArray];
     }

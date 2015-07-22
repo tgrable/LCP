@@ -41,7 +41,7 @@
     logoView = [[UIView alloc] initWithFrame:CGRectMake(0, 0, self.view.bounds.size.width, self.view.bounds.size.height)];
     logoView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:logoView];
-
+    
     //NSUserDefaults to check if data has been downloaded.
     //If data has been downloaded pull from local datastore else fetch data from Parse.com
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -111,11 +111,41 @@
         [logoView addSubview:presentedTo];
     }
     
-    //UIImageView used to hold the splash screen image
-    cLogo = [[UIImageView alloc] initWithFrame:CGRectMake(36, 500, companyLogo.size.width, companyLogo.size.height)];
+    //Check if the company logo size and location have been set
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    int x, y, w, h;
+    CGPoint logoLocation;
+    
+    //Check is company logo size has been set
+    if ([defaults objectForKey:@"logosize"]) {
+        NSDictionary *lSize = [NSDictionary dictionaryWithDictionary:[defaults objectForKey:@"logosize"]];
+        w = [[lSize objectForKey:@"width"] integerValue];
+        h = [[lSize objectForKey:@"height"] integerValue];
+    
+    }
+    else {
+        w = companyLogo.size.width;
+        h = companyLogo.size.height;
+    }
+    
+    //Check is company logo location has been set
+    if ([defaults objectForKey:@"touchLocation"]) {
+        logoLocation = CGPointFromString([NSString stringWithFormat:@"%@", [defaults objectForKey:@"touchLocation"]]);
+        x = logoLocation.x;
+        y = logoLocation.y;
+    }
+    else {
+        x = logoView.bounds.size.width / 2;
+        y = 200;
+        logoLocation.x = x;
+        logoLocation.y = y;
+    }
+    
+    //UIImageView used to hold the splash company logo image
+    cLogo = [[UIImageView alloc] initWithFrame:CGRectMake(x, y, w, h)];
     [cLogo setUserInteractionEnabled:YES];
     [cLogo setImage:companyLogo];
-    //cLogo.contentMode = UIViewContentModeScaleAspectFit;
+    cLogo.center = logoLocation;
     [logoView addSubview:cLogo];
     
     //UITapGesture used to navigate into the app
@@ -128,17 +158,34 @@
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
     // get touch event
     UITouch *touch = [[event allTouches] anyObject];
     if (touch.view == cLogo) {
         CGPoint touchLocation = [touch locationInView:self.view];
         cLogo.center = touchLocation;
+        [defaults setValue:NSStringFromCGPoint(touchLocation) forKey:@"touchLocation"];
+        [defaults synchronize];
     }
 }
 
 - (void)resizeImage:(UIPinchGestureRecognizer *)recognizer {
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    
     recognizer.view.transform = CGAffineTransformScale(recognizer.view.transform, recognizer.scale, recognizer.scale);
     recognizer.scale = 1;
+    
+    CGRect rect = recognizer.view.frame;
+    int w = rect.size.width;
+    int h = rect.size.height;
+    
+    NSMutableDictionary *cLogoSize = [NSMutableDictionary dictionary];
+    [cLogoSize setObject:[NSNumber numberWithInt:w] forKey:@"width"];
+    [cLogoSize setObject:[NSNumber numberWithInt:h] forKey:@"height"];
+    
+    [defaults setObject:cLogoSize forKey:@"logosize"];
+    [defaults synchronize];
 }
 
 #pragma mark -

@@ -107,7 +107,7 @@
 
     [view addSubview:videoActivityIndicator];
     
-    UILabel *vidDownload = [[UILabel alloc] initWithFrame:CGRectMake(175, 3, 175, 36)];
+    UILabel *vidDownload = [[UILabel alloc] initWithFrame:CGRectMake(175, 3, 200, 36)];
     [vidDownload setFont:[UIFont fontWithName:@"Oswald" size:16.0]];
     vidDownload.textColor = [UIColor blackColor];
     vidDownload.numberOfLines = 1;
@@ -161,6 +161,7 @@
                         [videoActivityIndicator stopAnimating];
                         videoFileBeingDownloaded = NO;
                         NSLog(@"All vidoes have been downloaded.");
+                        vidDownload.text = @"";
                     }
                     
                 } failure:^(AFHTTPRequestOperation *operation, NSError *error) {

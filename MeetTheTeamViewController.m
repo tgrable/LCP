@@ -146,9 +146,21 @@
                     [childTerms addObject:[object objectForKey:@"tid"]];
                 }
                 
-                //NSUserDefaults to check if data has been downloaded.
-                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                if ([[defaults objectForKey:@"team_member"] isEqualToString:@"hasData"]) {
+                //Check if data has been downloaded and pinned to local datastore.
+                //If data has been downloaded pull from local datastore
+                [self checkLocalDataStoreforData];
+            }
+        }];
+    });
+}
+
+- (void)checkLocalDataStoreforData {
+    PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
+    [query fromLocalDatastore];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
                     [self fetchDataFromLocalDataStore];
                 }
                 else {

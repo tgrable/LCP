@@ -145,15 +145,9 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    //NSUserDefaults to check if data has been downloaded.
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
-        //NSArray *termArray = [NSArray array];
-        [self fetchDataFromLocalDataStore:filterArray];
-    }
-    else {
-        [self fetchDataFromParse];
-    }
+    //Check if data has been downloaded and pinned to local datastore.
+    //If data has been downloaded pull from local datastore
+    [self checkLocalDataStoreforData];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -214,6 +208,23 @@
 
 #pragma mark
 #pragma mark - Parse
+- (void)checkLocalDataStoreforData {
+    PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
+    [query fromLocalDatastore];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    [self fetchDataFromLocalDataStore:filterArray];
+                }
+                else {
+                    [self fetchDataFromParse];
+                }
+            }
+        }];
+    });
+}
+
 - (void)fetchDataFromParse {
     
     if ([self connected]) {

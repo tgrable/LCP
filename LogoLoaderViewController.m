@@ -42,15 +42,9 @@
     logoView.backgroundColor = [UIColor clearColor];
     [self.view addSubview:logoView];
     
-    //NSUserDefaults to check if data has been downloaded.
-    //If data has been downloaded pull from local datastore else fetch data from Parse.com
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"splash_screen"] isEqualToString:@"hasData"]) {
-        [self buildLogoLoader:content.imgPoster];
-    }
-    else {
-        [self fetchDataFromParse];
-    }
+    //Check if data has been downloaded and pinned to local datastore.
+    //If data has been downloaded pull from local datastore
+    [self checkLocalDataStoreforData];
 }
 
 - (void) viewWillAppear:(BOOL)animated {
@@ -67,6 +61,23 @@
 
 #pragma mark
 #pragma mark - Parse
+- (void)checkLocalDataStoreforData {
+    PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
+    [query fromLocalDatastore];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    [self buildLogoLoader:content.imgPoster];
+                }
+                else {
+                    [self fetchDataFromParse];
+                }
+            }
+        }];
+    });
+}
+
 - (void)fetchDataFromParse {
     PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
     query.limit = 1;

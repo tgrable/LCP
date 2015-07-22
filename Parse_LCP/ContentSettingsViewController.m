@@ -188,7 +188,7 @@
                             if ([forParseClassType isEqualToString:@"pdf_slide_deck"]) {
                                 [self createpdfNIDArray:objects];
                             }
-                            //[self buildOptions:objects forView:forParseClassType withTerm:tagReference];
+                            [self buildOptions:objects forView:forParseClassType withTerm:tagReference];
                         }
                     }];
                 });
@@ -216,7 +216,7 @@
                 if ([forParseClassType isEqualToString:@"pdf_slide_deck"]) {
                     [self createpdfNIDArray:objects];
                 }
-                //[self buildOptions:objects forView:forParseClassType withTerm:tagReference];
+                [self buildOptions:objects forView:forParseClassType withTerm:tagReference];
             }
             else {
                 NSString *errorMsg = [NSString stringWithFormat:@"%@", error];
@@ -1417,7 +1417,7 @@
         }
         else if ([alertButtonPressed isEqualToString:@"reloadVideoContent"]) {
             if(buttonIndex == 1) {
-                [parsedownload downloadVideoFile:background forTerm:@""];
+                [parsedownload downloadVideoFile:self.view forTerm:@""];
             }
         }
         else if ([alertButtonPressed isEqualToString:@"reloadEverything"]) {

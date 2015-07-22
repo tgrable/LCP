@@ -77,19 +77,30 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    //NSUserDefaults to check if data has been downloaded.
+    //Check if data has been downloaded and pinned to local datastore.
     //If data has been downloaded pull from local datastore
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"pdf_slide_deck"] isEqualToString:@"hasData"]) {
-        [self fetchDataFromLocalDataStore];
-    }
-    else {
-        [self fetchDataFromParse];
-    }
+    [self checkLocalDataStoreforData];
 }
 
 #pragma mark
 #pragma mark - Parse
+- (void)checkLocalDataStoreforData {
+    PFQuery *query = [PFQuery queryWithClassName:@"pdf_slide_deck"];
+    [query fromLocalDatastore];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    [self fetchDataFromLocalDataStore];
+                }
+                else {
+                    [self fetchDataFromParse];
+                }
+            }
+        }];
+    });
+}
+
 //Query the local datastore for case_study to build the views
 - (void)fetchDataFromLocalDataStore {
     
@@ -103,21 +114,22 @@
             NSMutableDictionary *lcpPdfSlides = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
             
             for (PFObject *object in objects) {
-                
                 //Add selected objects the the array
                 if ([[lcpPdfSlides objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                     [selectedObjects addObject:object];
                 }
             }
             
-            NSFileManager *fileManager = [NSFileManager defaultManager];
-            NSString *pathForFile = [self getDBPathPDf:[NSString stringWithFormat:@"%@.pdf", [selectedObjects[0] objectForKey:@"nid"]]];
-            
-            if ([fileManager fileExistsAtPath:pathForFile]){
-                [self loadDocument:pathForFile inView:webView];
-            }
-            else {
-                [self buildPdfView:selectedObjects[0]];
+            if (selectedObjects.count > 0) {
+                NSFileManager *fileManager = [NSFileManager defaultManager];
+                NSString *pathForFile = [self getDBPathPDf:[NSString stringWithFormat:@"%@.pdf", [selectedObjects[0] objectForKey:@"nid"]]];
+                 
+                if ([fileManager fileExistsAtPath:pathForFile]){
+                    [self loadDocument:pathForFile inView:webView];
+                }
+                else {
+                    [self buildPdfView:selectedObjects[0]];
+                }
             }
         }];
     });
@@ -151,14 +163,17 @@
                                     [selectedObjects addObject:object];
                                 }
                             }
-                            NSFileManager *fileManager = [NSFileManager defaultManager];
-                            NSString *pathForFile = [self getDBPathPDf:[NSString stringWithFormat:@"%@.pdf", [selectedObjects[0] objectForKey:@"nid"]]];
+                            if (selectedObjects.count > 0) {
+                                
+                                NSFileManager *fileManager = [NSFileManager defaultManager];
+                                NSString *pathForFile = [self getDBPathPDf:[NSString stringWithFormat:@"%@.pdf", [selectedObjects[0] objectForKey:@"nid"]]];
                             
-                            if ([fileManager fileExistsAtPath:pathForFile]){
-                                [self loadDocument:pathForFile inView:webView];
-                            }
-                            else {
-                                [self buildPdfView:selectedObjects[0]];
+                                if ([fileManager fileExistsAtPath:pathForFile]){
+                                    [self loadDocument:pathForFile inView:webView];
+                                }
+                                else {
+                                    [self buildPdfView:selectedObjects[0]];
+                                }
                             }
                         }
                     }];

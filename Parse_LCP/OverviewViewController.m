@@ -189,15 +189,9 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    //NSUserDefaults to check if data has been downloaded.
+    //Check if data has been downloaded and pinned to local datastore.
     //If data has been downloaded pull from local datastore
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    if ([[defaults objectForKey:@"overview"] isEqualToString:@"hasData"]) {
-        [self fetchDataFromLocalDataStore];
-    }
-    else {
-        [self fetchDataFromParse];
-    }
+    [self checkLocalDataStoreforData];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -208,6 +202,23 @@
 
 #pragma mark
 #pragma mark - Parse
+- (void)checkLocalDataStoreforData {
+    PFQuery *query = [PFQuery queryWithClassName:@"overview"];
+    [query fromLocalDatastore];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    [self fetchDataFromLocalDataStore];
+                }
+                else {
+                    [self fetchDataFromParse];
+                }
+            }
+        }];
+    });
+}
+
 //Query the local datastore to build the views
 - (void)fetchDataFromLocalDataStore {
     PFQuery *query = [PFQuery queryWithClassName:@"overview"];

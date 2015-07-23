@@ -27,6 +27,7 @@
 @property (strong, nonatomic) UIScrollView *pageScroll, *mediaColumnScroll;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
 @property NSMutableArray *nids, *nodeTitles, *casestudyMediaObjects;
+@property NSMutableDictionary *csMediaDict, *csMediaObjectDict;
 
 @property (strong, nonatomic) LCPCaseStudyMedia *csMedia;
 @property (strong, nonatomic) SMPageControl *paginationDots;
@@ -41,6 +42,7 @@
 @synthesize pageScroll, mediaColumnScroll;          //UIScrollView
 @synthesize favoriteContentButton;                  //UIButton
 @synthesize nids, nodeTitles, casestudyMediaObjects;//NSMutableArrays
+@synthesize csMediaDict, csMediaObjectDict;
 
 @synthesize csMedia;                                //LCPCaseStudyMedia
 @synthesize content;                                //LCPContent
@@ -277,34 +279,29 @@
 #pragma mark
 #pragma mark - Parse
 - (void)checkLocalDataStoreforData {
+    csMediaDict = [NSMutableDictionary dictionary];
+    
     PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
+    if (isIndividualCaseStudy) {
+        [query whereKey:@"nid" equalTo:nodeId];
+    }
+    else {
+        [query whereKey:@"field_term_reference" equalTo:content.termId];
+    }
     [query fromLocalDatastore];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                if (objects.count > 0) {
-                    if (isIndividualCaseStudy) {
-                        PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
-                        [query fromLocalDatastore];
-                        [query whereKey:@"nid" equalTo:nodeId];
-                        dispatch_async(dispatch_get_main_queue(), ^{
-                            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-                                if (!error) {
-                                    if (objects.count > 0) {
-                                        for (PFObject *object in objects) {
-                                            content.termId = [object objectForKey:@"field_term_reference"];
-                                        }
-                                        
-                                        [self fetchCaseStudyMediaFromLocalDataStore];
-                                    }
-                                }
-                            }];
-                        });
-                    }
-                    else {
-                        [self fetchCaseStudyMediaFromLocalDataStore];
-                    }
-
+                for (PFObject *object in objects) {
+                    [csMediaDict setObject:[object objectForKey:@"field_case_study_media_reference"] forKey:[object objectForKey:@"nid"]];
+                    [self fetchCaseStudyMediaFromLocalDataStore:[object objectForKey:@"field_case_study_media_reference"]];
+                }
+                
+                //NSUserDefaults to check if data has been downloaded.
+                //If data has been downloaded pull from local datastore
+                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+                if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
+                    [self fetchDataFromLocalDataStore];
                 }
                 else {
                     [self fetchDataFromParse];
@@ -314,28 +311,32 @@
     });
 }
 
+
 //Query the local datastore for Case_Study_Media to build the views
-- (void)fetchCaseStudyMediaFromLocalDataStore {
+- (void)fetchCaseStudyMediaFromLocalDataStore:(NSArray *)csMediaNodes {
+    csMediaObjectDict = [NSMutableDictionary dictionary];
+    NSMutableArray *tempCsMediaArray = [NSMutableArray array];
+    
+    NSMutableArray *temp = [NSMutableArray array];
+    NSArray *bodyArray = csMediaNodes;
+    for (NSDictionary *obj in bodyArray) {
+        if([obj objectForKey:@"nid"] != nil) {
+            [temp addObject:[obj objectForKey:@"nid"]];
+        }
+    }
     
     PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
     [query fromLocalDatastore];
-    [query whereKey:@"field_term_reference" equalTo:content.termId];
+    [query whereKey:@"nid" containedIn:temp];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 if (objects.count > 0) {
-                    [self buildCaseStudyMediaView:objects];
-                }
-                else {
-                    //NSUserDefaults to check if data has been downloaded.
-                    //If data has been downloaded pull from local datastore
-                    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                    if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
-                        [self fetchDataFromLocalDataStore];
+                    for (PFObject *object in objects) {
+                        [tempCsMediaArray addObject:object];
+                        [csMediaObjectDict setObject:tempCsMediaArray forKey:[object objectForKey:@"nid"]];
                     }
-                    else {
-                        [self fetchDataFromParse];
-                    }
+
                 }
             }
         }];
@@ -343,13 +344,14 @@
 }
 
 //Query the Parse.com for Case_Study_Media to build the views
-- (void)fetchCaseStudyMediaFromParse {
+- (void)fetchCaseStudyMediaFromParse:(NSMutableArray *)nodeIds  {
     
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
-        [query whereKey:@"field_term_reference" equalTo:content.termId];
+        //[query whereKey:@"field_term_reference" equalTo:content.termId];
+        [query whereKey:@"nid" containedIn:nodeIds];
         dispatch_async(dispatch_get_main_queue(), ^{
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 if (!error) {
@@ -401,7 +403,6 @@
             NSMutableDictionary *lcpCaseStudy = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
             
             for (PFObject *object in objects) {
-                
                 //Add selected objects the the array
                 if ([[lcpCaseStudy objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
                     [selectedObjects addObject:object];
@@ -486,6 +487,10 @@
     int x = 24;
     
     for(PFObject *object in objects) {
+        NSLog(@"%@", [object objectForKey:@"nid"]);
+        NSLog(@"%@", csMediaObjectDict);
+        [self buildCaseStudyMediaView:[csMediaObjectDict objectForKey:[object objectForKey:@"nid"]]];
+        
         //add the nid for the object to nid array
         [nids addObject:object[@"nid"]];
         
@@ -584,7 +589,7 @@
         NSPredicate *predicate = [NSPredicate predicateWithFormat:@"csMediaTermReferenceId = %@", [object objectForKey:@"field_term_reference"]];
         NSArray *filteredArray = [casestudyMediaObjects filteredArrayUsingPredicate:predicate];
         for (LCPCaseStudyMedia *csm in filteredArray) {
-            
+            NSLog(@"");
             UIButton *csMediaButton = [UIButton buttonWithType:UIButtonTypeCustom];
             [csMediaButton setFrame:CGRectMake(0, y, 137, 80)];
             [csMediaButton addTarget:self action:@selector(showDetails:)forControlEvents:UIControlEventTouchUpInside];
@@ -628,6 +633,8 @@
 //Create the case study media content items before the rest of the view so
 //they will be available when running throught he loop
 - (void)buildCaseStudyMediaView:(NSArray *)objects {
+    
+    NSLog(@"%@", objects);
 
     casestudyMediaObjects = [NSMutableArray array];
     

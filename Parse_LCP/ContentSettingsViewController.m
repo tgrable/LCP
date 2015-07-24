@@ -195,6 +195,7 @@
             }
             else {
                 NSString *errorMsg = [NSString stringWithFormat:@"%@", error];
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
                 [self displayMessage:errorMsg];
             }
         }];
@@ -220,6 +221,7 @@
             }
             else {
                 NSString *errorMsg = [NSString stringWithFormat:@"%@", error];
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
                 [self displayMessage:errorMsg];
             }
         }];
@@ -242,6 +244,7 @@
             }
             else {
                 NSString *errorMsg = [NSString stringWithFormat:@"%@", error];
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
                 [self displayMessage:errorMsg];
             }
         }];
@@ -270,6 +273,7 @@
             }
             else {
                 NSString *errorMsg = [NSString stringWithFormat:@"%@", error];
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
                 [self displayMessage:errorMsg];
             }
         }];
@@ -327,6 +331,8 @@
                     }];
                 });
             }
+        } else {
+           NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
         }
     }];
 }
@@ -350,6 +356,8 @@
                         }];
                     });
                 }
+            } else {
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
             }
         }];
     });
@@ -387,6 +395,8 @@
                         [pContent setContentSize:CGSizeMake(400, y + 50)];
                     }
                 }
+            } else {
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
             }
         }];
     });
@@ -880,6 +890,8 @@
                 UIImageView *logoImageView = [[UIImageView alloc] initWithImage:logoImage];
                 logoImageView.frame = CGRectMake(0, y += 50, logoImage.size.width, logoImage.size.height);
                 [pContent addSubview:logoImageView];
+            } else {
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
             }
         }];
     });

@@ -26,6 +26,7 @@
 @property (strong, nonatomic) UIView *background;
 @property (strong, nonatomic) UIScrollView *pageScroll, *mediaColumnScroll;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 @property NSMutableArray *nids, *nodeTitles, *casestudyMediaObjects;
 @property NSMutableDictionary *csMediaDict, *csMediaObjectDict;
 
@@ -48,6 +49,7 @@
 @synthesize content;                                //LCPContent
 @synthesize paginationDots;                         //SMPageControll
 @synthesize parsedownload;                          //ParseDownload
+@synthesize activityIndicator;                      //ActivityIndicator
 
 - (BOOL)prefersStatusBarHidden {
     //Hide status bar
@@ -300,12 +302,17 @@
                 for (PFObject *object in objects) {
                     [csMediaDict setObject:[object objectForKey:@"field_case_study_media_reference"] forKey:[object objectForKey:@"nid"]];
                     isLast = (count == objects.count) ? YES : NO;
+                    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                     [self fetchCaseStudyMediaFromLocalDataStore:[object objectForKey:@"field_case_study_media_reference"]
                                                   withcsNodeIds:[object objectForKey:@"nid"]
                                                   isLastElement:isLast];
                     
                     count++;
                 }
+            } else {
+                // Log details of the failure
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                
             }
         }];
     });
@@ -349,21 +356,35 @@
                                         [csMediaObjectDict setObject:tempCsMediaArray forKey:csNodeId];
                                     }
                                 }
+                            } else {
+                                // Log details of the failure
+                                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                                
                             }
-                            NSLog(@"tempCsMediaArray.count: %d", tempCsMediaArray.count);
+                            NSLog(@"tempCsMediaArray.count: %lu", (unsigned long)tempCsMediaArray.count);
+                            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             [self buildCaseStudyMediaView:tempCsMediaArray];
                         }];
                     });
                 }
                 if (last) {
-                    [self fetchDataFromLocalDataStore];
+                    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+                    // Tim, I am commenting this out to try a new loading sequence
+                    // Refer to line 754
+                    //[self fetchDataFromLocalDataStore];
                 }
+                
+            } else {
+                // Log details of the failure
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
                 
             }
         }];
     });
 }
 
+
+// Is the fetchCaseStudyMediaFromParse function being called ???
 //Query the Parse.com for Case_Study_Media to build the views
 - (void)fetchCaseStudyMediaFromParse:(NSMutableArray *)nodeIds  {
     
@@ -384,12 +405,18 @@
                         //If data has been downloaded pull from local datastore
                         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                         if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
+                            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             [self fetchDataFromLocalDataStore];
                         }
                         else {
+                            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             [self fetchDataFromParse];
                         }
                     }
+                } else {
+                    // Log details of the failure
+                    NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                    
                 }
             }];
         });
@@ -417,18 +444,25 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             
-            //Some case studies may have be disabled in the app dashboard
-            //Check which one are set to "show" and use those to build the view
-            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-            NSMutableDictionary *lcpCaseStudy = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
-            
-            for (PFObject *object in objects) {
-                //Add selected objects the the array
-                if ([[lcpCaseStudy objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
-                    [selectedObjects addObject:object];
+            if (!error) {
+                //Some case studies may have be disabled in the app dashboard
+                //Check which one are set to "show" and use those to build the view
+                NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
+                NSMutableDictionary *lcpCaseStudy = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+                
+                for (PFObject *object in objects) {
+                    //Add selected objects the the array
+                    if ([[lcpCaseStudy objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                        [selectedObjects addObject:object];
+                    }
                 }
+                NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+                [self buildCaseStudyView:selectedObjects];
+            }else {
+                // Log details of the failure
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                
             }
-            [self buildCaseStudyView:selectedObjects];
         }];
     });
 }
@@ -466,7 +500,12 @@
                                     [selectedObjects addObject:object];
                                 }
                             }
+                            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             [self buildCaseStudyView:selectedObjects];
+                        } else {
+                            // Log details of the failure
+                            NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                            
                         }
                     }];
                 }
@@ -502,6 +541,8 @@
     pageScroll.backgroundColor = [UIColor clearColor];
     [background addSubview:pageScroll];
 
+    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+    
     int x = 24;
     
     for(PFObject *object in objects) {
@@ -598,17 +639,27 @@
         [mediaColumnScroll setBackgroundColor:[UIColor clearColor]];
         [caseStudy addSubview:mediaColumnScroll];
         
+        
         NSArray *tempCSMArray = [object objectForKey:@"field_case_study_media_reference"];
+        int i = 0;
         if (tempCSMArray.count > 0) {
             int y = 0;
             //NSPredicate *predicate = [NSPredicate predicateWithFormat:@"csMediaTermReferenceId = %@", [object objectForKey:@"field_term_reference"]];
             //NSArray *filteredArray = [casestudyMediaObjects filteredArrayUsingPredicate:predicate];
             for (LCPCaseStudyMedia *csm in casestudyMediaObjects) {
+  
                 UIButton *csMediaButton = [UIButton buttonWithType:UIButtonTypeCustom];
                 [csMediaButton setFrame:CGRectMake(0, y, 137, 80)];
                 [csMediaButton addTarget:self action:@selector(showDetails:)forControlEvents:UIControlEventTouchUpInside];
                 csMediaButton.showsTouchWhenHighlighted = YES;
                 [csMediaButton setBackgroundColor:[UIColor clearColor]];
+                
+                // Tim, if there was a way to set whether we are dealing with a sample or case_study_reference then
+                // we could pass this content type as a hidden button title to the showDetails function and use this button
+                // title as query flag.  I looked at what it would take to achieve this and it looks like we have to backup the data lifecycle
+                // all the way to Drupal.  I will leave this up to you
+                
+                NSLog(@"THE TAG BEING SET TO THE BUTTON: %ld WITH THE Y VALUE %d", (long)[csm.csMediaNodeId integerValue], y);
                 [csMediaButton setTag:[csm.csMediaNodeId integerValue]];
                 [csMediaButton setBackgroundImage:csm.csMediaThumb forState:UIControlStateNormal];
                 [mediaColumnScroll addSubview:csMediaButton];
@@ -619,7 +670,13 @@
                     [mediaColumnScroll addSubview:favItem];
                 }
                 y += 100;
+                i++;
                 [mediaColumnScroll setContentSize:CGSizeMake(137, 100 * tempCSMArray.count)];
+                
+                if (i == casestudyMediaObjects.count) {
+                    activityIndicator.alpha = 0.0;
+                    [mediaColumnScroll sendSubviewToBack:activityIndicator];
+                }
             }
         }
         
@@ -650,12 +707,23 @@
 //Create the case study media content items before the rest of the view so
 //they will be available when running throught he loop
 - (void)buildCaseStudyMediaView:(NSArray *)objects {
-    NSLog(@"objects.count: %d", objects.count);
+    NSLog(@"objects.count: %lu", (unsigned long)objects.count);
     
+    activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    activityIndicator.frame = CGRectMake(484.0, 300.0, 35.0, 35.0);
+    [activityIndicator setColor:[UIColor blackColor]];
+    [activityIndicator startAnimating];
+    [self.view addSubview:activityIndicator];
+    
+    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+    
+
+    __block int i = 0;
     for (PFObject *object in objects) {
     PFFile *imageFile = object[@"field_image_img"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
+                NSLog(@"Data returned");
                 if (!error) {
                     csMedia = [[LCPCaseStudyMedia alloc] init];
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
@@ -677,9 +745,17 @@
                     csMedia.csMediaImage = btnImg;
                     csMedia.csMediaThumb = [csMedia scaleImages:btnImg withSize:CGSizeMake(137, 80)];
                     
+                    
                     //add the case study objects to caseStudyObjects Array
                     [casestudyMediaObjects addObject:csMedia];
-                    
+                    i++;
+                    if (objects.count == i) {
+                        // Fetch the data here after all of the results have returned for media reference
+                        [self fetchDataFromLocalDataStore];
+                    }
+                } else {
+                    // Log details of the failure
+                    NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
                 }
             }];
         });
@@ -766,15 +842,54 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     DetailsViewController *dvc = (DetailsViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
     
+    NSLog(@"Selected NID %@", [NSString stringWithFormat:@"%ld", (long)sender.tag]);
+    
+    
+    // Attempt to make a query on the case study media first.
+    // After this query returns with no error, check to see if there is results.
+    // If no results are found make a query against samples.
+    
     PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
     [query fromLocalDatastore];
     [query whereKey:@"nid" equalTo:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        
-        dvc.contentObject = objects[0];
-        dvc.contentType = @"Case Study Media";
-        [self.navigationController pushViewController:dvc animated:YES];
-        [self removeEverything];
+        NSLog(@"Case Study Media Results were returned");
+        if (!error) {
+            
+           
+            NSLog(@"Case Study Media Object Count %lu", (unsigned long)[objects count]);
+            if ([objects count] > 0) {
+                // Push the case study media reference item onto the stack
+                dvc.contentObject = objects[0];
+                dvc.contentType = @"Case Study Media";
+                [self.navigationController pushViewController:dvc animated:YES];
+                [self removeEverything];
+            } else {
+                // Make a query against samples if no case_study_media results are returned
+                PFQuery *query = [PFQuery queryWithClassName:@"samples"];
+                [query fromLocalDatastore];
+                [query whereKey:@"nid" equalTo:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
+                [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                    NSLog(@"Sample Results were returned");
+                    if (!error) {
+                        NSLog(@"Sample Object Count %lu", (unsigned long)[objects count]);
+                        // Push the case study media reference item onto the stack
+                        dvc.contentObject = objects[0];
+                        dvc.contentType = @"Samples";
+                        [self.navigationController pushViewController:dvc animated:YES];
+                        [self removeEverything];
+                    } else {
+                        // Log details of the failure
+                        NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                        
+                    }
+                }];
+            }
+        } else {
+            // Log details of the failure
+            NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+            
+        }
     }];
 }
 

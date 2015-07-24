@@ -23,7 +23,9 @@
 @property (strong, nonatomic) UIScrollView *navContainer;
 @property (strong, nonatomic) UIImageView *overlay;
 @property (strong, nonatomic) NSMutableDictionary *posterDict, *headerDict, *teamDict, *iconDict;
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
+
 
 @property (strong, nonatomic) Reachability *reachable;
 @property (strong, nonatomic) SMPageControl *paginationDots;
@@ -45,6 +47,7 @@
 @synthesize reachable;                                      //Reachability
 @synthesize paginationDots;                                 //SMPageControl
 @synthesize parsedownload;                                  //ParseDownload
+@synthesize activityIndicator;                              //ActivityIndicator
 
 - (BOOL)prefersStatusBarHidden {
     //Hide status bar
@@ -158,15 +161,27 @@
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
     [self.view addSubview:dashboardButton];
     
+    
+    activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    activityIndicator.frame = CGRectMake(785.0, 200.0, 35.0, 35.0);
+    [activityIndicator setColor:[UIColor blackColor]];
+    activityIndicator.alpha = 0.0;
+    [activityIndicator startAnimating];
+    [self.view addSubview:activityIndicator];
+    
     //If content.navigationIcons, content.navigationTerms, content.navigationTids all have data
     //build the view with the content passed in else fetch the data from local datastore or Parse.com
     if (content.navigationIcons != NULL && content.navigationTerms != NULL && content.navigationTids != NULL) {
+        // Add an activitiy indicator to show that the icons are loading
+        activityIndicator.alpha = 1.0;
         [self buildViewWithLCPContentData];
     }
     else {
         
         //Check if data has been downloaded and pinned to local datastore.
         //If data has been downloaded pull from local datastore
+        // Add an activitiy indicator to show that the icons are loading
+        activityIndicator.alpha = 1.0;
         [self checkLocalDataStoreforData];
     }
 }
@@ -198,6 +213,10 @@
                 else {
                     [self fetchDataFromParse];
                 }
+            } else {
+                // Log details of the failure
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                
             }
         }];
     });
@@ -205,7 +224,7 @@
 
 //Query the local datastore to build the views
 - (void)fetchDataFromLocalDataStore {
-
+    
     PFQuery *query = [PFQuery queryWithClassName:@"term"];
     [query whereKey:@"parent" equalTo:@"0"];
     [query fromLocalDatastore];
@@ -216,6 +235,10 @@
                 
                 //Call buildView: with objects returned from query
                 [self buildView:objects];
+            } else {
+                // Log details of the failure
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                
             }
         }];
     });
@@ -243,6 +266,10 @@
                             
                             //Call buildView: with objects returned from query
                             [self buildView:objects];
+                        } else {
+                            // Log details of the failure
+                            NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                            
                         }
                     }];
                 }
@@ -304,7 +331,7 @@
 }
 
 - (void)buildView:(NSArray *)objects {
-    
+
     //Build the view with data fetched from the local datastore or Parse.com
     //This method is more of a fail safe in case all the term data wasn't loaded in the app dashboard
     int count = 0;
@@ -345,6 +372,10 @@
                     title.lineBreakMode = NSLineBreakByWordWrapping;
                     title.text = [object objectForKey:@"name"];
                     [navContainer addSubview:title];
+                } else {
+                    // Log details of the failure
+                    NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                    
                 }
             }];
         });
@@ -368,6 +399,7 @@
             }];
         });
     }
+    
     [self addLibraryButtons];
 }
 
@@ -410,6 +442,10 @@
     caseStudiesLabel.lineBreakMode = NSLineBreakByWordWrapping;
     caseStudiesLabel.text = @"CASE STUDIES";
     [navContainer addSubview:caseStudiesLabel];
+    
+    // Hide activity indicator
+    activityIndicator.alpha = 0.0;
+    
 }
 
 #pragma mark

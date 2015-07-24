@@ -23,6 +23,7 @@
 @property (strong, nonatomic) UIScrollView *pageScroll;
 @property (strong, nonatomic) UIPageControl *caseStudyDots;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 
 @property NSMutableArray *nids, *nodeTitles, *sampleObjects;
 
@@ -40,6 +41,7 @@
 
 @synthesize paginationDots;                     //SMPageControll
 @synthesize parsedownload;                      //ParseDownload
+@synthesize activityIndicator;                  //ActivityIndicator
 
 - (BOOL)prefersStatusBarHidden {
     //Hide status bar
@@ -167,6 +169,13 @@
     videosLabel.text = @"VIDEOS";
     [navBar addSubview:videosLabel];
     
+    activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    activityIndicator.frame = CGRectMake(484.0, 300.0, 35.0, 35.0);
+    [activityIndicator setColor:[UIColor blackColor]];
+    activityIndicator.alpha = 0.0;
+    [activityIndicator startAnimating];
+    [self.view addSubview:activityIndicator];
+    
     //Set the color of the location indicator view
     UIView *locationIndicator = [[UIView alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2), 0, 80, 5)];
     if ([content.catagoryId isEqualToString:@"38"]) {
@@ -201,9 +210,12 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
+    activityIndicator.alpha = 1.0;
+    
     //Check if data has been downloaded and pinned to local datastore.
     //If data has been downloaded pull from local datastore
     [self checkLocalDataStoreforData];
+    
 }
 
 - (void)didReceiveMemoryWarning {
@@ -496,6 +508,11 @@
         }
         
         totalCount++;
+        
+        if (totalCount == objects.count) {
+            activityIndicator.alpha = 0.0;
+        }
+        
         [pageScroll setContentSize:CGSizeMake((pageScroll.bounds.size.width * multiplier), 400)];
     }
     

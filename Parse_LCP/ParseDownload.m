@@ -207,17 +207,21 @@
                             if (count >= parseClassTypes.count && !videoFileBeingDownloaded) {
                                 [self postNotificationToRefresh];
                             }
+                        } else {
+                            NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
                         }
                     }];
                 });
             }
             else {
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
                 UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"There was an error downloading the data." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
                 [alert show];
             }
         }];
     }
     else {
+
         UIAlertView *alert = [[UIAlertView alloc] initWithTitle:@"Download Error" message:@"You are not currently connected to the internt." delegate:self cancelButtonTitle:@"Okay" otherButtonTitles:nil];
         [alert show];
     }

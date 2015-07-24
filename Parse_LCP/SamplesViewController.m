@@ -408,7 +408,7 @@
         [sampleObjects addObject:object];
         
         //Sample Image
-        PFFile *sampleFile = object[@"field_sample_image_img"];
+        PFFile *sampleFile = object[@"field_image_img"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [sampleFile getDataInBackgroundWithBlock:^(NSData *sampleData, NSError *error) {
                 

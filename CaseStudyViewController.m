@@ -225,6 +225,7 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
+    casestudyMediaObjects = [NSMutableArray array];
     
     if (content == nil) {
         content = [[LCPContent alloc] init];
@@ -292,19 +293,18 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
+                
+                int count = 1;
+                BOOL isLast = NO;
+                
                 for (PFObject *object in objects) {
                     [csMediaDict setObject:[object objectForKey:@"field_case_study_media_reference"] forKey:[object objectForKey:@"nid"]];
-                    [self fetchCaseStudyMediaFromLocalDataStore:[object objectForKey:@"field_case_study_media_reference"]];
-                }
-                
-                //NSUserDefaults to check if data has been downloaded.
-                //If data has been downloaded pull from local datastore
-                NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-                if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
-                    [self fetchDataFromLocalDataStore];
-                }
-                else {
-                    [self fetchDataFromParse];
+                    isLast = (count == objects.count) ? YES : NO;
+                    [self fetchCaseStudyMediaFromLocalDataStore:[object objectForKey:@"field_case_study_media_reference"]
+                                                  withcsNodeIds:[object objectForKey:@"nid"]
+                                                  isLastElement:isLast];
+                    
+                    count++;
                 }
             }
         }];
@@ -313,7 +313,7 @@
 
 
 //Query the local datastore for Case_Study_Media to build the views
-- (void)fetchCaseStudyMediaFromLocalDataStore:(NSArray *)csMediaNodes {
+- (void)fetchCaseStudyMediaFromLocalDataStore:(NSArray *)csMediaNodes withcsNodeIds:(NSString *)csNodeId isLastElement:(BOOL)last {
     csMediaObjectDict = [NSMutableDictionary dictionary];
     NSMutableArray *tempCsMediaArray = [NSMutableArray array];
     
@@ -334,10 +334,31 @@
                 if (objects.count > 0) {
                     for (PFObject *object in objects) {
                         [tempCsMediaArray addObject:object];
-                        [csMediaObjectDict setObject:tempCsMediaArray forKey:[object objectForKey:@"nid"]];
+                        [csMediaObjectDict setObject:tempCsMediaArray forKey:csNodeId];
                     }
-
+                    
+                    PFQuery *query = [PFQuery queryWithClassName:@"samples"];
+                    [query fromLocalDatastore];
+                    [query whereKey:@"nid" containedIn:temp];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [query findObjectsInBackgroundWithBlock:^(NSArray *sampleobjects, NSError *error) {
+                            if (!error) {
+                                if (sampleobjects.count > 0) {
+                                    for (PFObject *sampleobject in sampleobjects) {
+                                        [tempCsMediaArray addObject:sampleobject];
+                                        [csMediaObjectDict setObject:tempCsMediaArray forKey:csNodeId];
+                                    }
+                                }
+                            }
+                            NSLog(@"tempCsMediaArray.count: %d", tempCsMediaArray.count);
+                            [self buildCaseStudyMediaView:tempCsMediaArray];
+                        }];
+                    });
                 }
+                if (last) {
+                    [self fetchDataFromLocalDataStore];
+                }
+                
             }
         }];
     });
@@ -385,7 +406,6 @@
 
 //Query the local datastore for case_study to build the views
 - (void)fetchDataFromLocalDataStore {
-    
     PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
     [query fromLocalDatastore];
     if (isIndividualCaseStudy) {
@@ -415,7 +435,6 @@
 
 //Query the Parse.com for case_study to build the views
 - (void)fetchDataFromParse {
-    
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
@@ -467,7 +486,6 @@
 #pragma mark
 #pragma mark - Build Views
 - (void)buildCaseStudyView:(NSArray *)objects {
-    
     //UIScrollView used to hold the case study objects
     if (!isIndividualCaseStudy) {
         pageScroll = [[UIScrollView alloc] initWithFrame:CGRectMake(0, 110, background.bounds.size.width, background.bounds.size.height - 210)];
@@ -487,10 +505,6 @@
     int x = 24;
     
     for(PFObject *object in objects) {
-        NSLog(@"%@", [object objectForKey:@"nid"]);
-        NSLog(@"%@", csMediaObjectDict);
-        [self buildCaseStudyMediaView:[csMediaObjectDict objectForKey:[object objectForKey:@"nid"]]];
-        
         //add the nid for the object to nid array
         [nids addObject:object[@"nid"]];
         
@@ -527,7 +541,6 @@
         [caseStudy addSubview:bodyColumn];
 
         NSArray *bodyArray = [object objectForKey:@"body"];
-        //NSMutableDictionary *bodyDict = bodyArray[1];
         NSString *bodyString = @"Not Available";
         for(NSDictionary *obj in bodyArray) {
             if ([obj objectForKey:@"value"]) {
@@ -585,27 +598,31 @@
         [mediaColumnScroll setBackgroundColor:[UIColor clearColor]];
         [caseStudy addSubview:mediaColumnScroll];
         
-        int y = 0;
-        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"csMediaTermReferenceId = %@", [object objectForKey:@"field_term_reference"]];
-        NSArray *filteredArray = [casestudyMediaObjects filteredArrayUsingPredicate:predicate];
-        for (LCPCaseStudyMedia *csm in filteredArray) {
-            NSLog(@"");
-            UIButton *csMediaButton = [UIButton buttonWithType:UIButtonTypeCustom];
-            [csMediaButton setFrame:CGRectMake(0, y, 137, 80)];
-            [csMediaButton addTarget:self action:@selector(showDetails:)forControlEvents:UIControlEventTouchUpInside];
-            csMediaButton.showsTouchWhenHighlighted = YES;
-            [csMediaButton setBackgroundColor:[UIColor clearColor]];
-            [csMediaButton setTag:[csm.csMediaNodeId integerValue]];
-            [csMediaButton setBackgroundImage:csm.csMediaThumb forState:UIControlStateNormal];
-            [mediaColumnScroll addSubview:csMediaButton];
-            
-            if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:csm.csMediaNodeId] != nil) {
-                UIImageView *favItem = [[UIImageView alloc] initWithFrame:CGRectMake(103, y + 46, 24, 24)];
-                favItem.image = [UIImage imageNamed:@"ico-fav-active"];
-                [mediaColumnScroll addSubview:favItem];
+        NSArray *tempCSMArray = [object objectForKey:@"field_case_study_media_reference"];
+        if (tempCSMArray.count > 0) {
+            int y = 0;
+            //NSPredicate *predicate = [NSPredicate predicateWithFormat:@"csMediaTermReferenceId = %@", [object objectForKey:@"field_term_reference"]];
+            //NSArray *filteredArray = [casestudyMediaObjects filteredArrayUsingPredicate:predicate];
+            for (LCPCaseStudyMedia *csm in casestudyMediaObjects) {
+                UIButton *csMediaButton = [UIButton buttonWithType:UIButtonTypeCustom];
+                [csMediaButton setFrame:CGRectMake(0, y, 137, 80)];
+                [csMediaButton addTarget:self action:@selector(showDetails:)forControlEvents:UIControlEventTouchUpInside];
+                csMediaButton.showsTouchWhenHighlighted = YES;
+                [csMediaButton setBackgroundColor:[UIColor clearColor]];
+                [csMediaButton setTag:[csm.csMediaNodeId integerValue]];
+                [csMediaButton setBackgroundImage:csm.csMediaThumb forState:UIControlStateNormal];
+                [mediaColumnScroll addSubview:csMediaButton];
+                
+                if([[[NSUserDefaults standardUserDefaults] objectForKey:@"contentFavorites"] objectForKey:csm.csMediaNodeId] != nil) {
+                    UIImageView *favItem = [[UIImageView alloc] initWithFrame:CGRectMake(103, y + 46, 24, 24)];
+                    favItem.image = [UIImage imageNamed:@"ico-fav-active"];
+                    [mediaColumnScroll addSubview:favItem];
+                }
+                y += 100;
+                [mediaColumnScroll setContentSize:CGSizeMake(137, 100 * tempCSMArray.count)];
             }
-            y += 100;
         }
+        
         x += background.bounds.size.width;
         [pageScroll setContentSize:CGSizeMake(background.bounds.size.width * objects.count, 355)];
     }
@@ -633,15 +650,10 @@
 //Create the case study media content items before the rest of the view so
 //they will be available when running throught he loop
 - (void)buildCaseStudyMediaView:(NSArray *)objects {
+    NSLog(@"objects.count: %d", objects.count);
     
-    NSLog(@"%@", objects);
-
-    casestudyMediaObjects = [NSMutableArray array];
-    
-    int __block count = 0;
     for (PFObject *object in objects) {
-
-        PFFile *imageFile = object[@"field_image_img"];
+    PFFile *imageFile = object[@"field_image_img"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
                 if (!error) {
@@ -655,10 +667,9 @@
                     for(NSDictionary *obj in bodyArray) {
                         if ([obj objectForKey:@"value"]) {
                             bodyString = [obj objectForKey:@"value"];
-                            break;
+                            //break;
                         }
                     }
-
                     csMedia.csMediaTitle = object[@"title"];
                     csMedia.csMediaBody = [NSString stringWithFormat:@"%@", bodyString];
                     csMedia.csMediaNodeId = object[@"nid"];
@@ -669,17 +680,10 @@
                     //add the case study objects to caseStudyObjects Array
                     [casestudyMediaObjects addObject:csMedia];
                     
-                    count++;
-                    
-                    if (count == objects.count) {
-                        [self fetchDataFromLocalDataStore];
-                    }
                 }
             }];
         });
     }
-    
-    [mediaColumnScroll setContentSize:CGSizeMake(137, 100 * objects.count)];
 }
 
 //this function updates the dots for the current image the the user is on

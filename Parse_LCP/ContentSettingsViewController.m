@@ -296,7 +296,7 @@
     }
     
     if (![[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
-        [parsedownload downloadVideoFile:self.view forTerm:@""];
+        //[parsedownload downloadVideoFile:self.view forTerm:@""];
     }
     if (![[defaults objectForKey:@"overview"] isEqualToString:@"hasData"]) {
         [parsedownload downloadAndPinIndividualParseClass:@"overview"];

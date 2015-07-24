@@ -210,7 +210,6 @@
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
     
-    activityIndicator.alpha = 1.0;
     
     //Check if data has been downloaded and pinned to local datastore.
     //If data has been downloaded pull from local datastore
@@ -303,6 +302,10 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             
+            if (objects.count > 0) {
+                activityIndicator.alpha = 1.0;
+            }
+            
             //Some samples may have be disabled in the app dashboard
             //Check which one are set to "show" and use those to build the view
             NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
@@ -325,12 +328,16 @@
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
+
         PFQuery *query = [PFQuery queryWithClassName:@"samples"];
         [query whereKey:@"field_term_reference" equalTo:content.termId];
         [query orderByAscending:@"createdAt"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 if (!error) {
+                    if (objects.count > 0) {
+                        activityIndicator.alpha = 1.0;
+                    }
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                         if (!error) {
                             NSUserDefaults *csDefaults = [NSUserDefaults standardUserDefaults];

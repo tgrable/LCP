@@ -11,6 +11,8 @@
 
 @interface CaseStudyViewController : UIViewController<UIScrollViewDelegate>
 
+typedef void(^completeBlock)(BOOL);
+
 @property (strong, nonatomic) LCPContent *content;
 @property (strong, nonatomic) NSString *nodeId;
 @property BOOL isIndividualCaseStudy;

@@ -220,6 +220,13 @@
         [navBar addSubview:locationIndicator];
     }
     
+    activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+    activityIndicator.frame = CGRectMake(484.0, 300.0, 35.0, 35.0);
+    [activityIndicator setColor:[UIColor blackColor]];
+    activityIndicator.alpha = 0.0;
+    [activityIndicator startAnimating];
+    [self.view addSubview:activityIndicator];
+    
     //array used to hold nids for the current index of the case study
     nids = [NSMutableArray array];
     nodeTitles = [NSMutableArray array];
@@ -308,6 +315,7 @@
                                                   isLastElement:isLast];
                     
                     count++;
+                    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                 }
             } else {
                 // Log details of the failure
@@ -373,6 +381,7 @@
                                 
                                 [self buildCaseStudyMediaView:tempCsMediaArray complete:^(BOOL completeFlag){
                                     [csMediaObjectDict removeAllObjects];
+                                    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                                     [self fetchDataFromLocalDataStore];
                                 }];
                                 
@@ -418,9 +427,11 @@
                         //If data has been downloaded pull from local datastore
                         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                         if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
+                            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             [self fetchDataFromLocalDataStore];
                         }
                         else {
+                            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             [self fetchDataFromParse];
                         }
                     }
@@ -462,6 +473,7 @@
                     [selectedObjects addObject:object];
                 }
             }
+            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
             [self buildCaseStudyView:selectedObjects];
         }];
     });
@@ -500,6 +512,7 @@
                                     [selectedObjects addObject:object];
                                 }
                             }
+                            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             [self buildCaseStudyView:selectedObjects];
                         }
                     }];
@@ -653,7 +666,6 @@
             
             for (LCPCaseStudyMedia *csm in casestudyMediaObjects) {
                 
-                NSLog(@"NID %@",csm.csMediaNodeId );
                 
                 if ([nidArray containsObject:csm.csMediaNodeId] && ![usedArray containsObject:csm.csMediaNodeId]) {
                     UIButton *csMediaButton = [UIButton buttonWithType:UIButtonTypeCustom];
@@ -667,7 +679,7 @@
                     // title as query flag.  I looked at what it would take to achieve this and it looks like we have to backup the data lifecycle
                     // all the way to Drupal.  I will leave this up to you
                     
-                    NSLog(@"THE TAG BEING SET TO THE BUTTON: %d WITH THE Y VALUE %d", [csm.csMediaNodeId integerValue], y);
+                    //NSLog(@"THE TAG BEING SET TO THE BUTTON: %d WITH THE Y VALUE %d", [csm.csMediaNodeId integerValue], y);
                     [csMediaButton setTag:[csm.csMediaNodeId integerValue]];
                     [csMediaButton setBackgroundImage:csm.csMediaThumb forState:UIControlStateNormal];
                     [mediaColumnScroll addSubview:csMediaButton];
@@ -686,7 +698,7 @@
                 
             }
         }
-        
+        NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
         
         x += background.bounds.size.width;
         [pageScroll setContentSize:CGSizeMake(background.bounds.size.width * objects.count, 355)];
@@ -707,7 +719,7 @@
             [background addSubview:paginationDots];
         }
     }
-    
+    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
     activityIndicator.alpha = 0.0;
     //update the button color
     [self updateFavoriteButtonColor];
@@ -717,13 +729,8 @@
 //they will be available when running throught he loop
 - (void)buildCaseStudyMediaView:(NSArray *)objects complete:(completeBlock)completeFlag {
 
-    
-    activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    activityIndicator.frame = CGRectMake(484.0, 300.0, 35.0, 35.0);
-    [activityIndicator setColor:[UIColor blackColor]];
-    [activityIndicator startAnimating];
-    [self.view addSubview:activityIndicator];
-    
+
+    activityIndicator.alpha = 1.0;
     NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
     
 
@@ -732,7 +739,7 @@
     PFFile *imageFile = object[@"field_image_img"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
-                NSLog(@"Data returned");
+                //NSLog(@"Data returned");
                 if (!error) {
                     csMedia = [[LCPCaseStudyMedia alloc] init];
                     UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
@@ -760,6 +767,7 @@
                     i++;
                     if (i == objects.count) {
                         activityIndicator.alpha = 0.0;
+                        NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                         completeFlag(YES);
                     }
                     

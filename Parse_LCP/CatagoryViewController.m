@@ -177,9 +177,11 @@
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 if (objects.count > 0) {
+                    NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                     [self fetchDataFromLocalDataStore];
                 }
                 else {
+                    NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                     [self fetchDataFromParse];
                 }
             }
@@ -247,6 +249,8 @@
 #pragma mark - Build View
 - (void)buildView:(NSArray *)objects {
     
+    
+    NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
     //Create the cascading column of navigation buttons based on weight property
     int count = 0;
     [self createEmptyButtonArrays:objects.count];

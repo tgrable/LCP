@@ -181,7 +181,10 @@
                 operationQueue.maxConcurrentOperationCount = 2;
                 [operationQueue addOperation:operation];
             }
+        } else {
+            NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
         }
+
     }];
 }
 
@@ -241,7 +244,10 @@
                 [defaults setObject:@"dataRemoved" forKey:forParseClassType];
                 [defaults synchronize];
             });
+        } else {
+            NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
         }
+
     }];
 }
 

@@ -305,6 +305,7 @@
                 
                 int count = 1;
                 BOOL isLast = NO;
+                NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                 
                 for (PFObject *object in objects) {
                     [csMediaDict setObject:[object objectForKey:@"field_case_study_media_reference"] forKey:[object objectForKey:@"nid"]];
@@ -315,7 +316,7 @@
                                                   isLastElement:isLast];
                     
                     count++;
-                    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+                    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
                 }
             } else {
                 // Log details of the failure
@@ -340,7 +341,7 @@
         }
     }
     
-    
+    NSLog(@"%s [Line %d] -- csMediaNodes Data: %@",__PRETTY_FUNCTION__, __LINE__, csMediaNodes);
     NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
     PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
     [query fromLocalDatastore];
@@ -364,12 +365,17 @@
                             NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             if (!error) {
                                 if (sampleobjects.count > 0) {
-                                    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+                                    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, sampleobjects.count);
+                                    NSLog(@"%s [Line %d] -- sampleobjects Data: %@",__PRETTY_FUNCTION__, __LINE__, sampleobjects);
                                     for (PFObject *sampleobject in sampleobjects) {
                                         [tempCsMediaArray addObject:sampleobject];
                                         [csMediaObjectDict setObject:tempCsMediaArray forKey:csNodeId];
                                     }
                                 }
+                            } else {
+                                // Log details of the failure
+                                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                                
                             }
                             
                             
@@ -395,7 +401,7 @@
                     
                     
                 } else if (last) {
-                    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+                    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
                     [self fetchDataFromLocalDataStore];
                     
                 }
@@ -406,13 +412,14 @@
     });
 }
 
-
+// Not sure this function is called??
 //Query the Parse.com for Case_Study_Media to build the views
 - (void)fetchCaseStudyMediaFromParse:(NSMutableArray *)nodeIds  {
     
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
+        NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
         PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
         //[query whereKey:@"field_term_reference" equalTo:content.termId];
         [query whereKey:@"nid" containedIn:nodeIds];
@@ -427,14 +434,20 @@
                         //If data has been downloaded pull from local datastore
                         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                         if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
-                            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+                            NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
+                            NSLog(@"%s [Line %d] -- Objects: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                             [self fetchDataFromLocalDataStore];
                         }
                         else {
-                            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+                            NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
+                            NSLog(@"%s [Line %d] -- Objects: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                             [self fetchDataFromParse];
                         }
                     }
+                } else {
+                    // Log details of the failure
+                    NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                    
                 }
             }];
         });
@@ -459,22 +472,29 @@
     else {
         [query whereKey:@"field_term_reference" equalTo:content.termId];
     }
+    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             
-            //Some case studies may have be disabled in the app dashboard
-            //Check which one are set to "show" and use those to build the view
-            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-            NSMutableDictionary *lcpCaseStudy = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
-            
-            for (PFObject *object in objects) {
-                //Add selected objects the the array
-                if ([[lcpCaseStudy objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
-                    [selectedObjects addObject:object];
+            if (!error) {
+                //Some case studies may have be disabled in the app dashboard
+                //Check which one are set to "show" and use those to build the view
+                NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
+                NSMutableDictionary *lcpCaseStudy = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+                for (PFObject *object in objects) {
+                    //Add selected objects the the array
+                    if ([[lcpCaseStudy objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                        [selectedObjects addObject:object];
+                    }
                 }
+                NSLog(@"%s [Line %d] -- Objects: %@",__PRETTY_FUNCTION__, __LINE__, objects);
+                NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
+                [self buildCaseStudyView:selectedObjects];
+            } else {
+                // Log details of the failure
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                    
             }
-            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
-            [self buildCaseStudyView:selectedObjects];
         }];
     });
 }
@@ -484,6 +504,7 @@
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
+        NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
         PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
         if (isIndividualCaseStudy) {
             [query whereKey:@"nid" equalTo:nodeId];
@@ -494,6 +515,7 @@
         dispatch_async(dispatch_get_main_queue(), ^{
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 if (!error) {
+                    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                         if (!error) {
                             NSUserDefaults *csDefaults = [NSUserDefaults standardUserDefaults];
@@ -512,8 +534,13 @@
                                     [selectedObjects addObject:object];
                                 }
                             }
+                            NSLog(@"%s [Line %d] -- Objects: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                             NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             [self buildCaseStudyView:selectedObjects];
+                        } else {
+                            // Log details of the failure
+                            NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                            
                         }
                     }];
                 }
@@ -549,7 +576,7 @@
     pageScroll.backgroundColor = [UIColor clearColor];
     [background addSubview:pageScroll];
 
-    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
     
     int x = 24;
     
@@ -655,7 +682,7 @@
                 [nidArray addObject:[obj objectForKey:@"nid"]];
             }
         }
-
+        NSLog(@"%s [Line %d] -- tempCSMArray: %@",__PRETTY_FUNCTION__, __LINE__, tempCSMArray);
         int i = 0;
         if (tempCSMArray.count > 0) {
             int y = 0;
@@ -666,7 +693,7 @@
             
             for (LCPCaseStudyMedia *csm in casestudyMediaObjects) {
                 
-                
+                NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                 if ([nidArray containsObject:csm.csMediaNodeId] && ![usedArray containsObject:csm.csMediaNodeId]) {
                     UIButton *csMediaButton = [UIButton buttonWithType:UIButtonTypeCustom];
                     [csMediaButton setFrame:CGRectMake(0, y, 137, 80)];
@@ -693,6 +720,7 @@
                     y += 100;
                     i++;
                     [mediaColumnScroll setContentSize:CGSizeMake(137, 100 * tempCSMArray.count)];
+                    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                     activityIndicator.alpha = 0.0;
                 }
                 
@@ -731,7 +759,7 @@
 
 
     activityIndicator.alpha = 1.0;
-    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
     
 
     __block int i = 0;
@@ -765,6 +793,7 @@
                     //add the case study objects to caseStudyObjects Array
                     [casestudyMediaObjects addObject:csMedia];
                     i++;
+                    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                     if (i == objects.count) {
                         activityIndicator.alpha = 0.0;
                         NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
@@ -897,6 +926,8 @@
                         dvc.contentType = @"Samples";
                         [self.navigationController pushViewController:dvc animated:YES];
                         [self removeEverything];
+                        NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
+                        NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                     } else {
                         // Log details of the failure
                         NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);

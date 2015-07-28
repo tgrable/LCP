@@ -61,6 +61,16 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    casestudyMediaObjects = [NSMutableArray array];
+    
+    if (content == nil) {
+        content = [[LCPContent alloc] init];
+    }
+    
+    //Check if data has been downloaded and pinned to local datastore.
+    //If data has been downloaded pull from local datastore
+    [self checkLocalDataStoreforData];
+    
     parsedownload = [[ParseDownload alloc] init];
     
     //First Page Summary View
@@ -234,15 +244,6 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     [super viewWillAppear:animated];
-    casestudyMediaObjects = [NSMutableArray array];
-    
-    if (content == nil) {
-        content = [[LCPContent alloc] init];
-    }
-    
-    //Check if data has been downloaded and pinned to local datastore.
-    //If data has been downloaded pull from local datastore
-    [self checkLocalDataStoreforData];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -310,7 +311,7 @@
                 for (PFObject *object in objects) {
                     [csMediaDict setObject:[object objectForKey:@"field_case_study_media_reference"] forKey:[object objectForKey:@"nid"]];
                     isLast = (count == objects.count) ? YES : NO;
-    
+                    
                     [self fetchCaseStudyMediaFromLocalDataStore:[object objectForKey:@"field_case_study_media_reference"]
                                                   withcsNodeIds:[object objectForKey:@"nid"]
                                                   isLastElement:isLast];
@@ -493,7 +494,7 @@
             } else {
                 // Log details of the failure
                 NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
-                    
+                
             }
         }];
     });
@@ -575,7 +576,7 @@
     pageScroll.delegate = self;
     pageScroll.backgroundColor = [UIColor clearColor];
     [background addSubview:pageScroll];
-
+    
     NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
     
     int x = 24;
@@ -586,7 +587,7 @@
         
         //add the node title to be added for
         [nodeTitles addObject:object[@"title"]];
-
+        
         UIView *caseStudy = [[UIView alloc] init];
         
         //If it's not an individual case study called from the case study library allow room for navigation bar
@@ -615,7 +616,7 @@
         UIView *bodyColumn = [[UIView alloc] initWithFrame:CGRectMake(173, 53, 556, caseStudy.bounds.size.height - 89)];
         [bodyColumn setBackgroundColor:[UIColor clearColor]];
         [caseStudy addSubview:bodyColumn];
-
+        
         NSArray *bodyArray = [object objectForKey:@"body"];
         NSString *bodyString = @"Not Available";
         for(NSDictionary *obj in bodyArray) {
@@ -634,7 +635,7 @@
         }
         [bodyScroll setBackgroundColor:[UIColor clearColor]];
         [bodyColumn addSubview:bodyScroll];
-
+        
         NSString *temp = [NSString stringWithFormat:@"%@", bodyString];
         UILabel *myLabel = [[UILabel alloc] init];
         if (!isIndividualCaseStudy) {
@@ -688,10 +689,14 @@
             int y = 0;
             //NSPredicate *predicate = [NSPredicate predicateWithFormat:@"csMediaTermReferenceId = %@", [object objectForKey:@"field_term_reference"]];
             //NSArray *filteredArray = [casestudyMediaObjects filteredArrayUsingPredicate:predicate];
-           
+            
             NSMutableArray *usedArray = [NSMutableArray array];
             
-            for (LCPCaseStudyMedia *csm in casestudyMediaObjects) {
+            NSSortDescriptor *sortDescriptor = [[NSSortDescriptor alloc] initWithKey:@"csMediaTitle" ascending:YES];
+            NSArray *sortDescriptors = [NSArray arrayWithObject:sortDescriptor];
+            NSArray *sortedArray = [casestudyMediaObjects sortedArrayUsingDescriptors:sortDescriptors];
+            
+            for (LCPCaseStudyMedia *csm in sortedArray) {
                 
                 NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                 if ([nidArray containsObject:csm.csMediaNodeId] && ![usedArray containsObject:csm.csMediaNodeId]) {
@@ -756,15 +761,15 @@
 //Create the case study media content items before the rest of the view so
 //they will be available when running throught he loop
 - (void)buildCaseStudyMediaView:(NSArray *)objects complete:(completeBlock)completeFlag {
-
-
+    
+    
     activityIndicator.alpha = 1.0;
     NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
     
-
+    
     __block int i = 0;
     for (PFObject *object in objects) {
-    PFFile *imageFile = object[@"field_image_img"];
+        PFFile *imageFile = object[@"field_image_img"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
                 //NSLog(@"Data returned");
@@ -904,14 +909,14 @@
         NSLog(@"Case Study Media Results were returned");
         if (!error) {
             
-           
+            
             NSLog(@"Case Study Media Object Count %lu", (unsigned long)[objects count]);
             if ([objects count] > 0) {
                 // Push the case study media reference item onto the stack
                 dvc.contentObject = objects[0];
                 dvc.contentType = @"Case Study Media";
                 [self.navigationController pushViewController:dvc animated:YES];
-                [self removeEverything];
+                //[self removeEverything];
             } else {
                 // Make a query against samples if no case_study_media results are returned
                 PFQuery *query = [PFQuery queryWithClassName:@"samples"];
@@ -925,7 +930,7 @@
                         dvc.contentObject = objects[0];
                         dvc.contentType = @"Samples";
                         [self.navigationController pushViewController:dvc animated:YES];
-                        [self removeEverything];
+                        //[self removeEverything];
                         NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
                         NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                     } else {

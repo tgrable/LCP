@@ -210,13 +210,9 @@
             if (!error) {
                 if (objects.count > 0) {
                     [self fetchDataFromLocalDataStore];
-                    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-                    NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                 }
                 else {
                     [self fetchDataFromParse];
-                    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-                    NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                 }
             } else {
                 // Log details of the failure
@@ -235,8 +231,6 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-                NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                 [self buildSummaryView:objects];
             } else {
                 // Log details of the failure
@@ -257,12 +251,9 @@
         [query whereKey:@"field_overview_tag_reference" equalTo:content.termId];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-                NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                         if (!error) {
-                            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                             [defaults setObject:@"hasData" forKey:@"overview"];
                             [defaults synchronize];

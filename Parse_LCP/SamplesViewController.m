@@ -283,12 +283,10 @@
             if (!error) {
                 if (objects.count > 0) {
                     NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-                    NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                     [self fetchDataFromLocalDataStore];
                 }
                 else {
                     NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-                    NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                     [self fetchDataFromParse];
                 }
             }
@@ -322,7 +320,6 @@
                 }
             }
             NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
-            NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
             [self buildSamplesView:selectedObjects];
         }];
     });
@@ -360,7 +357,6 @@
                                 }
                             }
                             NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
-                            NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                             [self buildSamplesView:selectedObjects];
                         }
                     }];
@@ -524,7 +520,6 @@
         
         totalCount++;
         NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-        NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
         [pageScroll setContentSize:CGSizeMake((pageScroll.bounds.size.width * multiplier), 400)];
     }
     

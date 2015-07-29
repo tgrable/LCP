@@ -208,11 +208,9 @@
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 if (objects.count > 0) {
-                    NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                     [self fetchDataFromLocalDataStore];
                 }
                 else {
-                    NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                     [self fetchDataFromParse];
                 }
             } else {
@@ -260,7 +258,6 @@
                 if (!error) {
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                         if (!error) {
-                            NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                             //Set NSUserDefaults to "hasData" for key "term"
                             NSUserDefaults *csDefaults = [NSUserDefaults standardUserDefaults];
                             [csDefaults setObject:@"hasData" forKey:@"term"];

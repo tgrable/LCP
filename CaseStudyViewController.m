@@ -306,7 +306,6 @@
                 
                 int count = 1;
                 BOOL isLast = NO;
-                NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                 
                 for (PFObject *object in objects) {
                     [csMediaDict setObject:[object objectForKey:@"field_case_study_media_reference"] forKey:[object objectForKey:@"nid"]];
@@ -342,7 +341,6 @@
         }
     }
     
-    NSLog(@"%s [Line %d] -- csMediaNodes Data: %@",__PRETTY_FUNCTION__, __LINE__, csMediaNodes);
     NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
     PFQuery *query = [PFQuery queryWithClassName:@"case_study_media"];
     [query fromLocalDatastore];
@@ -367,7 +365,6 @@
                             if (!error) {
                                 if (sampleobjects.count > 0) {
                                     NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, sampleobjects.count);
-                                    NSLog(@"%s [Line %d] -- sampleobjects Data: %@",__PRETTY_FUNCTION__, __LINE__, sampleobjects);
                                     for (PFObject *sampleobject in sampleobjects) {
                                         [tempCsMediaArray addObject:sampleobject];
                                         [csMediaObjectDict setObject:tempCsMediaArray forKey:csNodeId];
@@ -436,12 +433,10 @@
                         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                         if ([[defaults objectForKey:@"case_study"] isEqualToString:@"hasData"]) {
                             NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-                            NSLog(@"%s [Line %d] -- Objects: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                             [self fetchDataFromLocalDataStore];
                         }
                         else {
                             NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-                            NSLog(@"%s [Line %d] -- Objects: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                             [self fetchDataFromParse];
                         }
                     }
@@ -488,7 +483,6 @@
                         [selectedObjects addObject:object];
                     }
                 }
-                NSLog(@"%s [Line %d] -- Objects: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                 NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
                 [self buildCaseStudyView:selectedObjects];
             } else {
@@ -535,7 +529,6 @@
                                     [selectedObjects addObject:object];
                                 }
                             }
-                            NSLog(@"%s [Line %d] -- Objects: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                             NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             [self buildCaseStudyView:selectedObjects];
                         } else {
@@ -932,7 +925,6 @@
                         [self.navigationController pushViewController:dvc animated:YES];
                         //[self removeEverything];
                         NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-                        NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
                     } else {
                         // Log details of the failure
                         NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);

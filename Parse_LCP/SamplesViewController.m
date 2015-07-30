@@ -278,6 +278,8 @@
 - (void)checkLocalDataStoreforData {
     PFQuery *query = [PFQuery queryWithClassName:@"samples"];
     [query fromLocalDatastore];
+    [query fromLocalDatastore];
+    [query whereKey:@"field_term_reference" equalTo:content.termId];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {

@@ -16,6 +16,7 @@
 
 @property (strong, nonatomic) UIView *logoView;
 @property (strong, nonatomic) UIImageView *cLogo;
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 
 @end
 
@@ -26,6 +27,7 @@
 @synthesize companyName;    //NSString
 @synthesize companyLogo;    //UIImage
 @synthesize cLogo;
+@synthesize activityIndicator;
 
 - (BOOL)prefersStatusBarHidden {
     //Hide status bar
@@ -68,10 +70,35 @@
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 if (objects.count > 0) {
-                    [self buildLogoLoader:content.imgPoster];
+                    NSLog(@"Splash screen from local data store");
+                    
+                    // TODO: cim is always returning null
+                    CIImage *cim = [content.imgPoster CIImage];
+                    NSLog(@"cim: %@ - content.imgPoster: %@", cim ,content.imgPoster);
+                    if (cim != nil) {
+                        [self buildLogoLoader:content.imgPoster];
+                    }
+                    else {
+                        PFFile *imageFile = [objects[0] objectForKey:@"field_background_image_img"];
+                        [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
+                            if (!error) {
+                                UIImage *backgroundImage = [[UIImage alloc] initWithData:imgData];
+                                [self buildLogoLoader:backgroundImage];
+                            }
+                        }];
+                    }
+                    
                 }
                 else {
+                    
+                    activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
+                    activityIndicator.frame = CGRectMake(484.0, 300.0, 35.0, 35.0);
+                    [activityIndicator setColor:[UIColor blackColor]];
+                    [activityIndicator startAnimating];
+                    [self.view addSubview:activityIndicator];
+                    
                     [self fetchDataFromParse];
+                    NSLog(@"Splash screen from parse");
                 }
             }
         }];
@@ -85,15 +112,19 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    PFFile *imageFile = [objects[0] objectForKey:@"field_background_image_img"];
-                    [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
-                        if (!error) {
-                            UIImage *backgroundImage = [[UIImage alloc] initWithData:imgData];
-                            [self buildLogoLoader:backgroundImage];
-                        }
-                    }];
-                });
+                [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
+                    if (!error) {
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            PFFile *imageFile = [objects[0] objectForKey:@"field_background_image_img"];
+                            [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
+                                if (!error) {
+                                    UIImage *backgroundImage = [[UIImage alloc] initWithData:imgData];
+                                    [self buildLogoLoader:backgroundImage];
+                                }
+                            }];
+                        });
+                    }
+                }];
             }
         }];
     });
@@ -108,6 +139,8 @@
     [splashImg setUserInteractionEnabled:NO];
     [splashImg setImage:image];
     [logoView addSubview:splashImg];
+    
+    [activityIndicator stopAnimating];
     
     //UILable and NSString used to hold Presented to content
     //NSString *name = (companyName == (id)[NSNull null] || companyName.length == 0 ) ? @"<COMPANY NAME HERE>" : companyName;

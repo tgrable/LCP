@@ -142,87 +142,65 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                for (PFObject *object in objects) {
-                    [childTerms addObject:[object objectForKey:@"tid"]];
+                NSLog(@"local - objects.count: %d", objects.count);
+                if (objects.count > 0) {
+                    for (PFObject *object in objects) {
+                        [childTerms addObject:[object objectForKey:@"tid"]];
+                    }
+                    
+                    //Check if data has been downloaded and pinned to local datastore.
+                    //If data has been downloaded pull from local datastore
+                    [self checkLocalDataStoreforData];
                 }
-                
-                //Check if data has been downloaded and pinned to local datastore.
-                //If data has been downloaded pull from local datastore
-                [self checkLocalDataStoreforData];
+                else {
+                    // Query the Local Datastore for term data
+                    PFQuery *query = [PFQuery queryWithClassName:@"term"];
+                    [query whereKey:@"parent" equalTo:content.catagoryId];
+                    [query orderByAscending:@"weight"];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                            if (!error) {
+                                NSLog(@"local - objects.count: %d", objects.count);
+                                if (objects.count > 0) {
+                                    for (PFObject *object in objects) {
+                                        [childTerms addObject:[object objectForKey:@"tid"]];
+                                    }
+                                    
+                                    //Check if data has been downloaded and pinned to local datastore.
+                                    //If data has been downloaded pull from local datastore
+                                    [self checkLocalDataStoreforData];
+                                }
+                            }
+                        }];
+                    });
+                }
             }
         }];
     });
 }
 
 - (void)checkLocalDataStoreforData {
-    PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
-    [query fromLocalDatastore];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                if (objects.count > 0) {
-                    [self fetchDataFromLocalDataStore];
-                }
-                else {
-                    [self fetchDataFromParse];
-                }
-            }
-        }];
-    });
-}
-
-//Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore {
-    
-    PFQuery *executiveQuery = [PFQuery queryWithClassName:@"team_member"];
-    [executiveQuery whereKey:@"field_term_reference" equalTo:@"N/A"];
-    
     PFQuery *catagoryQuery = [PFQuery queryWithClassName:@"team_member"];
     [catagoryQuery whereKey:@"field_term_reference" equalTo:content.catagoryId];
     
     PFQuery *childQuery = [PFQuery queryWithClassName:@"team_member"];
     [childQuery whereKey:@"field_term_reference" containedIn:childTerms];
     
-    PFQuery *query = [PFQuery orQueryWithSubqueries:@[executiveQuery, catagoryQuery, childQuery]];
+    PFQuery *query = [PFQuery orQueryWithSubqueries:@[catagoryQuery, childQuery]];
     [query fromLocalDatastore];
     [query orderByAscending:@"createdAt"];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
-            [self buildImgArray:objects];
+            if (objects.count > 0) {
+                NSLog(@"fetchDataFromLocalDataStore");
+                [self buildImgArray:objects];
+            }
+            else {
+                NSLog(@"fetchDataFromParse");
+                [self fetchDataFromParse];
+            }
         }
     }];
-}
-
-//Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore:(NSArray *)termArray {
-    //Query the Local Datastore
-    PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
-    if (termArray.count > 0) {
-        //[query whereKey:@"field_term_reference" equalTo:key];
-        [query whereKey:@"field_term_reference" containedIn:termArray];
-    }
-    [query fromLocalDatastore];
-    [query orderByAscending:@"createdAt"];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            [self buildImgArray:objects];
-        }];
-    });
-}
-
-- (void)fetchTermsFromLocalDataStore {
-    // Query the Local Datastore for term data
-    PFQuery *query = [PFQuery queryWithClassName:@"term"];
-    [query whereKey:@"parent" equalTo:@"0"];
-    [query fromLocalDatastore];
-    [query orderByAscending:@"weight"];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                [self buildView:objects];
-            }
-        }];
-    });
 }
 
 - (void)fetchDataFromParse {
@@ -230,17 +208,21 @@
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
-        PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
-        [query whereKey:@"field_term_reference" equalTo:content.catagoryId];
+        PFQuery *catagoryQuery = [PFQuery queryWithClassName:@"team_member"];
+        [catagoryQuery whereKey:@"field_term_reference" equalTo:content.catagoryId];
+        
+        PFQuery *childQuery = [PFQuery queryWithClassName:@"team_member"];
+        [childQuery whereKey:@"field_term_reference" containedIn:childTerms];
+        
+        PFQuery *query = [PFQuery orQueryWithSubqueries:@[catagoryQuery, childQuery]];
         [query orderByAscending:@"createdAt"];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                     if (!error) {
-                        NSUserDefaults *csDefaults = [NSUserDefaults standardUserDefaults];
-                        [csDefaults setObject:@"hasData" forKey:@"team_member"];
-                        [csDefaults synchronize];
-                        [self buildImgArray:objects];
+                        if (objects.count > 0) {
+                            [self buildImgArray:objects];
+                        }
                     }
                 }];
             }
@@ -254,6 +236,87 @@
                                               otherButtonTitles:nil];
         [alert show];
     }
+}
+
+//Query the local datastore to build the views
+- (void)fetchDataFromLocalDataStore:(NSArray *)termArray {
+    NSLog(@"local filter - termArray: %@", termArray);
+    
+    //Query the Local Datastore
+    PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
+    if (termArray.count > 0) {
+        [query whereKey:@"field_term_reference" containedIn:termArray];
+    }
+    [query fromLocalDatastore];
+    [query orderByAscending:@"createdAt"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    [self buildImgArray:objects];
+                }
+                else {
+                    [self fetchDataFromParse:termArray];
+                }
+            }
+        }];
+    });
+}
+
+//Query the local datastore to build the views
+- (void)fetchDataFromParse:(NSArray *)termArray {
+    NSLog(@"parse filter - termArray: %@", termArray);
+    
+    //Query Parse
+    PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
+    if (termArray.count > 0) {
+        [query whereKey:@"field_term_reference" containedIn:termArray];
+    }
+    [query orderByAscending:@"createdAt"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
+                    if (!error) {
+                        if (objects.count > 0) {
+                            [self buildImgArray:objects];
+                        }
+                    }
+                }];
+            }
+        }];
+    });
+}
+
+- (void)fetchTermsFromLocalDataStore {
+    // Query the Local Datastore for term data
+    PFQuery *query = [PFQuery queryWithClassName:@"term"];
+    [query whereKey:@"parent" equalTo:@"0"];
+    [query fromLocalDatastore];
+    [query orderByAscending:@"weight"];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    [self buildView:objects];
+                }
+                else {
+                    PFQuery *query = [PFQuery queryWithClassName:@"term"];
+                    [query whereKey:@"parent" equalTo:@"0"];
+                    [query orderByAscending:@"weight"];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                            if (!error) {
+                                if (objects.count > 0) {
+                                    [self buildView:objects];
+                                }
+                            }
+                        }];
+                    });
+                }
+            }
+        }];
+    });
 }
 
 - (void)didReceiveMemoryWarning {
@@ -479,11 +542,31 @@
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 if (!error) {
                     filterArray = [NSMutableArray array];
-                    [filterArray addObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
-                    for (PFObject *obj in objects) {
-                        [filterArray addObject:[obj objectForKey:@"tid"]];
+                    if (objects.count > 0) {
+                        [filterArray addObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
+                        for (PFObject *obj in objects) {
+                            [filterArray addObject:[obj objectForKey:@"tid"]];
+                        }
+                        [self fetchDataFromLocalDataStore:filterArray];
                     }
-                    [self fetchDataFromLocalDataStore:filterArray];
+                    else {
+                        PFQuery *query = [PFQuery queryWithClassName:@"term"];
+                        [query whereKey:@"parent" equalTo:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
+                        [query orderByAscending:@"weight"];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                                if (!error) {
+                                    if (objects.count > 0) {
+                                        [filterArray addObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
+                                        for (PFObject *obj in objects) {
+                                            [filterArray addObject:[obj objectForKey:@"tid"]];
+                                        }
+                                        [self fetchDataFromLocalDataStore:filterArray];
+                                    }
+                                }
+                            }];
+                        });
+                    }
                 }
             }];
         });

@@ -230,13 +230,16 @@
 
 //This method is called first to get all the parse.com class "terms" before we grab the rest of the classes
 - (void)fetchTerms {
+    NSLog(@"fetchTerms");
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"term"] isEqualToString:@"hasData"]) {
+        NSLog(@"yes");
         PFQuery *query = [PFQuery queryWithClassName:@"term"];
         [query fromLocalDatastore];
         [query orderByAscending:@"tid"];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
+                NSLog(@"objects.count: %d", objects.count);
                 for (PFObject *object in objects) {
                     [termsArray addObject:object];
                 }
@@ -250,6 +253,7 @@
         }];
     }
     else {
+        NSLog(@"no");
         PFQuery *query = [PFQuery queryWithClassName:@"term"];
         [query orderByAscending:@"tid"];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
@@ -282,6 +286,9 @@
 }
 
 - (void)fetchRemainingObjectsFromParse {
+    
+    NSLog(@"fetchRemainingObjectsFromParse");
+    
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSArray *parseClasses = @[@"case_study", @"samples", @"video", @"testimonials", @"pdf_slide_deck"];
@@ -295,7 +302,7 @@
         }
     }
     
-    if (![[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
+    /*if (![[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
         [parsedownload downloadVideoFile:self.view forTerm:@""];
     }
     if (![[defaults objectForKey:@"overview"] isEqualToString:@"hasData"]) {
@@ -312,10 +319,11 @@
     }
     if (![[defaults objectForKey:@"company_logo"] isEqualToString:@"hasData"]) {
         [parsedownload downloadAndPinIndividualParseClass:@"company_logo"];
-    }
+    }*/
 }
 
 - (void)fetchPosterImage {
+    NSLog(@"fetchPosterImage");
     PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
     query.limit = 1;
     [query fromLocalDatastore];
@@ -338,6 +346,7 @@
 }
 
 - (void)fetchNavIcons {
+    NSLog(@"fetchNavIcons");
     PFQuery *query = [PFQuery queryWithClassName:@"term"];
     [query whereKey:@"parent" equalTo:@"0"];
     [query fromLocalDatastore];
@@ -405,6 +414,7 @@
 #pragma mark -
 #pragma mark - Build View
 - (void)drawViews {
+    NSLog(@"drawViews");
     //First Page Summary View
     pContent = [[UIScrollView alloc] initWithFrame:CGRectMake(24, 150, 400, (presentationContent.bounds.size.height - 160))];
     [pContent setBackgroundColor:[UIColor clearColor]];
@@ -586,6 +596,7 @@
 
 //Once all data has been downloaded NSNotification is posted and this method is called to redraw the view.
 - (void)redrawView:(NSNotification *)notification {
+    NSLog(@"redrawView");
     [self removeEverything];
     [self drawViews];
     [self fetchPosterImage];
@@ -1449,6 +1460,7 @@
 #pragma mark
 #pragma mark - Memory Management
 - (void)removeEverything {
+    NSLog(@"removeEverything");
     for (UIView *v in [pContent subviews]) {
         [v removeFromSuperview];
     }

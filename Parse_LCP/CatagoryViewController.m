@@ -55,6 +55,7 @@
 #pragma mark - ViewController Life Cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
+    NSLog(@"content.catagoryId: %@",content.catagoryId);
 
     //This view is dependent on user input but these elements will not change
     //so they will only need to loaded one time.
@@ -170,35 +171,27 @@
 
 #pragma mark
 #pragma mark - Parse
-- (void)checkLocalDataStoreforData {
-    PFQuery *query = [PFQuery queryWithClassName:@"term"];
-    [query fromLocalDatastore];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                if (objects.count > 0) {
-                    [self fetchDataFromLocalDataStore];
-                }
-                else {
-                    [self fetchDataFromParse];
-                }
-            }
-        }];
-    });
-}
-
 //Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore {
-    
+- (void)checkLocalDataStoreforData {
     PFQuery *query = [PFQuery queryWithClassName:@"term"];
     [query fromLocalDatastore];
     [query whereKey:@"parent" equalTo:content.catagoryId];
     [query orderByDescending:@"weight"];
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        if (!error) {
-            [self buildView:objects];
-        }
-    }];
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                if (objects.count > 0) {
+                    NSLog(@"fetchDataFromLocalDataStore");
+                    NSLog(@"objects.count %d", objects.count);
+                    [self buildView:objects];
+                }
+                else {
+                    [self fetchDataFromParse];
+                    NSLog(@"fetchDataFromParse");
+                }
+            }
+        }];
+    });
 }
 
 //Query the parse.com to build the views

@@ -171,10 +171,12 @@
     
     //If content.navigationIcons, content.navigationTerms, content.navigationTids all have data
     //build the view with the content passed in else fetch the data from local datastore or Parse.com
-    if (content.navigationIcons != NULL && content.navigationTerms != NULL && content.navigationTids != NULL) {
+    if (content.navigationIcons.count > 0 && content.navigationTerms.count > 0 && content.navigationTids.count > 0) {
         // Add an activitiy indicator to show that the icons are loading
         activityIndicator.alpha = 1.0;
         [self buildViewWithLCPContentData];
+        NSLog(@"buildViewWithLCPContentData");
+        NSLog(@"content.navigationIcons: %@\ncontent.navigationTerms: %@\ncontent.navigationTids: %@", content.navigationIcons, content.navigationTerms, content.navigationTids);
     }
     else {
         
@@ -183,6 +185,7 @@
         // Add an activitiy indicator to show that the icons are loading
         activityIndicator.alpha = 1.0;
         [self checkLocalDataStoreforData];
+        NSLog(@"checkLocalDataStoreforData");
     }
 }
 
@@ -203,38 +206,21 @@
 #pragma mark - Parse
 - (void)checkLocalDataStoreforData {
     PFQuery *query = [PFQuery queryWithClassName:@"term"];
-    [query fromLocalDatastore];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                if (objects.count > 0) {
-                    [self fetchDataFromLocalDataStore];
-                }
-                else {
-                    [self fetchDataFromParse];
-                }
-            } else {
-                // Log details of the failure
-                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
-                
-            }
-        }];
-    });
-}
-
-//Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore {
-    
-    PFQuery *query = [PFQuery queryWithClassName:@"term"];
     [query whereKey:@"parent" equalTo:@"0"];
     [query fromLocalDatastore];
     [query orderByAscending:@"weight"];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                
-                //Call buildView: with objects returned from query
-                [self buildView:objects];
+                if (objects.count > 0) {
+                    //Call buildView: with objects returned from query
+                    [self buildView:objects];
+                    NSLog(@"fetchDataFromLocalDataStore");
+                }
+                else {
+                    [self fetchDataFromParse];
+                    NSLog(@"fetchDataFromParse");
+                }
             } else {
                 // Log details of the failure
                 NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);

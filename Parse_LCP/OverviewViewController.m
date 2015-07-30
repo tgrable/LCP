@@ -39,6 +39,7 @@
 #pragma mark - ViewController Life Cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
+    NSLog(@"content.termId: %@", content.termId);
     
     //First Page Summary View
     summaryView = [[UIView alloc] initWithFrame:CGRectMake(36, 36, self.view.bounds.size.width - (36 * 2), self.view.bounds.size.height - (36 * 2))];
@@ -205,33 +206,19 @@
 - (void)checkLocalDataStoreforData {
     PFQuery *query = [PFQuery queryWithClassName:@"overview"];
     [query fromLocalDatastore];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                if (objects.count > 0) {
-                    [self fetchDataFromLocalDataStore];
-                }
-                else {
-                    [self fetchDataFromParse];
-                }
-            } else {
-                // Log details of the failure
-                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
-                
-            }
-        }];
-    });
-}
-
-//Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore {
-    PFQuery *query = [PFQuery queryWithClassName:@"overview"];
-    [query fromLocalDatastore];
     [query whereKey:@"field_term_reference" equalTo:content.termId];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                [self buildSummaryView:objects];
+                if (objects.count > 0) {
+                    NSLog(@"fetchDataFromLocalDataStore");
+                    NSLog(@"objects.count: %d", objects.count);
+                    [self buildSummaryView:objects];
+                }
+                else {
+                    NSLog(@"fetchDataFromParse");
+                    [self fetchDataFromParse];
+                }
             } else {
                 // Log details of the failure
                 NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
@@ -248,7 +235,7 @@
     //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"overview"];
-        [query whereKey:@"field_overview_tag_reference" equalTo:content.termId];
+        [query whereKey:@"field_term_reference" equalTo:content.termId];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 dispatch_async(dispatch_get_main_queue(), ^{

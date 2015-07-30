@@ -14,6 +14,7 @@
 @interface PDFViewController ()
 @property (strong, nonatomic) UIView *background;
 @property (strong, nonatomic) UIWebView *webView;
+
 @end
 
 @implementation PDFViewController
@@ -91,44 +92,31 @@
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 if (objects.count > 0) {
-                    [self fetchDataFromLocalDataStore];
+                    //Check which one is set to "show" and use those to build the view
+                    NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
+                    NSMutableDictionary *lcpPdfSlides = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+                    
+                    for (PFObject *object in objects) {
+                        //Add selected objects the the array
+                        if ([[lcpPdfSlides objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                            [selectedObjects addObject:object];
+                        }
+                    }
+                    
+                    if (selectedObjects.count > 0) {
+                        NSFileManager *fileManager = [NSFileManager defaultManager];
+                        NSString *pathForFile = [self getDBPathPDf:[NSString stringWithFormat:@"%@.pdf", [selectedObjects[0] objectForKey:@"nid"]]];
+                        
+                        if ([fileManager fileExistsAtPath:pathForFile]){
+                            [self loadDocument:pathForFile inView:webView];
+                        }
+                        else {
+                            [self buildPdfView:selectedObjects[0]];
+                        }
+                    }
                 }
                 else {
                     [self fetchDataFromParse];
-                }
-            }
-        }];
-    });
-}
-
-//Query the local datastore for case_study to build the views
-- (void)fetchDataFromLocalDataStore {
-    
-    PFQuery *query = [PFQuery queryWithClassName:@"pdf_slide_deck"];
-    [query fromLocalDatastore];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            
-            //Check which one is set to "show" and use those to build the view
-            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-            NSMutableDictionary *lcpPdfSlides = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
-            
-            for (PFObject *object in objects) {
-                //Add selected objects the the array
-                if ([[lcpPdfSlides objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
-                    [selectedObjects addObject:object];
-                }
-            }
-            
-            if (selectedObjects.count > 0) {
-                NSFileManager *fileManager = [NSFileManager defaultManager];
-                NSString *pathForFile = [self getDBPathPDf:[NSString stringWithFormat:@"%@.pdf", [selectedObjects[0] objectForKey:@"nid"]]];
-                 
-                if ([fileManager fileExistsAtPath:pathForFile]){
-                    [self loadDocument:pathForFile inView:webView];
-                }
-                else {
-                    [self buildPdfView:selectedObjects[0]];
                 }
             }
         }];

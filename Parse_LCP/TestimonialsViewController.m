@@ -90,14 +90,28 @@
 
 #pragma mark
 #pragma mark - Parse
+//Query the local datastore to build the views
 - (void)checkLocalDataStoreforData {
     PFQuery *query = [PFQuery queryWithClassName:@"testimonials"];
     [query fromLocalDatastore];
+    [query whereKey:@"field_term_reference" equalTo:content.catagoryId];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 if (objects.count > 0) {
-                    [self fetchDataFromLocalDataStore];
+                    //Some testimonials may have be disabled in the app dashboard
+                    //Check which one are set to "show" and use those to build the view
+                    NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
+                    NSMutableDictionary *lcpTestimonials = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+                    
+                    //Add selected objects the the array
+                    for (PFObject *object in objects) {
+                        //Add selected objects the the array
+                        if ([[lcpTestimonials objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                            [selectedObjects addObject:object];
+                        }
+                    }
+                    [self buildTestimonials:selectedObjects];
                 }
                 else {
                     [self fetchDataFromParse];
@@ -107,38 +121,13 @@
     });
 }
 
-//Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore {
-    
-    PFQuery *query = [PFQuery queryWithClassName:@"testimonials"];
-    [query fromLocalDatastore];
-    [query whereKey:@"field_term_reference" equalTo:content.catagoryId];
-    [query orderByAscending:@"createdAt"];
-    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        
-        //Some testimonials may have be disabled in the app dashboard
-        //Check which one are set to "show" and use those to build the view
-        NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-        NSMutableDictionary *lcpTestimonials = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
-        
-        //Add selected objects the the array
-        for (PFObject *object in objects) {
-            //Add selected objects the the array
-            if ([[lcpTestimonials objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
-                [selectedObjects addObject:object];
-            }
-        }
-        [self buildTestimonials:selectedObjects];
-    }];
-}
-
 - (void)fetchDataFromParse {
     
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
         PFQuery *query = [PFQuery queryWithClassName:@"testimonials"];
-        [query whereKey:@"field_testimonial_tag_reference" equalTo:content.catagoryId];
+        [query whereKey:@"field_term_reference" equalTo:content.catagoryId];
         [query orderByAscending:@"createdAt"];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {

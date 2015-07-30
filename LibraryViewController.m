@@ -49,6 +49,7 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     parsedownload = [[ParseDownload alloc] init];
+    NSLog(@"contentType: %@", contentType);
     
     NSString *pageTitle;
     if ([contentType isEqualToString:@"case_study"]) {
@@ -209,15 +210,17 @@
 #pragma mark
 #pragma mark - Parse
 - (void)checkLocalDataStoreforData {
-    PFQuery *query = [PFQuery queryWithClassName:@"case_study"];
+    PFQuery *query = [PFQuery queryWithClassName:contentType];
     [query fromLocalDatastore];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 if (objects.count > 0) {
+                    NSLog(@"fetchDataFromLocalDataStore");
                     [self fetchDataFromLocalDataStore:filterArray];
                 }
                 else {
+                    NSLog(@"fetchDataFromParse");
                     [self fetchDataFromParse];
                 }
             }
@@ -228,20 +231,16 @@
 - (void)fetchDataFromParse {
     
     if ([self connected]) {
-        PFQuery *query = [PFQuery queryWithClassName:@"video"];
-        [query orderByAscending:@"createdAt"];
+        PFQuery *query = [PFQuery queryWithClassName:contentType];
+        [query orderByAscending:@"title"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 if (!error) {
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                         if (!error) {
-                            NSUserDefaults *csDefaults = [NSUserDefaults standardUserDefaults];
-                            [csDefaults setObject:@"hasData" forKey:@"video"];
-                            [csDefaults synchronize];
-                            
-                            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
+                            NSMutableArray *selectedObjects = [NSMutableArray array];
                             NSMutableDictionary *lcpLibrary = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
-                            
+                            NSLog(@"case study objects: %d", objects.count);
                             //Add selected objects the the array
                             for (PFObject *object in objects) {
                                 //Add selected objects the the array
@@ -270,19 +269,19 @@
 
 //Query the local datastore to build the views
 - (void)fetchDataFromLocalDataStore:(NSArray *)termArray {
+    NSLog(@"termArray: %@", termArray);
     //Query the Local Datastore
     PFQuery *query = [PFQuery queryWithClassName:contentType];
     if (termArray.count > 0) {
-        //[query whereKey:@"field_term_reference" equalTo:key];
         [query whereKey:@"field_term_reference" containedIn:termArray];
     }
     [query fromLocalDatastore];
-    [query orderByAscending:@"createdAt"];
+    [query orderByAscending:@"title"];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
             NSMutableDictionary *lcpLibrary = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
-            
+            NSLog(@"case study objects: %d", objects.count);
             //Add selected objects the the array
             for (PFObject *object in objects) {
                 //Add selected objects the the array
@@ -311,6 +310,7 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
+                NSLog(@"term objects: %d", objects.count);
                 [self buildView:objects];
             }
         }];
@@ -543,11 +543,33 @@
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 if (!error) {
                     filterArray = [NSMutableArray array];
-                    [filterArray addObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
-                    for (PFObject *obj in objects) {
-                        [filterArray addObject:[obj objectForKey:@"tid"]];
+                    if (objects.count > 0) {
+                        NSLog(@"objects.count: %d", objects.count);
+                        NSLog(@"terms from local data store");
+                        [filterArray addObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
+                        for (PFObject *obj in objects) {
+                            [filterArray addObject:[obj objectForKey:@"tid"]];
+                        }
+                        [self fetchDataFromLocalDataStore:filterArray];
                     }
-                    [self fetchDataFromLocalDataStore:filterArray];
+                    else {
+                        PFQuery *query = [PFQuery queryWithClassName:@"term"];
+                        [query whereKey:@"parent" equalTo:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
+                        [query orderByAscending:@"weight"];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                                NSLog(@"objects.count: %d", objects.count);
+                                NSLog(@"terms from local data store");
+                                if (!error) {
+                                    [filterArray addObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
+                                    for (PFObject *obj in objects) {
+                                        [filterArray addObject:[obj objectForKey:@"tid"]];
+                                    }
+                                    [self fetchDataFromLocalDataStore:filterArray];
+                                }
+                            }];
+                        });
+                    }
                 }
             }];
         });

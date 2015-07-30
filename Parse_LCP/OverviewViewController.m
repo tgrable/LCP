@@ -283,8 +283,6 @@
 #pragma mark - Build Views
 - (void)buildSummaryView:(NSArray *)objects {
     
-    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-    NSLog(@"%s [Line %d] -- Objects Data: %@",__PRETTY_FUNCTION__, __LINE__, objects);
     for(PFObject *object in objects) {
       
         //UIlabel used to hold the Overview title

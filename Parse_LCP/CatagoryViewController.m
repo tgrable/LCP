@@ -479,15 +479,9 @@
 #pragma mark
 #pragma mark - Memory Management
 - (void)removeEverything {
-    
     //Loop through and remove all the views in background
     for (UIView *v in [background subviews]) {
         [v removeFromSuperview];
     }
-
-    //Remove all objects in the three arrays
-    [btnImageArray removeAllObjects];
-    [btnTitleArray removeAllObjects];
-    [btnTagArray removeAllObjects];
 }
 @end

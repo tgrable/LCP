@@ -20,6 +20,7 @@
 @property (strong, nonatomic) UIView *background, *jobDescription, *pagination, *navBar, *filterSelection;
 @property (strong, nonatomic) UIScrollView *teamScroll;
 @property (strong, nonatomic) NSMutableArray *teamMemberArray, *buttons, *filterArray, *childTerms;
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 @property (strong, nonatomic) SMPageControl *paginationDots;
 
 @end
@@ -30,6 +31,7 @@
 @synthesize teamScroll;                                                         //UIScrollView
 @synthesize teamMemberArray, buttons, filterArray, childTerms;                  //NSMutableArray
 @synthesize paginationDots;                                                     //UIPageControl
+@synthesize activityIndicator;                                                  //ActivityIndicator
 
 - (BOOL)prefersStatusBarHidden {
     return YES;
@@ -120,6 +122,14 @@
     [allButton setTitleColor:[UIColor clearColor] forState:UIControlStateNormal];
     [navBar addSubview:allButton];
     
+    activityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle: UIActivityIndicatorViewStyleWhiteLarge];
+    [activityIndicator setCenter:CGPointMake(150, 20)];
+    activityIndicator.transform = CGAffineTransformMakeScale(0.65, 0.65);
+    [activityIndicator setColor:[UIColor blackColor]];
+    [activityIndicator startAnimating];
+    activityIndicator.hidesWhenStopped = YES;
+    [self.view addSubview:activityIndicator];
+    
     [self fetchTermsFromLocalDataStore];
 }
 
@@ -142,7 +152,6 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                NSLog(@"local - objects.count: %d", objects.count);
                 if (objects.count > 0) {
                     for (PFObject *object in objects) {
                         [childTerms addObject:[object objectForKey:@"tid"]];
@@ -160,7 +169,6 @@
                     dispatch_async(dispatch_get_main_queue(), ^{
                         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                             if (!error) {
-                                NSLog(@"local - objects.count: %d", objects.count);
                                 if (objects.count > 0) {
                                     for (PFObject *object in objects) {
                                         [childTerms addObject:[object objectForKey:@"tid"]];
@@ -192,11 +200,9 @@
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
             if (objects.count > 0) {
-                NSLog(@"fetchDataFromLocalDataStore");
                 [self buildImgArray:objects];
             }
             else {
-                NSLog(@"fetchDataFromParse");
                 [self fetchDataFromParse];
             }
         }
@@ -240,7 +246,6 @@
 
 //Query the local datastore to build the views
 - (void)fetchDataFromLocalDataStore:(NSArray *)termArray {
-    NSLog(@"local filter - termArray: %@", termArray);
     
     //Query the Local Datastore
     PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
@@ -264,9 +269,7 @@
 }
 
 //Query the local datastore to build the views
-- (void)fetchDataFromParse:(NSArray *)termArray {
-    NSLog(@"parse filter - termArray: %@", termArray);
-    
+- (void)fetchDataFromParse:(NSArray *)termArray {    
     //Query Parse
     PFQuery *query = [PFQuery queryWithClassName:@"team_member"];
     if (termArray.count > 0) {
@@ -413,6 +416,9 @@
         paginationDots.currentPageIndicatorImage = [UIImage imageNamed:@"ico-dot-active-black"];
         [pagination addSubview:paginationDots];
     }
+    
+    [activityIndicator stopAnimating];
+    
     [teamScroll setContentSize:CGSizeMake(background.bounds.size.width * multiplier, 200)];
 }
 
@@ -528,6 +534,8 @@
 }
 
 - (void)filterButtonPressed:(UIButton *)sender {
+    [activityIndicator startAnimating];
+    
     if (sender.tag == 99) {
         filterArray = [NSMutableArray array];
         NSArray *termArray = [NSArray array];

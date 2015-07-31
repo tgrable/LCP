@@ -23,6 +23,7 @@
 @property (strong, nonatomic) UIPageControl *caseStudyDots;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
 @property NSMutableArray *nids, *nodeTitles, *sampleObjects, *filterArray;
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 
 @property (strong, nonatomic) SMPageControl *paginationDots;
 @property (strong, nonatomic) ParseDownload *parsedownload;
@@ -38,6 +39,7 @@
 @synthesize caseStudyDots;                                  //UIPageControl
 @synthesize favoriteContentButton;                          //UIButton
 @synthesize nids, nodeTitles, sampleObjects, filterArray;   //NSMutableArrays
+@synthesize activityIndicator;                              //ActivityIndicator
 
 @synthesize paginationDots;                                 //SMPageControll
 @synthesize parsedownload;                                  //ParseDownload
@@ -49,7 +51,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     parsedownload = [[ParseDownload alloc] init];
-    NSLog(@"contentType: %@", contentType);
     
     NSString *pageTitle;
     if ([contentType isEqualToString:@"case_study"]) {
@@ -134,6 +135,14 @@
     [allButton setTag:99];
     [allButton setTitleColor:[UIColor clearColor] forState:UIControlStateNormal];
     [navBar addSubview:allButton];
+    
+    activityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle: UIActivityIndicatorViewStyleWhiteLarge];
+    [activityIndicator setCenter:CGPointMake(150, 20)];
+    activityIndicator.transform = CGAffineTransformMakeScale(0.65, 0.65);
+    [activityIndicator setColor:[UIColor blackColor]];
+    [activityIndicator startAnimating];
+    activityIndicator.hidesWhenStopped = YES;
+    [self.view addSubview:activityIndicator];
 
     [self fetchTermsFromLocalDataStore];
     
@@ -160,12 +169,8 @@
 #pragma mark - Favorite Functionality
 
 //pick the current nid of the content and save it to the NSUserDefault
--(void)setContentAsFavorite:(id)sender
-{
+-(void)setContentAsFavorite:(id)sender {
     UIButton *favButton = (UIButton *)sender;
-    
-    NSLog(@"Selected nid %@" , [nids objectAtIndex:caseStudyDots.currentPage]);
-    NSLog(@"Selected title %@" , [nodeTitles objectAtIndex:caseStudyDots.currentPage]);
     
     if(favButton.backgroundColor == [UIColor whiteColor]){
         //add favorite
@@ -216,13 +221,16 @@
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 if (objects.count > 0) {
-                    NSLog(@"fetchDataFromLocalDataStore");
                     [self fetchDataFromLocalDataStore:filterArray];
                 }
                 else {
-                    NSLog(@"fetchDataFromParse");
                     [self fetchDataFromParse];
                 }
+            }
+            else {
+                // Log details of the failure
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                
             }
         }];
     });
@@ -240,7 +248,6 @@
                         if (!error) {
                             NSMutableArray *selectedObjects = [NSMutableArray array];
                             NSMutableDictionary *lcpLibrary = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
-                            NSLog(@"case study objects: %d", objects.count);
                             //Add selected objects the the array
                             for (PFObject *object in objects) {
                                 //Add selected objects the the array
@@ -258,6 +265,11 @@
                         }
                     }];
                 }
+                else {
+                    // Log details of the failure
+                    NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                    
+                }
             }];
         });
     }
@@ -269,7 +281,6 @@
 
 //Query the local datastore to build the views
 - (void)fetchDataFromLocalDataStore:(NSArray *)termArray {
-    NSLog(@"termArray: %@", termArray);
     //Query the Local Datastore
     PFQuery *query = [PFQuery queryWithClassName:contentType];
     if (termArray.count > 0) {
@@ -279,24 +290,28 @@
     [query orderByAscending:@"title"];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-            NSMutableDictionary *lcpLibrary = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
-            NSLog(@"case study objects: %d", objects.count);
-            //Add selected objects the the array
-            for (PFObject *object in objects) {
+            if (!error) {
+                NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
+                NSMutableDictionary *lcpLibrary = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
                 //Add selected objects the the array
-                if ([[lcpLibrary objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
-                    [selectedObjects addObject:object];
+                for (PFObject *object in objects) {
+                    //Add selected objects the the array
+                    if ([[lcpLibrary objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                        [selectedObjects addObject:object];
+                    }
+                }
+                
+                if ([contentType isEqualToString:@"video"]) {
+                    [self buildVideosView:selectedObjects];
+                }
+                else {
+                    [self buildCaseStudyView:selectedObjects];
                 }
             }
-
-            if ([contentType isEqualToString:@"video"]) {
-                [self buildVideosView:selectedObjects];
-            }
             else {
-                [self buildCaseStudyView:selectedObjects];
+                // Log details of the failure
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
             }
-            
         }];
     });
 }
@@ -310,8 +325,27 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                NSLog(@"term objects: %d", objects.count);
-                [self buildView:objects];
+                if (objects > 0) {
+                    [self buildView:objects];
+                }
+                else {
+                    PFQuery *query = [PFQuery queryWithClassName:@"term"];
+                    [query whereKey:@"parent" equalTo:@"0"];
+                    [query orderByAscending:@"weight"];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                            if (!error) {
+                                if (objects > 0) {
+                                    [self buildView:objects];
+                                }
+                            }
+                        }];
+                    });
+                }
+            }
+            else {
+                // Log details of the failure
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
             }
         }];
     });
@@ -411,6 +445,8 @@
         [background addSubview:paginationDots];
     }
     
+    [activityIndicator stopAnimating];
+    
     //update the button color
     [self updateFavoriteButtonColor];
 }
@@ -481,6 +517,8 @@
         y += 147;
     }
     
+    [activityIndicator stopAnimating];
+    
     [pageScroll setContentSize:CGSizeMake(background.bounds.size.width - 48, 150 * objects.count)];
 }
 
@@ -529,6 +567,8 @@
 }
 
 -(void)filterButtonPressed:(UIButton *)sender {
+    [activityIndicator startAnimating];
+    
     if (sender.tag == 99) {
         filterArray = [NSMutableArray array];
         NSArray *termArray = [NSArray array];
@@ -544,8 +584,6 @@
                 if (!error) {
                     filterArray = [NSMutableArray array];
                     if (objects.count > 0) {
-                        NSLog(@"objects.count: %d", objects.count);
-                        NSLog(@"terms from local data store");
                         [filterArray addObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
                         for (PFObject *obj in objects) {
                             [filterArray addObject:[obj objectForKey:@"tid"]];
@@ -558,8 +596,6 @@
                         [query orderByAscending:@"weight"];
                         dispatch_async(dispatch_get_main_queue(), ^{
                             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-                                NSLog(@"objects.count: %d", objects.count);
-                                NSLog(@"terms from local data store");
                                 if (!error) {
                                     [filterArray addObject:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
                                     for (PFObject *obj in objects) {
@@ -567,9 +603,19 @@
                                     }
                                     [self fetchDataFromLocalDataStore:filterArray];
                                 }
+                                else {
+                                    // Log details of the failure
+                                    NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                                    
+                                }
                             }];
                         });
                     }
+                }
+                else {
+                    // Log details of the failure
+                    NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
+                    
                 }
             }];
         });

@@ -70,11 +70,8 @@
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 if (objects.count > 0) {
-                    NSLog(@"Splash screen from local data store");
-                    
                     // TODO: cim is always returning null
                     CIImage *cim = [content.imgPoster CIImage];
-                    NSLog(@"cim: %@ - content.imgPoster: %@", cim ,content.imgPoster);
                     if (cim != nil) {
                         [self buildLogoLoader:content.imgPoster];
                     }
@@ -98,8 +95,10 @@
                     [self.view addSubview:activityIndicator];
                     
                     [self fetchDataFromParse];
-                    NSLog(@"Splash screen from parse");
                 }
+            }
+            else {
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
             }
         }];
     });
@@ -125,6 +124,9 @@
                         });
                     }
                 }];
+            }
+            else {
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
             }
         }];
     });

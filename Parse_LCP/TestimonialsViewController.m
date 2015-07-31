@@ -17,14 +17,18 @@
 @interface TestimonialsViewController ()
 @property (strong, nonatomic) UIView *background;
 @property (strong, nonatomic) UIScrollView *pageScroll;
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
+
 @property (strong, nonatomic) SMPageControl *paginationDots;
+
 @end
 
 @implementation TestimonialsViewController
-@synthesize content;        //LCPContent
-@synthesize background;     //UIView
-@synthesize pageScroll;     //UIScrollView
-@synthesize paginationDots;  //UIPageControl
+@synthesize content;            //LCPContent
+@synthesize background;         //UIView
+@synthesize pageScroll;         //UIScrollView
+@synthesize paginationDots;     //UIPageControl
+@synthesize activityIndicator;  //ActivityIndicator
 
 - (BOOL)prefersStatusBarHidden
 {
@@ -33,7 +37,6 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     // Do any additional setup after loading the view.
-    NSLog(@"Testimonials");
     
     //First Page Summary View
     background = [[UIView alloc] initWithFrame:CGRectMake(36, 36, self.view.bounds.size.width - (36 * 2), self.view.bounds.size.height - (36 * 2))];
@@ -78,6 +81,14 @@
     homeButton.tag = 0;
     [homeButton setBackgroundImage:[UIImage imageNamed:@"ico-home"] forState:UIControlStateNormal];
     [self.view addSubview:homeButton];
+    
+    activityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle: UIActivityIndicatorViewStyleWhiteLarge];
+    [activityIndicator setCenter:CGPointMake(150, 20)];
+    activityIndicator.transform = CGAffineTransformMakeScale(0.65, 0.65);
+    [activityIndicator setColor:[UIColor blackColor]];
+    [activityIndicator startAnimating];
+    activityIndicator.hidesWhenStopped = YES;
+    [self.view addSubview:activityIndicator];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -290,6 +301,8 @@
     }
     
     [pageScroll setContentSize:CGSizeMake(((background.bounds.size.width - 48) * objects.count), 400)];
+    
+    [activityIndicator stopAnimating];
 }
 
 //this function updates the dots for the current image the the user is on

@@ -17,6 +17,7 @@
 @property (strong, nonatomic) UIImageView *videoPoster;
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
 @property (strong, nonatomic) UIButton *favoriteContentButton;
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 @property NSString *nid, *nodeTitle;
 
 @property (strong, nonatomic) ParseDownload *parsedownload;
@@ -32,13 +33,13 @@
 @synthesize nid, nodeTitle;         //NSMutableArray
 @synthesize videoNid;               //NSString
 @synthesize isFromVideoLibrary;     //BOOL
+@synthesize activityIndicator;      //ActivityIndicator
 
 @synthesize content;                //LCPContent
 @synthesize parsedownload;          //ParseDownload
 
 - (void)viewDidLoad {
     [super viewDidLoad];
-    NSLog(@"isFromVideoLibrary: %hhd\nvideoNid: %@\ncontent.termId: %@", isFromVideoLibrary, videoNid, content.termId);
 
     parsedownload = [[ParseDownload alloc] init];
 
@@ -56,6 +57,14 @@
     doneButton.tag = 1;
     [doneButton setBackgroundImage:[UIImage imageNamed:@"btn-done-white"] forState:UIControlStateNormal];
     [self.view addSubview:doneButton];
+    
+    activityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle: UIActivityIndicatorViewStyleWhiteLarge];
+    [activityIndicator setCenter:CGPointMake(150, 20)];
+    activityIndicator.transform = CGAffineTransformMakeScale(0.65, 0.65);
+    [activityIndicator setColor:[UIColor blackColor]];
+    [activityIndicator startAnimating];
+    activityIndicator.hidesWhenStopped = YES;
+    [self.view addSubview:activityIndicator];
     
     [self checkLocalDataStoreforData];
 }
@@ -78,11 +87,9 @@
     [vidQuery findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
             if (objects.count > 0) {
-                NSLog(@"video checkLocalDataStoreforData");
                 [self buildVideoView:objects];
             }
             else {
-                NSLog(@"video fetchDataFromParse");
                 [self fetchDataFromParse];
             }
         }
@@ -95,9 +102,8 @@
 
 - (void)fetchDataFromParse {
     NSString *videoId = isFromVideoLibrary ? videoNid : content.termId;
-    NSLog(@"videoId: %@", videoId);
     NSString *whereKey = isFromVideoLibrary ? @"nid" : @"field_term_reference";
-    NSLog(@"whereKey: %@", whereKey);
+    
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not query the local datastore for what ever term data exists
     PFQuery *vidQuery = [PFQuery queryWithClassName:@"video"];
@@ -106,7 +112,6 @@
         if (!error) {
             [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                 if (!error) {
-                    NSLog(@"video objects: %d", objects.count);
                     [self buildVideoView:objects];
                 }
                 else {
@@ -179,6 +184,8 @@
             }];
         }
     }
+    
+    [activityIndicator stopAnimating];
 }
 
 //pick the current nid of the content and save it to the NSUserDefault

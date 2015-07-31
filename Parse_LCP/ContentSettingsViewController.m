@@ -161,7 +161,6 @@
     //build email view is executed here so that the list is always refreshed
     [self refreshEmailList];
     [self checkIfContentIsFavorited];
-    [self checkIfContentIsSelected];
 }
 
 - (void)didReceiveMemoryWarning {
@@ -182,6 +181,7 @@
                 dispatch_async(dispatch_get_main_queue(), ^{
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                         if (succeded) {
+                            
                             NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
                             [defaults setObject:@"hasData" forKey:forParseClassType];
                             [defaults synchronize];
@@ -230,16 +230,13 @@
 
 //This method is called first to get all the parse.com class "terms" before we grab the rest of the classes
 - (void)fetchTerms {
-    NSLog(@"fetchTerms");
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     if ([[defaults objectForKey:@"term"] isEqualToString:@"hasData"]) {
-        NSLog(@"yes");
         PFQuery *query = [PFQuery queryWithClassName:@"term"];
         [query fromLocalDatastore];
         [query orderByAscending:@"tid"];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                NSLog(@"objects.count: %d", objects.count);
                 for (PFObject *object in objects) {
                     [termsArray addObject:object];
                 }
@@ -253,7 +250,6 @@
         }];
     }
     else {
-        NSLog(@"no");
         PFQuery *query = [PFQuery queryWithClassName:@"term"];
         [query orderByAscending:@"tid"];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
@@ -286,33 +282,48 @@
 }
 
 - (void)fetchRemainingObjectsFromParse {
-    
-    NSLog(@"fetchRemainingObjectsFromParse");
-    
     //NSUserDefaults to check if data has been downloaded.
     NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
     NSArray *parseClasses = @[@"case_study", @"samples", @"video", @"testimonials", @"pdf_slide_deck"];
 
     for (NSString *parseClass in parseClasses) {
-        if ([[defaults objectForKey:parseClass] isEqualToString:@"hasData"]) {
+        /*if ([[defaults objectForKey:parseClass] isEqualToString:@"hasData"]) {
             [self fetchDataFromLocalDataStore:parseClass andSortedBy:@"field_term_reference"];
         }
         else {
             [self fetchDataFromParse:parseClass andSortedBy:@"field_term_reference"];
-        }
+        }*/
+        
+        PFQuery *query = [PFQuery queryWithClassName:parseClass];
+        [query fromLocalDatastore];
+        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+            if (!error) {
+                NSLog(@"%s [Line %d] -- %@ objects.count == %d",__PRETTY_FUNCTION__, __LINE__, parseClass, objects.count);
+                if (objects.count == 0) {
+                    [self fetchDataFromParse:parseClass andSortedBy:@"field_term_reference"];
+                }
+                else {
+                    [self fetchDataFromLocalDataStore:parseClass andSortedBy:@"field_term_reference"];
+                }
+            }
+        }];
+
+        
     }
     
-    /*if (![[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
+    if (![[defaults objectForKey:@"video"] isEqualToString:@"hasData"]) {
         [parsedownload downloadVideoFile:self.view forTerm:@""];
     }
+    
+    /*
     if (![[defaults objectForKey:@"overview"] isEqualToString:@"hasData"]) {
         [parsedownload downloadAndPinIndividualParseClass:@"overview"];
     }
+    if (![[defaults objectForKey:@"splash_screen"] isEqualToString:@"hasData"]) {
+        [parsedownload downloadAndPinIndividualParseClass:@"case_study_media"];
+    }
     if (![[defaults objectForKey:@"team_member"] isEqualToString:@"hasData"]) {
         [parsedownload downloadAndPinIndividualParseClass:@"team_member"];
-    }
-    if (![[defaults objectForKey:@"case_study_media"] isEqualToString:@"hasData"]) {
-        [parsedownload downloadAndPinIndividualParseClass:@"case_study_media"];
     }
     if (![[defaults objectForKey:@"splash_screen"] isEqualToString:@"hasData"]) {
         [parsedownload downloadAndPinIndividualParseClass:@"splash_screen"];
@@ -320,33 +331,73 @@
     if (![[defaults objectForKey:@"company_logo"] isEqualToString:@"hasData"]) {
         [parsedownload downloadAndPinIndividualParseClass:@"company_logo"];
     }*/
+    
+    [self checkIfParseClassContentHasBeenPinned:@"case_study_media"];
+    [self checkIfParseClassContentHasBeenPinned:@"overview"];
+    [self checkIfParseClassContentHasBeenPinned:@"team_member"];
+    [self checkIfParseClassContentHasBeenPinned:@"splash_screen"];
+    [self checkIfParseClassContentHasBeenPinned:@"company_logo"];
+}
+
+- (void)checkIfParseClassContentHasBeenPinned:(NSString *)parseClass {
+    PFQuery *query = [PFQuery queryWithClassName:parseClass];
+    [query fromLocalDatastore];
+    [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+        if (!error) {
+            NSLog(@"%s [Line %d] -- %@ objects.count == %d",__PRETTY_FUNCTION__, __LINE__, parseClass, objects.count);
+            if (objects.count == 0) {
+                [parsedownload downloadAndPinIndividualParseClass:parseClass];
+            }
+        }
+    }];
 }
 
 - (void)fetchPosterImage {
-    NSLog(@"fetchPosterImage");
     PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
     query.limit = 1;
     [query fromLocalDatastore];
     [query orderByAscending:@"updatedAt"];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
-            for (PFObject *object in objects) {
-                PFFile *imageFile = [object objectForKey:@"field_background_image_img"];
-                dispatch_async(dispatch_get_main_queue(), ^{
-                    [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
-                        UIImage *posterImg = [[UIImage alloc] initWithData:imageData];
-                        [posterDictionary setObject:posterImg forKey:[object objectForKey:@"nid"]];
-                    }];
-                });
+            if (objects.count > 0) {
+                for (PFObject *object in objects) {
+                    PFFile *imageFile = [object objectForKey:@"field_background_image_img"];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
+                            UIImage *posterImg = [[UIImage alloc] initWithData:imageData];
+                            [posterDictionary setObject:posterImg forKey:[object objectForKey:@"nid"]];
+                        }];
+                    });
+                }
             }
-        } else {
+            else {
+                PFQuery *query = [PFQuery queryWithClassName:@"splash_screen"];
+                query.limit = 1;
+                [query orderByAscending:@"updatedAt"];
+                [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                    if (!error) {
+                        if (objects.count > 0) {
+                            for (PFObject *object in objects) {
+                                PFFile *imageFile = [object objectForKey:@"field_background_image_img"];
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
+                                        UIImage *posterImg = [[UIImage alloc] initWithData:imageData];
+                                        [posterDictionary setObject:posterImg forKey:[object objectForKey:@"nid"]];
+                                    }];
+                                });
+                            }
+                        }
+                    }
+                }];
+            }
+        }
+        else {
            NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
         }
     }];
 }
 
 - (void)fetchNavIcons {
-    NSLog(@"fetchNavIcons");
     PFQuery *query = [PFQuery queryWithClassName:@"term"];
     [query whereKey:@"parent" equalTo:@"0"];
     [query fromLocalDatastore];
@@ -354,17 +405,44 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                for (PFObject *object in objects) {
-                    PFFile *imageFile = [object objectForKey:@"field_button_image_img"];
+                if (objects.count > 0) {
+                    for (PFObject *object in objects) {
+                        PFFile *imageFile = [object objectForKey:@"field_button_image_img"];
+                        dispatch_async(dispatch_get_main_queue(), ^{
+                            [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
+                                UIImage *iconImg = [[UIImage alloc] initWithData:imageData];
+                                [navIconDictionary setObject:iconImg forKey:[object objectForKey:@"weight"]];
+                                [navTermDictionary setObject:[object objectForKey:@"name"] forKey:[object objectForKey:@"weight"]];
+                                [navTidsDictionary setObject:[object objectForKey:@"tid"] forKey:[object objectForKey:@"weight"]];
+                            }];
+                        });
+                    }
+                }
+                else {
+                    PFQuery *query = [PFQuery queryWithClassName:@"term"];
+                    [query whereKey:@"parent" equalTo:@"0"];
+                    [query orderByAscending:@"weight"];
                     dispatch_async(dispatch_get_main_queue(), ^{
-                        [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
-                            UIImage *iconImg = [[UIImage alloc] initWithData:imageData];
-                            [navIconDictionary setObject:iconImg forKey:[object objectForKey:@"weight"]];
-                            [navTermDictionary setObject:[object objectForKey:@"name"] forKey:[object objectForKey:@"weight"]];
-                            [navTidsDictionary setObject:[object objectForKey:@"tid"] forKey:[object objectForKey:@"weight"]];
+                        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                            if (!error) {
+                                if (objects.count > 0) {
+                                    for (PFObject *object in objects) {
+                                        PFFile *imageFile = [object objectForKey:@"field_button_image_img"];
+                                        dispatch_async(dispatch_get_main_queue(), ^{
+                                            [imageFile getDataInBackgroundWithBlock:^(NSData *imageData, NSError *error) {
+                                                UIImage *iconImg = [[UIImage alloc] initWithData:imageData];
+                                                [navIconDictionary setObject:iconImg forKey:[object objectForKey:@"weight"]];
+                                                [navTermDictionary setObject:[object objectForKey:@"name"] forKey:[object objectForKey:@"weight"]];
+                                                [navTidsDictionary setObject:[object objectForKey:@"tid"] forKey:[object objectForKey:@"weight"]];
+                                            }];
+                                        });
+                                    }
+                                }
+                            }
                         }];
                     });
                 }
+                
             } else {
                 NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
             }
@@ -379,32 +457,30 @@
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                int y = -50, count = 0;
-                companyLogoArray = [NSMutableArray arrayWithCapacity:objects.count];
-                for (int i = 0; i < objects.count; i++) {
-                    [companyLogoArray addObject:[NSNull null]];
+                if (objects.count > 0) {
+                    [self buildCompanyLogo:objects];
                 }
-
-                for (PFObject *object in objects) {
-                    NSArray *imgArray = [object objectForKey:@"field_image"];
-                    //NSDictionary *imgDict = imgArray[2];
-                    NSDictionary *imgDict = [NSDictionary dictionary];
-                    for (NSDictionary *object in imgArray) {
-                        if ([object objectForKey:@"height"] != nil) {
-                            imgDict = [object copy];
-                            break;
-                        }
-                    }
-                    
-                    [self buildCompanyLogoItems:(y += 50) withPFObject:object andTag:count];
-                    y +=  ([[imgDict objectForKey:@"height"] intValue] + 10);
-                    count++;
-                    
-                    if (count == objects.count) {
-                        [pContent setContentSize:CGSizeMake(400, y + 50)];
-                    }
+                else {
+                    PFQuery *query = [PFQuery queryWithClassName:@"company_logo"];
+                    [query orderByAscending:@"title"];
+                    dispatch_async(dispatch_get_main_queue(), ^{
+                        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
+                            if (!error) {
+                                dispatch_async(dispatch_get_main_queue(), ^{
+                                    [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
+                                        if (!error) {
+                                            if (objects.count > 0) {
+                                                [self buildCompanyLogo:objects];
+                                            }
+                                        }
+                                    }];
+                                });
+                            }
+                        }];
+                    });
                 }
-            } else {
+            }
+            else {
                 NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
             }
         }];
@@ -414,7 +490,6 @@
 #pragma mark -
 #pragma mark - Build View
 - (void)drawViews {
-    NSLog(@"drawViews");
     //First Page Summary View
     pContent = [[UIScrollView alloc] initWithFrame:CGRectMake(24, 150, 400, (presentationContent.bounds.size.height - 160))];
     [pContent setBackgroundColor:[UIColor clearColor]];
@@ -465,7 +540,6 @@
 }
 
 - (void)buildEmailView {
-
     /*** Start of email views ***/
     
     UITapGestureRecognizer *tapAwayFromFormRecognizer = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapEmailView:)];
@@ -596,7 +670,6 @@
 
 //Once all data has been downloaded NSNotification is posted and this method is called to redraw the view.
 - (void)redrawView:(NSNotification *)notification {
-    NSLog(@"redrawView");
     [self removeEverything];
     [self drawViews];
     [self fetchPosterImage];
@@ -605,7 +678,6 @@
 }
 
 -(void)buildPresentationView {
-    
     UILabel *companyNameLabel = [[UILabel alloc] initWithFrame:CGRectMake(24, 0, 200, 40)];
     companyNameLabel.textColor = [UIColor whiteColor];
     companyNameLabel.font = [UIFont fontWithName:@"Oswald" size:20];
@@ -867,8 +939,35 @@
     [defaults synchronize];
 }
 
-- (void)buildCompanyLogoItems:(int)atLocation withPFObject:(PFObject *)object andTag:(int)count {
+- (void)buildCompanyLogo:(NSArray *)objects {
+    int y = -50, count = 0;
+    companyLogoArray = [NSMutableArray arrayWithCapacity:objects.count];
+    for (int i = 0; i < objects.count; i++) {
+        [companyLogoArray addObject:[NSNull null]];
+    }
     
+    for (PFObject *object in objects) {
+        NSArray *imgArray = [object objectForKey:@"field_image"];
+        //NSDictionary *imgDict = imgArray[2];
+        NSDictionary *imgDict = [NSDictionary dictionary];
+        for (NSDictionary *object in imgArray) {
+            if ([object objectForKey:@"height"] != nil) {
+                imgDict = [object copy];
+                break;
+            }
+        }
+        
+        [self buildCompanyLogoItems:(y += 50) withPFObject:object andTag:count];
+        y +=  ([[imgDict objectForKey:@"height"] intValue] + 10);
+        count++;
+        
+        if (count == objects.count) {
+            [pContent setContentSize:CGSizeMake(400, y + 50)];
+        }
+    }
+}
+
+- (void)buildCompanyLogoItems:(int)atLocation withPFObject:(PFObject *)object andTag:(int)count {
     int __block y = atLocation;
     int __block arrayIndex = count;
     dispatch_async(dispatch_get_main_queue(), ^{
@@ -913,6 +1012,8 @@
     for (PFObject *object in objects) {
         [pdfNIDs addObject:[object objectForKey:@"nid"]];
     }
+    
+    [self checkIfContentIsSelected];
 }
 
 - (void)checkIfContentIsFavorited {
@@ -932,6 +1033,13 @@
 
 - (void)checkIfContentIsSelected {
     NSMutableDictionary *templcpContent = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+    
+    for (NSString *key in pdfNIDs) {
+        if ([templcpContent objectForKey:key]) {
+            [templcpContent removeObjectForKey:key];
+        }
+    }
+    
     
     for (id key in templcpContent) {
         if ([[templcpContent objectForKey:key] isEqualToString:@"hide"]) {
@@ -1024,7 +1132,6 @@
 //this function is in place because often times a scrollview will not let a touch event penetrate down to the subviews
 //this function is specifically being used to close the keyboard on a non-focus touch to the form
 -(void)tapEmailView:(UITapGestureRecognizer *)recognizer {
-    
     if(recognizer.view.tag == 212 || recognizer.view.tag == 213){
         //remove the first responder from the message view
         if(message.isFirstResponder){
@@ -1039,8 +1146,7 @@
 }
 
 //utility function to slide the form back into position if it was left slid up
--(void)moveFormFieldBackIntoPosition
-{
+-(void)moveFormFieldBackIntoPosition {
     if(formSlidView.frame.origin.y < 0){
         [UIView animateWithDuration:0.9f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
             formSlidView.frame = CGRectMake(160, 0, 685, 600);
@@ -1050,8 +1156,7 @@
 
 //deletgate function for UITextViews
 //textview delegate function to slide the form view up when the keyboard is blocking it
-- (BOOL)textViewShouldBeginEditing:(UITextView *)textView
-{
+- (BOOL)textViewShouldBeginEditing:(UITextView *)textView {
     if(formSlidView.frame.origin.y == 0){
         [UIView animateWithDuration:0.9f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
             formSlidView.frame = CGRectMake(160, -160, 685, 600);
@@ -1062,8 +1167,7 @@
 
 //deletgate function for UITextViews
 //this function is being used to detect the send button on the keyboard
-- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text;
-{
+- (BOOL)textView:(UITextView *)textView shouldChangeTextInRange:(NSRange)range replacementText:(NSString *)text; {
     if ([text isEqualToString:@"\n"] ) {
         [self submitEmail:submitButton];
     }
@@ -1095,8 +1199,8 @@
 
 //delegate function for UITextFields
 //delegate function passes focus to textfields
-- (BOOL)textFieldShouldReturn:(UITextField *)textField
-{
+- (BOOL)textFieldShouldReturn:(UITextField *)textField {
+    
     // Tell the keyboard where to go on next button
     if(textField == email){
         [subject becomeFirstResponder];
@@ -1349,7 +1453,7 @@
 //Download all the data from parse and pin it to the local datastore
 - (void)reloadLocalDataStore:(id)sender {
     alertButtonPressed = @"reloadLocalDataStore";
-    [self displayDownLoadMessage:@"If you have deleted any content from the website plaese use the 'Remove and Reload Content' button. Otherwise use the 'Reload Content' button to overwrite the exisiting content."
+    [self displayDownLoadMessage:@"If you have deleted any content from the website please use the 'Remove and Reload Content' button. Otherwise use the 'Reload Content' button to overwrite the exisiting content."
                    andMessageOne:@"Remove and Reload Content"
                    andMessageTwo:@"Reload Content"];
 }
@@ -1460,7 +1564,6 @@
 #pragma mark
 #pragma mark - Memory Management
 - (void)removeEverything {
-    NSLog(@"removeEverything");
     for (UIView *v in [pContent subviews]) {
         [v removeFromSuperview];
     }

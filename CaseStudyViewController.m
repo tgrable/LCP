@@ -840,7 +840,7 @@
                         dvc.contentType = @"samples";
                         [self.navigationController pushViewController:dvc animated:YES];
                         //[self removeEverything];
-                        NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
+                        NSLog(@"%s [Line %d] -- Objects Count: %lu",__PRETTY_FUNCTION__, __LINE__, (unsigned long)objects.count);
                     } else {
                         // Log details of the failure
                         NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);

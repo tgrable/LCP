@@ -284,6 +284,9 @@
                         if (objects.count > 0) {
                             [self buildImgArray:objects];
                         }
+                        else {
+                            [activityIndicator stopAnimating];
+                        }
                     }
                 }];
             }

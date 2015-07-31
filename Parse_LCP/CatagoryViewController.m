@@ -26,6 +26,7 @@
 @property (strong, nonatomic) NSMutableArray *btnImageArray, *btnTitleArray, *btnTagArray;
 @property (strong, nonatomic) NSTimer *time;
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 
 @property (strong, nonatomic) Reachability *reachable;
 @property (strong, nonatomic) SMPageControl *paginationDots;
@@ -41,6 +42,7 @@
 @synthesize btnImageArray, btnTitleArray, btnTagArray;  //NSMutableArray
 @synthesize time;                                       //NSTimer
 @synthesize moviePlayerController;                      //MPMoviePlayerController
+@synthesize activityIndicator;                          //ActivityIndicator
 
 @synthesize reachable;                                  //Reachability
 @synthesize paginationDots;                             //SMPageControl
@@ -55,7 +57,6 @@
 #pragma mark - ViewController Life Cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
-    NSLog(@"content.catagoryId: %@",content.catagoryId);
 
     //This view is dependent on user input but these elements will not change
     //so they will only need to loaded one time.
@@ -90,6 +91,14 @@
     backButton.tag = 0;
     [backButton setBackgroundImage:[UIImage imageNamed:@"ico-home.png"] forState:UIControlStateNormal];
     [self.view addSubview:backButton];
+    
+    activityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle: UIActivityIndicatorViewStyleWhiteLarge];
+    [activityIndicator setCenter:CGPointMake(150, 20)];
+    activityIndicator.transform = CGAffineTransformMakeScale(0.65, 0.65);
+    [activityIndicator setColor:[UIColor blackColor]];
+    [activityIndicator startAnimating];
+    activityIndicator.hidesWhenStopped = YES;
+    [self.view addSubview:activityIndicator];
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -173,6 +182,7 @@
 #pragma mark - Parse
 //Query the local datastore to build the views
 - (void)checkLocalDataStoreforData {
+    
     PFQuery *query = [PFQuery queryWithClassName:@"term"];
     [query fromLocalDatastore];
     [query whereKey:@"parent" equalTo:content.catagoryId];
@@ -181,14 +191,14 @@
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 if (objects.count > 0) {
-                    NSLog(@"fetchDataFromLocalDataStore");
-                    NSLog(@"objects.count %d", objects.count);
                     [self buildView:objects];
                 }
                 else {
                     [self fetchDataFromParse];
-                    NSLog(@"fetchDataFromParse");
                 }
+            }
+            else {
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
             }
         }];
     });
@@ -215,6 +225,9 @@
                         [defaults synchronize];
                     }
                 }];
+            }
+            else {
+                NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
             }
         }];
     }
@@ -267,6 +280,8 @@
         }
         count++;
     }
+    
+    [activityIndicator stopAnimating];
 }
 
 //The images get downloaded from the local datastore at different times. The empty array is created and filled with NSNull objects

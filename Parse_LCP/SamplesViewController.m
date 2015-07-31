@@ -169,11 +169,12 @@
     videosLabel.text = @"VIDEOS";
     [navBar addSubview:videosLabel];
     
-    activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    activityIndicator.frame = CGRectMake(484.0, 300.0, 35.0, 35.0);
+    activityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle: UIActivityIndicatorViewStyleWhiteLarge];
+    [activityIndicator setCenter:CGPointMake(150, 20)];
+    activityIndicator.transform = CGAffineTransformMakeScale(0.65, 0.65);
     [activityIndicator setColor:[UIColor blackColor]];
-    activityIndicator.alpha = 0.0;
     [activityIndicator startAnimating];
+    activityIndicator.hidesWhenStopped = YES;
     [self.view addSubview:activityIndicator];
     
     //Set the color of the location indicator view
@@ -230,9 +231,6 @@
 {
     UIButton *favButton = (UIButton *)sender;
     
-    NSLog(@"Selected nid %@" , [nids objectAtIndex:caseStudyDots.currentPage]);
-    NSLog(@"Selected title %@" , [nodeTitles objectAtIndex:caseStudyDots.currentPage]);
-    
     if(favButton.backgroundColor == [UIColor whiteColor]){
         //add favorite
         [parsedownload addOrRemoveFavoriteNodeID:[nids objectAtIndex:caseStudyDots.currentPage]
@@ -275,54 +273,35 @@
 
 #pragma mark -
 #pragma mark - Parse
-- (void)checkLocalDataStoreforData {
-    PFQuery *query = [PFQuery queryWithClassName:@"samples"];
-    [query fromLocalDatastore];
-    [query fromLocalDatastore];
-    [query whereKey:@"field_term_reference" equalTo:content.termId];
-    dispatch_async(dispatch_get_main_queue(), ^{
-        [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            if (!error) {
-                if (objects.count > 0) {
-                    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-                    [self fetchDataFromLocalDataStore];
-                }
-                else {
-                    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-                    [self fetchDataFromParse];
-                }
-            }
-        }];
-    });
-}
-
 //Query the local datastore to build the views
-- (void)fetchDataFromLocalDataStore {
-    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
+- (void)checkLocalDataStoreforData {
     PFQuery *query = [PFQuery queryWithClassName:@"samples"];
     [query fromLocalDatastore];
     [query whereKey:@"field_term_reference" equalTo:content.termId];
     [query orderByAscending:@"createdAt"];
     dispatch_async(dispatch_get_main_queue(), ^{
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-            
-        
-            NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
-            //Some samples may have be disabled in the app dashboard
-            //Check which one are set to "show" and use those to build the view
-            NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
-            NSMutableDictionary *lcpSamples = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
-            
-            //Add selected objects the the array
-            for (PFObject *object in objects) {
-                //Add selected objects the the array
-                if ([[lcpSamples objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
-                     NSLog(@"%s [Line %d] -- %@",__PRETTY_FUNCTION__, __LINE__, object);
-                    [selectedObjects addObject:object];
+            if (!error) {
+                if (objects.count > 0) {
+                    
+                    //Some samples may have be disabled in the app dashboard
+                    //Check which one are set to "show" and use those to build the view
+                    NSMutableArray *selectedObjects = [[NSMutableArray alloc] init];
+                    NSMutableDictionary *lcpSamples = [[[NSUserDefaults standardUserDefaults] objectForKey:@"lcpContent"] mutableCopy];
+                    
+                    //Add selected objects the the array
+                    for (PFObject *object in objects) {
+                        //Add selected objects the the array
+                        if ([[lcpSamples objectForKey:[object objectForKey:@"nid"]] isEqualToString:@"show"]) {
+                            [selectedObjects addObject:object];
+                        }
+                    }
+                    [self buildSamplesView:selectedObjects];
+                }
+                else {
+                    [self fetchDataFromParse];
                 }
             }
-            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
-            [self buildSamplesView:selectedObjects];
         }];
     });
 }
@@ -332,14 +311,12 @@
     //Using Reachability check if there is an internet connection
     //If there is download term data from Parse.com if not alert the user there needs to be an internet connection
     if ([self connected]) {
-        NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
         PFQuery *query = [PFQuery queryWithClassName:@"samples"];
         [query whereKey:@"field_term_reference" equalTo:content.termId];
         [query orderByAscending:@"createdAt"];
         dispatch_async(dispatch_get_main_queue(), ^{
             [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
                 if (!error) {
-                    NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
                     [PFObject pinAllInBackground:objects block:^(BOOL succeded, NSError *error) {
                         if (!error) {
                             NSUserDefaults *csDefaults = [NSUserDefaults standardUserDefaults];
@@ -358,10 +335,12 @@
                                     [selectedObjects addObject:object];
                                 }
                             }
-                            NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
                             [self buildSamplesView:selectedObjects];
                         }
                     }];
+                }
+                else {
+                    NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
                 }
             }];
         });
@@ -417,8 +396,6 @@
 
     int x = 24, y = 48, count = 1, subcount = 1, totalCount = 1;
     int multiplier = 1, offset = 0;
-    NSLog(@"%s [Line %d] -- ",__PRETTY_FUNCTION__, __LINE__);
-    activityIndicator.alpha = 1.0;
     
     for (PFObject *object in objects){
         
@@ -430,7 +407,7 @@
         
         //add the sample objects to SampleObjects Array
         [sampleObjects addObject:object];
-        NSLog(@"%s [Line %d] -- %@",__PRETTY_FUNCTION__, __LINE__, object[@"field_sample_image_img"]);
+
         //Sample Image
         //PFFile *sampleFile = object[@"field_image_img"];
         PFFile *sampleFile = object[@"field_sample_image_img"];
@@ -521,7 +498,7 @@
         }
         
         totalCount++;
-        NSLog(@"%s [Line %d] -- Objects Count: %d",__PRETTY_FUNCTION__, __LINE__, objects.count);
+
         [pageScroll setContentSize:CGSizeMake((pageScroll.bounds.size.width * multiplier), 400)];
     }
     
@@ -540,7 +517,7 @@
     }
    
     //update the button color
-    activityIndicator.alpha = 0.0;
+    [activityIndicator stopAnimating];
     [self updateFavoriteButtonColor];
 }
 

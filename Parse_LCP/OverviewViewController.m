@@ -21,6 +21,7 @@
 
 @property (strong, nonatomic) UIImage *ovImg, *csImg, *sImg, *vImg;
 @property (strong, nonatomic) UIView *background, *summaryView, *navBar;
+@property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 
 @end
 
@@ -29,6 +30,7 @@
 @synthesize content;                    //LCPContent
 @synthesize ovImg, csImg, sImg, vImg;   //UIImage
 @synthesize summaryView, navBar;        //UIView
+@synthesize activityIndicator;          //ActivityIndicator
 
 - (BOOL)prefersStatusBarHidden {
     //Hide status bar
@@ -39,7 +41,6 @@
 #pragma mark - ViewController Life Cycle
 - (void)viewDidLoad {
     [super viewDidLoad];
-    NSLog(@"content.termId: %@", content.termId);
     
     //First Page Summary View
     summaryView = [[UIView alloc] initWithFrame:CGRectMake(36, 36, self.view.bounds.size.width - (36 * 2), self.view.bounds.size.height - (36 * 2))];
@@ -160,6 +161,15 @@
     videosLabel.textAlignment = NSTextAlignmentCenter;
     videosLabel.text = @"VIDEOS";
     [navBar addSubview:videosLabel];
+    
+    activityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle: UIActivityIndicatorViewStyleWhiteLarge];
+    [activityIndicator setCenter:CGPointMake(150, 20)];
+    activityIndicator.transform = CGAffineTransformMakeScale(0.65, 0.65);
+    [activityIndicator setColor:[UIColor blackColor]];
+    [activityIndicator startAnimating];
+    activityIndicator.hidesWhenStopped = YES;
+    [self.view addSubview:activityIndicator];
+
 
     //Set the color of the location indicator view
     UIView *locationIndicator = [[UIView alloc] initWithFrame:CGRectMake((navBar.bounds.size.width / 2) - 160, 0, 80, 5)];
@@ -211,12 +221,9 @@
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
                 if (objects.count > 0) {
-                    NSLog(@"fetchDataFromLocalDataStore");
-                    NSLog(@"objects.count: %d", objects.count);
                     [self buildSummaryView:objects];
                 }
                 else {
-                    NSLog(@"fetchDataFromParse");
                     [self fetchDataFromParse];
                 }
             } else {
@@ -317,6 +324,8 @@
         //Set the hieght of summaryScroll to the height of the UILabel
         [summaryScroll setContentSize:CGSizeMake(summaryScroll.bounds.size.width, myLabel.frame.size.height)];
     }
+    
+    [activityIndicator stopAnimating];
 }
 
 #pragma mark

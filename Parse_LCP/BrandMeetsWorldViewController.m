@@ -161,31 +161,26 @@
     [dashboardButton setBackgroundImage:[UIImage imageNamed:@"ico-settings"] forState:UIControlStateNormal];
     [self.view addSubview:dashboardButton];
     
-    
-    activityIndicator = [UIActivityIndicatorView.alloc initWithActivityIndicatorStyle:UIActivityIndicatorViewStyleWhiteLarge];
-    activityIndicator.frame = CGRectMake(785.0, 200.0, 35.0, 35.0);
+    activityIndicator  = [[UIActivityIndicatorView alloc] initWithActivityIndicatorStyle: UIActivityIndicatorViewStyleWhiteLarge];
+    [activityIndicator setCenter:CGPointMake(150, 20)];
+    activityIndicator.transform = CGAffineTransformMakeScale(0.65, 0.65);
     [activityIndicator setColor:[UIColor blackColor]];
-    activityIndicator.alpha = 0.0;
     [activityIndicator startAnimating];
+    activityIndicator.hidesWhenStopped = YES;
     [self.view addSubview:activityIndicator];
     
     //If content.navigationIcons, content.navigationTerms, content.navigationTids all have data
     //build the view with the content passed in else fetch the data from local datastore or Parse.com
     if (content.navigationIcons.count > 0 && content.navigationTerms.count > 0 && content.navigationTids.count > 0) {
         // Add an activitiy indicator to show that the icons are loading
-        activityIndicator.alpha = 1.0;
         [self buildViewWithLCPContentData];
-        NSLog(@"buildViewWithLCPContentData");
-        NSLog(@"content.navigationIcons: %@\ncontent.navigationTerms: %@\ncontent.navigationTids: %@", content.navigationIcons, content.navigationTerms, content.navigationTids);
     }
     else {
         
         //Check if data has been downloaded and pinned to local datastore.
         //If data has been downloaded pull from local datastore
         // Add an activitiy indicator to show that the icons are loading
-        activityIndicator.alpha = 1.0;
         [self checkLocalDataStoreforData];
-        NSLog(@"checkLocalDataStoreforData");
     }
 }
 
@@ -215,11 +210,9 @@
                 if (objects.count > 0) {
                     //Call buildView: with objects returned from query
                     [self buildView:objects];
-                    NSLog(@"fetchDataFromLocalDataStore");
                 }
                 else {
                     [self fetchDataFromParse];
-                    NSLog(@"fetchDataFromParse");
                 }
             } else {
                 // Log details of the failure
@@ -257,6 +250,9 @@
                             
                         }
                     }];
+                }
+                else {
+                    NSLog(@"%s [Line %d] -- Error: %@ %@",__PRETTY_FUNCTION__, __LINE__,  error, [error userInfo]);
                 }
             }];
         });
@@ -429,8 +425,7 @@
     [navContainer addSubview:caseStudiesLabel];
     
     // Hide activity indicator
-    activityIndicator.alpha = 0.0;
-    
+    [activityIndicator stopAnimating];
 }
 
 #pragma mark

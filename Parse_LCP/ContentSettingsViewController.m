@@ -298,7 +298,7 @@
         [query fromLocalDatastore];
         [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
             if (!error) {
-                NSLog(@"%s [Line %d] -- %@ objects.count == %d",__PRETTY_FUNCTION__, __LINE__, parseClass, objects.count);
+                NSLog(@"%s [Line %d] -- %@ objects.count == %lu",__PRETTY_FUNCTION__, __LINE__, parseClass, (unsigned long)objects.count);
                 if (objects.count == 0) {
                     [self fetchDataFromParse:parseClass andSortedBy:@"field_term_reference"];
                 }
@@ -344,7 +344,7 @@
     [query fromLocalDatastore];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
         if (!error) {
-            NSLog(@"%s [Line %d] -- %@ objects.count == %d",__PRETTY_FUNCTION__, __LINE__, parseClass, objects.count);
+            NSLog(@"%s [Line %d] -- %@ objects.count == %lu",__PRETTY_FUNCTION__, __LINE__, parseClass, (unsigned long)objects.count);
             if (objects.count == 0) {
                 [parsedownload downloadAndPinIndividualParseClass:parseClass];
             }

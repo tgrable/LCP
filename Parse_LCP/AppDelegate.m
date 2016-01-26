@@ -26,13 +26,13 @@
         // Initialize Parse.
         
          // Producion
-         [Parse setApplicationId:@"HSahbYRu1Fnkjq5Y1BMVQbx67r7DgVpsWglTzND4"
-                      clientKey:@"N1fnetz4MSeMZ9BNuOhLaghyU38qYzvrzFDBEU8m"];
+         [Parse setApplicationId:@"RoGfDFAHxmi2QxOk2vqhPbRLMtwGwDCK1QU1ownD"
+                      clientKey:@"dLKyqbHeZkMeeHyPldsVdl73HktnVUHnq0KgduBV"];
          
         // Dev
         /*
-        [Parse setApplicationId:@"YJJWTRfsMiGiU8D1s2kZbMfCdU8eDbYvXb5FK12z"
-                      clientKey:@"OoaWx54ZQRlhsHoK8mjn4Y6TzU1anMmnd8y0l0C1"];
+        [Parse setApplicationId:@"HSahbYRu1Fnkjq5Y1BMVQbx67r7DgVpsWglTzND4"
+                      clientKey:@"N1fnetz4MSeMZ9BNuOhLaghyU38qYzvrzFDBEU8m"];
          */
 
         

@@ -130,12 +130,13 @@
             
             vidDownload.text = [NSString stringWithFormat:@"%d / %lu VIDEOS DOWNLOADED", vidCount, (unsigned long)objects.count];
             
-            
             for (PFObject *object in objects) {
-                
-                
+        
                 NSLog(@"%@", [object objectForKey:@"field_video"]);
-                NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:[NSString stringWithFormat:@"%@",[object objectForKey:@"field_video"]]]];
+                NSString *urlString = [NSString stringWithFormat:@"%@",[object objectForKey:@"field_video"]];
+                urlString = [urlString stringByReplacingOccurrencesOfString:@" " withString:@"%20"];
+                
+                NSURLRequest *request = [NSURLRequest requestWithURL:[NSURL URLWithString:urlString]];
                 AFHTTPRequestOperation *operation = [[AFHTTPRequestOperation alloc] initWithRequest:request];
                 
                 NSString * videoName = [[object objectForKey:@"field_video"] componentsSeparatedByString:@"/videos/"][1];

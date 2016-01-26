@@ -170,10 +170,9 @@
 		4FDE36171A72FCA3000052E9 /* MobileCoreServices.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDE36161A72FCA3000052E9 /* MobileCoreServices.framework */; };
 		4FDE36191A72FCAC000052E9 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDE36181A72FCAC000052E9 /* QuartzCore.framework */; };
 		4FDE361B1A72FCB5000052E9 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDE361A1A72FCB5000052E9 /* Security.framework */; };
-		4FDE361D1A72FCBD000052E9 /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDE361C1A72FCBD000052E9 /* StoreKit.framework */; };
 		4FDE361F1A72FCC9000052E9 /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDE361E1A72FCC9000052E9 /* SystemConfiguration.framework */; };
-		4FDE36211A72FCD5000052E9 /* libz.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDE36201A72FCD5000052E9 /* libz.dylib */; };
-		4FDE36231A72FCE1000052E9 /* libsqlite3.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDE36221A72FCE1000052E9 /* libsqlite3.dylib */; };
+		4FDEBEF51C57C6700034C010 /* libsqlite3.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDEBEF41C57C6700034C010 /* libsqlite3.tbd */; };
+		4FDEBEF71C57C67A0034C010 /* libz.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4FDEBEF61C57C67A0034C010 /* libz.tbd */; };
 		4FE195FB1ACCA0A500922ECE /* mykey.pem in Resources */ = {isa = PBXBuildFile; fileRef = 4FE195F41ACCA0A500922ECE /* mykey.pem */; };
 		4FE195FC1ACCA0A500922ECE /* NSData+Base64Additions.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FE195F61ACCA0A500922ECE /* NSData+Base64Additions.m */; };
 		4FE195FD1ACCA0A500922ECE /* public_key.der in Resources */ = {isa = PBXBuildFile; fileRef = 4FE195F71ACCA0A500922ECE /* public_key.der */; };
@@ -403,10 +402,9 @@
 		4FDE36161A72FCA3000052E9 /* MobileCoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MobileCoreServices.framework; path = System/Library/Frameworks/MobileCoreServices.framework; sourceTree = SDKROOT; };
 		4FDE36181A72FCAC000052E9 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		4FDE361A1A72FCB5000052E9 /* Security.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Security.framework; path = System/Library/Frameworks/Security.framework; sourceTree = SDKROOT; };
-		4FDE361C1A72FCBD000052E9 /* StoreKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		4FDE361E1A72FCC9000052E9 /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
-		4FDE36201A72FCD5000052E9 /* libz.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libz.dylib; path = usr/lib/libz.dylib; sourceTree = SDKROOT; };
-		4FDE36221A72FCE1000052E9 /* libsqlite3.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libsqlite3.dylib; path = usr/lib/libsqlite3.dylib; sourceTree = SDKROOT; };
+		4FDEBEF41C57C6700034C010 /* libsqlite3.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libsqlite3.tbd; path = usr/lib/libsqlite3.tbd; sourceTree = SDKROOT; };
+		4FDEBEF61C57C67A0034C010 /* libz.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.tbd; path = usr/lib/libz.tbd; sourceTree = SDKROOT; };
 		4FE195F41ACCA0A500922ECE /* mykey.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = mykey.pem; sourceTree = "<group>"; };
 		4FE195F51ACCA0A500922ECE /* NSData+Base64Additions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSData+Base64Additions.h"; sourceTree = "<group>"; };
 		4FE195F61ACCA0A500922ECE /* NSData+Base64Additions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSData+Base64Additions.m"; sourceTree = "<group>"; };
@@ -422,6 +420,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4FDEBEF71C57C67A0034C010 /* libz.tbd in Frameworks */,
+				4FDEBEF51C57C6700034C010 /* libsqlite3.tbd in Frameworks */,
 				4F28C2DF1AE5361E00995D67 /* Bolts.framework in Frameworks */,
 				4F28C2E21AE5362500995D67 /* Parse.framework in Frameworks */,
 				4F28C2E31AE5362500995D67 /* ParseCrashReporting.framework in Frameworks */,
@@ -429,10 +429,7 @@
 				4F28C2E71AE5362A00995D67 /* ParseFacebookUtils.framework in Frameworks */,
 				4F28C2E81AE5362A00995D67 /* ParseFacebookUtilsV4.framework in Frameworks */,
 				4F28C2E91AE5362A00995D67 /* ParseUI.framework in Frameworks */,
-				4FDE36231A72FCE1000052E9 /* libsqlite3.dylib in Frameworks */,
-				4FDE36211A72FCD5000052E9 /* libz.dylib in Frameworks */,
 				4FDE361F1A72FCC9000052E9 /* SystemConfiguration.framework in Frameworks */,
-				4FDE361D1A72FCBD000052E9 /* StoreKit.framework in Frameworks */,
 				4FDE361B1A72FCB5000052E9 /* Security.framework in Frameworks */,
 				4FDE36191A72FCAC000052E9 /* QuartzCore.framework in Frameworks */,
 				4FDE36171A72FCA3000052E9 /* MobileCoreServices.framework in Frameworks */,
@@ -790,6 +787,8 @@
 		4FDE36031A72FC42000052E9 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4FDEBEF61C57C67A0034C010 /* libz.tbd */,
+				4FDEBEF41C57C6700034C010 /* libsqlite3.tbd */,
 				4F28C2E41AE5362A00995D67 /* ParseFacebookUtils.framework */,
 				4F28C2E51AE5362A00995D67 /* ParseFacebookUtilsV4.framework */,
 				4F28C2E61AE5362A00995D67 /* ParseUI.framework */,
@@ -797,10 +796,7 @@
 				4F28C2E11AE5362500995D67 /* ParseCrashReporting.framework */,
 				4F28C2DE1AE5361E00995D67 /* Bolts.framework */,
 				4FCC5BCF1A8BC49B00292D6B /* MediaPlayer.framework */,
-				4FDE36221A72FCE1000052E9 /* libsqlite3.dylib */,
-				4FDE36201A72FCD5000052E9 /* libz.dylib */,
 				4FDE361E1A72FCC9000052E9 /* SystemConfiguration.framework */,
-				4FDE361C1A72FCBD000052E9 /* StoreKit.framework */,
 				4FDE361A1A72FCB5000052E9 /* Security.framework */,
 				4FDE36181A72FCAC000052E9 /* QuartzCore.framework */,
 				4FDE36161A72FCA3000052E9 /* MobileCoreServices.framework */,
@@ -878,6 +874,11 @@
 					4FDE35D91A72FBAE000052E9 = {
 						CreatedOnToolsVersion = 6.1.1;
 						DevelopmentTeam = 477HKM2JBJ;
+						SystemCapabilities = {
+							com.apple.InAppPurchase = {
+								enabled = 0;
+							};
+						};
 					};
 					4FDE35F21A72FBAE000052E9 = {
 						CreatedOnToolsVersion = 6.1.1;
@@ -1220,10 +1221,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = Parse_LCP/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "Trekk.LCP.Dev-Prod";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 2;
@@ -1236,10 +1239,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = "$(PROJECT_DIR)";
 				INFOPLIST_FILE = Parse_LCP/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "Trekk.LCP.Dev-Prod";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 2;

@@ -68,6 +68,8 @@
 #pragma mark -
 #pragma mark - View Life Cycle
 - (void)viewDidLoad {
+    
+    // TODO: Fix the bundle id currently com.trekk.dev-prod... Should be com.trekk.prod 
     [super viewDidLoad];
     [self.navigationController setNavigationBarHidden:YES animated:NO];
     

@@ -242,6 +242,7 @@
                 for (PFObject *object in objects) {
                     [termsArray addObject:object];
                 }
+                NSLog(@"TrekkAdmin: %lu", (unsigned long)termsArray.count);
                 [self fetchRemainingObjectsFromParse];
             }
             else {

@@ -24,16 +24,15 @@
         [Parse enableLocalDatastore];
         
         // Initialize Parse.
+        NSString *developmentURL = @"http://lcp-app-dev.herokuapp.com/parse";
+        NSString *productionURL = @"http://lcp-parse.herokuapp.com/parse";
         
-         // Producion
-         [Parse setApplicationId:@"RoGfDFAHxmi2QxOk2vqhPbRLMtwGwDCK1QU1ownD"
-                      clientKey:@"dLKyqbHeZkMeeHyPldsVdl73HktnVUHnq0KgduBV"];
-         
-        // Dev
-        /*
-        [Parse setApplicationId:@"HSahbYRu1Fnkjq5Y1BMVQbx67r7DgVpsWglTzND4"
-                      clientKey:@"N1fnetz4MSeMZ9BNuOhLaghyU38qYzvrzFDBEU8m"];
-         */
+        [Parse initializeWithConfiguration:[ParseClientConfiguration configurationWithBlock:^(id<ParseMutableClientConfiguration> configuration) {
+            configuration.applicationId = @"RoGfDFAHxmi2QxOk2vqhPbRLMtwGwDCK1QU1ownD";
+            configuration.clientKey = @"VEdMcEtpbm4MQ63Z0itXdx4lls0riWrkCeUquEbg";
+            configuration.server = productionURL;
+            configuration.localDatastoreEnabled = YES;
+        }]];
 
         
         // [Optional] Track statistics around application opens.

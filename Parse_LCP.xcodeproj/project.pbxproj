@@ -26,12 +26,6 @@
 		4F1243A71B20F02C002DA8A2 /* flag@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F1243A51B20F02C002DA8A2 /* flag@2x.png */; };
 		4F2573271A9E3366003EFAB8 /* ContentSettingsViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4F2573261A9E3366003EFAB8 /* ContentSettingsViewController.m */; };
 		4F2669CD1B5EE2AC00D320AD /* master-lcp-team-img.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F2669CC1B5EE2AC00D320AD /* master-lcp-team-img.png */; };
-		4F28C2DF1AE5361E00995D67 /* Bolts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F28C2DE1AE5361E00995D67 /* Bolts.framework */; };
-		4F28C2E21AE5362500995D67 /* Parse.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F28C2E01AE5362500995D67 /* Parse.framework */; };
-		4F28C2E31AE5362500995D67 /* ParseCrashReporting.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F28C2E11AE5362500995D67 /* ParseCrashReporting.framework */; };
-		4F28C2E71AE5362A00995D67 /* ParseFacebookUtils.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F28C2E41AE5362A00995D67 /* ParseFacebookUtils.framework */; };
-		4F28C2E81AE5362A00995D67 /* ParseFacebookUtilsV4.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F28C2E51AE5362A00995D67 /* ParseFacebookUtilsV4.framework */; };
-		4F28C2E91AE5362A00995D67 /* ParseUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F28C2E61AE5362A00995D67 /* ParseUI.framework */; };
 		4F32CC971AF92AE400375F2C /* img-splash.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F32CC951AF92AE400375F2C /* img-splash.png */; };
 		4F32CC981AF92AE400375F2C /* img-splash@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F32CC961AF92AE400375F2C /* img-splash@2x.png */; };
 		4F32CC9F1AF940A700375F2C /* ico-play.png in Resources */ = {isa = PBXBuildFile; fileRef = 4F32CC991AF940A600375F2C /* ico-play.png */; };
@@ -178,6 +172,8 @@
 		4FE195FD1ACCA0A500922ECE /* public_key.der in Resources */ = {isa = PBXBuildFile; fileRef = 4FE195F71ACCA0A500922ECE /* public_key.der */; };
 		4FE195FE1ACCA0A500922ECE /* SendEmail.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FE195F91ACCA0A500922ECE /* SendEmail.m */; };
 		4FE196011ACCA0B300922ECE /* Base64Transcoder.m in Sources */ = {isa = PBXBuildFile; fileRef = 4FE196001ACCA0B300922ECE /* Base64Transcoder.m */; };
+		D2D3C8C22057FE68B2AE5651 /* libPods-Parse_LCPTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = E82C9A125FB3BEA8E30556BC /* libPods-Parse_LCPTests.a */; };
+		E6301C53B298D5FE8E894023 /* libPods-Parse_LCP.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 98E304F5737E006179A39105 /* libPods-Parse_LCP.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -191,6 +187,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		29E3EBBF50753EE661EFC207 /* Pods-Parse_LCPTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Parse_LCPTests.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Parse_LCPTests/Pods-Parse_LCPTests.debug.xcconfig"; sourceTree = "<group>"; };
 		2C97CF511AC649A000256BFA /* ParseDownload.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ParseDownload.h; path = Parse_LCP/ParseDownload.h; sourceTree = "<group>"; };
 		2C97CF521AC649A000256BFA /* ParseDownload.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = ParseDownload.m; path = Parse_LCP/ParseDownload.m; sourceTree = "<group>"; };
 		2C9EE2531B002DF3003705DD /* ico-all-filter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-all-filter.png"; sourceTree = "<group>"; };
@@ -204,17 +201,12 @@
 		2C9EE2631B003457003705DD /* ico-casestudy-hdr.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-casestudy-hdr.png"; sourceTree = "<group>"; };
 		2C9EE2641B003457003705DD /* ico-casestudy-hdr@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-casestudy-hdr@2x.png"; sourceTree = "<group>"; };
 		2C9EE2671B0036EE003705DD /* bmwposter.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = bmwposter.png; sourceTree = "<group>"; };
+		435FFAE07DF8F14020B81BC9 /* Pods-Parse_LCP.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Parse_LCP.debug.xcconfig"; path = "Pods/Target Support Files/Pods-Parse_LCP/Pods-Parse_LCP.debug.xcconfig"; sourceTree = "<group>"; };
 		4F1243A41B20F02C002DA8A2 /* flag.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = flag.png; sourceTree = "<group>"; };
 		4F1243A51B20F02C002DA8A2 /* flag@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "flag@2x.png"; sourceTree = "<group>"; };
 		4F2573251A9E3366003EFAB8 /* ContentSettingsViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContentSettingsViewController.h; sourceTree = "<group>"; };
 		4F2573261A9E3366003EFAB8 /* ContentSettingsViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ContentSettingsViewController.m; sourceTree = "<group>"; };
 		4F2669CC1B5EE2AC00D320AD /* master-lcp-team-img.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "master-lcp-team-img.png"; sourceTree = "<group>"; };
-		4F28C2DE1AE5361E00995D67 /* Bolts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Bolts.framework; sourceTree = "<group>"; };
-		4F28C2E01AE5362500995D67 /* Parse.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Parse.framework; sourceTree = "<group>"; };
-		4F28C2E11AE5362500995D67 /* ParseCrashReporting.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ParseCrashReporting.framework; sourceTree = "<group>"; };
-		4F28C2E41AE5362A00995D67 /* ParseFacebookUtils.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ParseFacebookUtils.framework; sourceTree = "<group>"; };
-		4F28C2E51AE5362A00995D67 /* ParseFacebookUtilsV4.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ParseFacebookUtilsV4.framework; sourceTree = "<group>"; };
-		4F28C2E61AE5362A00995D67 /* ParseUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = ParseUI.framework; sourceTree = "<group>"; };
 		4F32CC951AF92AE400375F2C /* img-splash.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "img-splash.png"; sourceTree = "<group>"; };
 		4F32CC961AF92AE400375F2C /* img-splash@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "img-splash@2x.png"; sourceTree = "<group>"; };
 		4F32CC991AF940A600375F2C /* ico-play.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "ico-play.png"; sourceTree = "<group>"; };
@@ -413,6 +405,10 @@
 		4FE195F91ACCA0A500922ECE /* SendEmail.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SendEmail.m; sourceTree = "<group>"; };
 		4FE195FF1ACCA0B300922ECE /* Base64Transcoder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Base64Transcoder.h; sourceTree = "<group>"; };
 		4FE196001ACCA0B300922ECE /* Base64Transcoder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Base64Transcoder.m; sourceTree = "<group>"; };
+		98E304F5737E006179A39105 /* libPods-Parse_LCP.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Parse_LCP.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		BD10DAD0F53B06CCD6F12ABB /* Pods-Parse_LCPTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Parse_LCPTests.release.xcconfig"; path = "Pods/Target Support Files/Pods-Parse_LCPTests/Pods-Parse_LCPTests.release.xcconfig"; sourceTree = "<group>"; };
+		E82C9A125FB3BEA8E30556BC /* libPods-Parse_LCPTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Parse_LCPTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		F40C0BA183B918F4A93C5D6C /* Pods-Parse_LCP.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Parse_LCP.release.xcconfig"; path = "Pods/Target Support Files/Pods-Parse_LCP/Pods-Parse_LCP.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -422,13 +418,7 @@
 			files = (
 				4FDEBEF71C57C67A0034C010 /* libz.tbd in Frameworks */,
 				4FDEBEF51C57C6700034C010 /* libsqlite3.tbd in Frameworks */,
-				4F28C2DF1AE5361E00995D67 /* Bolts.framework in Frameworks */,
-				4F28C2E21AE5362500995D67 /* Parse.framework in Frameworks */,
-				4F28C2E31AE5362500995D67 /* ParseCrashReporting.framework in Frameworks */,
 				4FCC5BD01A8BC49B00292D6B /* MediaPlayer.framework in Frameworks */,
-				4F28C2E71AE5362A00995D67 /* ParseFacebookUtils.framework in Frameworks */,
-				4F28C2E81AE5362A00995D67 /* ParseFacebookUtilsV4.framework in Frameworks */,
-				4F28C2E91AE5362A00995D67 /* ParseUI.framework in Frameworks */,
 				4FDE361F1A72FCC9000052E9 /* SystemConfiguration.framework in Frameworks */,
 				4FDE361B1A72FCB5000052E9 /* Security.framework in Frameworks */,
 				4FDE36191A72FCAC000052E9 /* QuartzCore.framework in Frameworks */,
@@ -437,6 +427,7 @@
 				4FDE36131A72FC90000052E9 /* CoreGraphics.framework in Frameworks */,
 				4FDE36111A72FC88000052E9 /* CFNetwork.framework in Frameworks */,
 				4FDE360F1A72FC82000052E9 /* AudioToolbox.framework in Frameworks */,
+				E6301C53B298D5FE8E894023 /* libPods-Parse_LCP.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -444,6 +435,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				D2D3C8C22057FE68B2AE5651 /* libPods-Parse_LCPTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -707,6 +699,7 @@
 				4F79A02A1AC99E0200A5C712 /* UIKit+AFNetworking */,
 				4FBA1F2E1A966E1000364F01 /* NSString+html */,
 				4FD82B1A1AFBA0C200F102BE /* UIImage+Resize */,
+				5CA38DA7D99FE11083B6A04B /* Pods */,
 			);
 			sourceTree = "<group>";
 		};
@@ -789,12 +782,6 @@
 			children = (
 				4FDEBEF61C57C67A0034C010 /* libz.tbd */,
 				4FDEBEF41C57C6700034C010 /* libsqlite3.tbd */,
-				4F28C2E41AE5362A00995D67 /* ParseFacebookUtils.framework */,
-				4F28C2E51AE5362A00995D67 /* ParseFacebookUtilsV4.framework */,
-				4F28C2E61AE5362A00995D67 /* ParseUI.framework */,
-				4F28C2E01AE5362500995D67 /* Parse.framework */,
-				4F28C2E11AE5362500995D67 /* ParseCrashReporting.framework */,
-				4F28C2DE1AE5361E00995D67 /* Bolts.framework */,
 				4FCC5BCF1A8BC49B00292D6B /* MediaPlayer.framework */,
 				4FDE361E1A72FCC9000052E9 /* SystemConfiguration.framework */,
 				4FDE361A1A72FCB5000052E9 /* Security.framework */,
@@ -804,6 +791,8 @@
 				4FDE36121A72FC90000052E9 /* CoreGraphics.framework */,
 				4FDE36101A72FC88000052E9 /* CFNetwork.framework */,
 				4FDE360E1A72FC82000052E9 /* AudioToolbox.framework */,
+				98E304F5737E006179A39105 /* libPods-Parse_LCP.a */,
+				E82C9A125FB3BEA8E30556BC /* libPods-Parse_LCPTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -823,6 +812,17 @@
 			name = encryption;
 			sourceTree = "<group>";
 		};
+		5CA38DA7D99FE11083B6A04B /* Pods */ = {
+			isa = PBXGroup;
+			children = (
+				435FFAE07DF8F14020B81BC9 /* Pods-Parse_LCP.debug.xcconfig */,
+				F40C0BA183B918F4A93C5D6C /* Pods-Parse_LCP.release.xcconfig */,
+				29E3EBBF50753EE661EFC207 /* Pods-Parse_LCPTests.debug.xcconfig */,
+				BD10DAD0F53B06CCD6F12ABB /* Pods-Parse_LCPTests.release.xcconfig */,
+			);
+			name = Pods;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -830,10 +830,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4FDE35FD1A72FBAE000052E9 /* Build configuration list for PBXNativeTarget "Parse_LCP" */;
 			buildPhases = (
+				49D5959BAE9E6550C8BBF05F /* [CP] Check Pods Manifest.lock */,
 				4FDE35D61A72FBAE000052E9 /* Sources */,
 				4FDE35D71A72FBAE000052E9 /* Frameworks */,
 				4FDE35D81A72FBAE000052E9 /* Resources */,
 				4F7922291ACB51C3007457DF /* ShellScript */,
+				AD92CE03BC5C9C882EA7BCB0 /* [CP] Embed Pods Frameworks */,
+				037C1F21662B5B526811E758 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -848,9 +851,12 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 4FDE36001A72FBAE000052E9 /* Build configuration list for PBXNativeTarget "Parse_LCPTests" */;
 			buildPhases = (
+				A8F5F7016ED5F17B74266E28 /* [CP] Check Pods Manifest.lock */,
 				4FDE35EF1A72FBAE000052E9 /* Sources */,
 				4FDE35F01A72FBAE000052E9 /* Frameworks */,
 				4FDE35F11A72FBAE000052E9 /* Resources */,
+				4EE207C544EE9F64E16FD826 /* [CP] Embed Pods Frameworks */,
+				42FB20A5CA85E2CED6B0435D /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -1030,6 +1036,66 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		037C1F21662B5B526811E758 /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Parse_LCP/Pods-Parse_LCP-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		42FB20A5CA85E2CED6B0435D /* [CP] Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Parse_LCPTests/Pods-Parse_LCPTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		49D5959BAE9E6550C8BBF05F /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		4EE207C544EE9F64E16FD826 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Parse_LCPTests/Pods-Parse_LCPTests-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
 		4F7922291ACB51C3007457DF /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -1042,6 +1108,36 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "KEYWORDS=\"TODO:|FIXME:|\\?\\?\\?:|\\!\\!\\!:\"\nfind \"${SRCROOT}\" \\( -name \"*.h\" -or -name \"*.m\" \\) -print0 | xargs -0 egrep --with-filename --line-number --only-matching \"($KEYWORDS).*\\$\" | perl -p -e \"s/($KEYWORDS)/ warning: \\$1/\"";
+		};
+		A8F5F7016ED5F17B74266E28 /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		AD92CE03BC5C9C882EA7BCB0 /* [CP] Embed Pods Frameworks */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "[CP] Embed Pods Frameworks";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Target Support Files/Pods-Parse_LCP/Pods-Parse_LCP-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1217,6 +1313,7 @@
 		};
 		4FDE35FE1A72FBAE000052E9 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 435FFAE07DF8F14020B81BC9 /* Pods-Parse_LCP.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -1226,7 +1323,7 @@
 				INFOPLIST_FILE = Parse_LCP/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "Trekk.LCP.Dev-Prod";
+				PRODUCT_BUNDLE_IDENTIFIER = Trekk.LCP.Dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 2;
@@ -1235,6 +1332,7 @@
 		};
 		4FDE35FF1A72FBAE000052E9 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = F40C0BA183B918F4A93C5D6C /* Pods-Parse_LCP.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
@@ -1244,7 +1342,7 @@
 				INFOPLIST_FILE = Parse_LCP/Info.plist;
 				IPHONEOS_DEPLOYMENT_TARGET = 7.1;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				PRODUCT_BUNDLE_IDENTIFIER = "Trekk.LCP.Dev-Prod";
+				PRODUCT_BUNDLE_IDENTIFIER = Trekk.LCP.Dev;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
 				TARGETED_DEVICE_FAMILY = 2;
@@ -1253,6 +1351,7 @@
 		};
 		4FDE36011A72FBAE000052E9 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 29E3EBBF50753EE661EFC207 /* Pods-Parse_LCPTests.debug.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1272,6 +1371,7 @@
 		};
 		4FDE36021A72FBAE000052E9 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = BD10DAD0F53B06CCD6F12ABB /* Pods-Parse_LCPTests.release.xcconfig */;
 			buildSettings = {
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				FRAMEWORK_SEARCH_PATHS = (

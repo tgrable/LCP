@@ -28,6 +28,8 @@
 @property (nonatomic) MPMoviePlayerController *moviePlayerController;
 @property (strong, nonatomic) UIActivityIndicatorView *activityIndicator;
 
+@property (strong, nonatomic) NSArray *btnDictionaryArray;
+
 @property (strong, nonatomic) Reachability *reachable;
 @property (strong, nonatomic) SMPageControl *paginationDots;
 @property (strong, nonatomic) ParseDownload *parsedownload;
@@ -47,6 +49,7 @@
 @synthesize reachable;                                  //Reachability
 @synthesize paginationDots;                             //SMPageControl
 @synthesize parsedownload;                              //ParseDownload
+@synthesize btnDictionaryArray;                         //NSMutableArray
 
 - (BOOL)prefersStatusBarHidden {
     //Hide status bar
@@ -253,9 +256,13 @@
 #pragma mark - Build View
 - (void)buildView:(NSArray *)objects {
     
+    for (PFObject *obj in objects) {
+        NSLog(@"%@", obj[@"name"]);
+    }
+    
     //Create the cascading column of navigation buttons based on weight property
     int count = 0;
-    [self createEmptyButtonArrays:objects.count];
+//    [self createEmptyButtonArrays:objects.count];
     
     //If there are more than 8 terms build the pagination dots
     if (objects.count > 8) {
@@ -267,42 +274,26 @@
         [navContainer setContentSize:CGSizeMake((324 * 2), background.bounds.size.height - 130)];
     }
     
+    NSMutableArray *tempArray = [[NSMutableArray alloc] init];
     //Load the navigation buttons
     for (PFObject *object in objects) {
-        int weight = [[object objectForKey:@"weight"] intValue];
-        //[btnTitleArray replaceObjectAtIndex:weight withObject:[object objectForKey:@"name"]];
-        //[btnTagArray replaceObjectAtIndex:weight withObject:[object objectForKey:@"tid"]];
-        [btnTitleArray setObject:[object objectForKey:@"name"] atIndexedSubscript:weight];
-        [btnTagArray setObject:[object objectForKey:@"tid"] atIndexedSubscript:weight];
-        
+        NSDictionary *tempDict = @{@"tid" : [object objectForKey:@"tid"], @"name" : [object objectForKey:@"name"], @"weight" : [object objectForKey:@"weight"]};
+        [tempArray addObject:tempDict];
+
         if (count == (objects.count - 1)) {
+            NSSortDescriptor *sortByWeight = [NSSortDescriptor sortDescriptorWithKey:@"weight" ascending:YES];
+            NSArray *sortDescriptors = [NSArray arrayWithObject:sortByWeight];
+            NSArray *sortedArray = [tempArray sortedArrayUsingDescriptors:sortDescriptors];
+            
+            btnDictionaryArray = [NSArray arrayWithArray:sortedArray];
+            index = btnDictionaryArray.count - 1;
+            
             [self timerCountdown];
         }
         count++;
     }
     
     [activityIndicator stopAnimating];
-}
-
-//The images get downloaded from the local datastore at different times. The empty array is created and filled with NSNull objects
-//so we can insert the button images at specific locations based on the weight.
-- (void)createEmptyButtonArrays:(long int)arrayCount {
-    /*
-    btnImageArray = [[NSMutableArray alloc] init];
-    btnTitleArray = [[NSMutableArray alloc] init];
-    btnTagArray = [[NSMutableArray alloc] init];
-    */
-    btnImageArray = [NSMutableArray array];
-    btnTitleArray = [NSMutableArray array];
-    btnTagArray = [NSMutableArray array];
-     
-    index = (arrayCount - 1);
-    
-    for(int i = 0; i < arrayCount; i++) {
-        [btnImageArray addObject: [NSNull null]];
-        [btnTitleArray addObject: [NSNull null]];
-        [btnTagArray addObject: [NSNull null]];
-    }
 }
 
 - (void)timerCountdown {
@@ -319,59 +310,61 @@
         yVal = (index - 8) * 54;
     }
     
+    NSDictionary * tempDict = [btnDictionaryArray objectAtIndex:index];
+    NSString *tag = [tempDict objectForKey:@"tid"];
+    NSLog(@"tag: %@", tag);
     
-    //Create the navigation buttons
-    //if (![[btnImageArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTagArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTitleArray objectAtIndex:index] isKindOfClass:[NSNull class]]) {
-    if (![[btnTagArray objectAtIndex:index] isKindOfClass:[NSNull class]] || ![[btnTitleArray objectAtIndex:index] isKindOfClass:[NSNull class]]) {
-        UIButton *customButton = [UIButton buttonWithType:UIButtonTypeCustom];
-        [customButton setFrame:CGRectMake(20, -40, 280, 44)];
-        [customButton addTarget:self action:@selector(navigationButtonClick:)forControlEvents:UIControlEventTouchUpInside];
-        customButton.showsTouchWhenHighlighted = YES;
-        [customButton setBackgroundColor:[UIColor colorWithRed:115.0f/255.0f green:115.0f/255.0f blue:115.0f/255.0f alpha:1.0]];
-        customButton.layer.borderColor = [UIColor whiteColor].CGColor;
-        customButton.layer.borderWidth = 1.0f;
-        customButton.tag = [[btnTagArray objectAtIndex:index] intValue];
-        [customButton setTitle:[[btnTitleArray objectAtIndex:index] uppercaseString] forState:normal];
-        [customButton.titleLabel setFont:[UIFont fontWithName:@"Oswald" size:18.0f]];
-        [customButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
-        customButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
-        customButton.contentEdgeInsets = UIEdgeInsetsMake(0, 10, 0, 0);
-        [navContainer addSubview:customButton];
-        
-        //Cascading animation
-        [UIView animateWithDuration:0.5f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
-            customButton.frame = CGRectMake(xVal, (yVal + 120), 280, 44);
-        }completion:^(BOOL finished) {}];
-        
-        //UIView used to hold Header icon and title
-        UIView *navHeader = [[UIView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), 30, 320, 106)];
-        [navHeader setBackgroundColor:[UIColor colorWithRed:179.0f/255.0f green:179.0f/255.0f blue:179.0f/255.0f alpha:1.0]];
-        navHeader.layer.borderWidth =  1.0f;
-        navHeader.layer.borderColor = [UIColor whiteColor].CGColor;
-        [background addSubview:navHeader];
-        
-        //UIImageView used to hold header icon
-        UIImageView *header = [[UIImageView alloc] initWithFrame:CGRectMake(20, 14, 80, 80)];
-        [header setImage:content.imgIcon];
-        [header setUserInteractionEnabled:YES];
-        header.alpha = 1.0;
-        header.tag = 90;
-        [navHeader addSubview:header];
-        
-        //UIlabel used to hold the title
-        UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(114, 14, 186, 80)];
-        [headerLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:22.0]];
-        headerLabel.textColor = [UIColor blackColor];
-        headerLabel.backgroundColor = [UIColor clearColor];
-        headerLabel.textAlignment = NSTextAlignmentLeft;
-        headerLabel.numberOfLines = 0;
-        headerLabel.lineBreakMode = NSLineBreakByWordWrapping;
-        headerLabel.text = [content.lblMainSectionTitle uppercaseString];
-        [navHeader addSubview:headerLabel];
-    }
+    NSString *title = [tempDict objectForKey:@"name"];
+    
+    UIButton *customButton = [UIButton buttonWithType:UIButtonTypeCustom];
+    [customButton setFrame:CGRectMake(20, -40, 280, 44)];
+    [customButton addTarget:self action:@selector(navigationButtonClick:)forControlEvents:UIControlEventTouchUpInside];
+    customButton.showsTouchWhenHighlighted = YES;
+    [customButton setBackgroundColor:[UIColor colorWithRed:115.0f/255.0f green:115.0f/255.0f blue:115.0f/255.0f alpha:1.0]];
+    customButton.layer.borderColor = [UIColor whiteColor].CGColor;
+    customButton.layer.borderWidth = 1.0f;
+    customButton.tag = [tag integerValue];
+    [customButton setTitle:[title uppercaseString] forState:normal];
+    [customButton.titleLabel setFont:[UIFont fontWithName:@"Oswald" size:18.0f]];
+    [customButton setTitleColor:[UIColor whiteColor] forState:UIControlStateNormal];
+    customButton.contentHorizontalAlignment = UIControlContentHorizontalAlignmentLeft;
+    customButton.contentEdgeInsets = UIEdgeInsetsMake(0, 10, 0, 0);
+    [navContainer addSubview:customButton];
+    
+    //Cascading animation
+    [UIView animateWithDuration:0.5f delay:0.0f options:UIViewAnimationOptionAllowAnimatedContent animations:^{
+        customButton.frame = CGRectMake(xVal, (yVal + 120), 280, 44);
+    }completion:^(BOOL finished) {}];
+    
+    //UIView used to hold Header icon and title
+    UIView *navHeader = [[UIView alloc] initWithFrame:CGRectMake((background.bounds.size.width - (320 + 24)), 30, 320, 106)];
+    [navHeader setBackgroundColor:[UIColor colorWithRed:179.0f/255.0f green:179.0f/255.0f blue:179.0f/255.0f alpha:1.0]];
+    navHeader.layer.borderWidth =  1.0f;
+    navHeader.layer.borderColor = [UIColor whiteColor].CGColor;
+    [background addSubview:navHeader];
+    
+    //UIImageView used to hold header icon
+    UIImageView *header = [[UIImageView alloc] initWithFrame:CGRectMake(20, 14, 80, 80)];
+    [header setImage:content.imgIcon];
+    [header setUserInteractionEnabled:YES];
+    header.alpha = 1.0;
+    header.tag = 90;
+    [navHeader addSubview:header];
+    
+    //UIlabel used to hold the title
+    UILabel *headerLabel = [[UILabel alloc] initWithFrame:CGRectMake(114, 14, 186, 80)];
+    [headerLabel setFont:[UIFont fontWithName:@"Oswald-Bold" size:22.0]];
+    headerLabel.textColor = [UIColor blackColor];
+    headerLabel.backgroundColor = [UIColor clearColor];
+    headerLabel.textAlignment = NSTextAlignmentLeft;
+    headerLabel.numberOfLines = 0;
+    headerLabel.lineBreakMode = NSLineBreakByWordWrapping;
+    headerLabel.text = [content.lblMainSectionTitle uppercaseString];
+    [navHeader addSubview:headerLabel];
+    
     index--;
     
-    if(index < [btnImageArray count]){
+    if(index < [btnDictionaryArray count]){
         //Start the timer countdown
         [self timerCountdown];
     }else{
@@ -398,6 +391,8 @@
 #pragma mark
 #pragma mark - Navigation
 - (void)navigationButtonClick:(UIButton *)sender {
+    
+    NSLog(@"sender.tag: %ld", (long)sender.tag);
     
     content.termId = [NSString stringWithFormat: @"%ld", (long)sender.tag];
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];

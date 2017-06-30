@@ -459,7 +459,11 @@
     
     int x = 24;
     
+    NSLog(@"%lu", (unsigned long)objects.count);
+    
     for(PFObject *object in objects) {
+        NSLog(@"%@", object);
+        
         //add the nid for the object to nid array
         [nids addObject:object[@"nid"]];
         
@@ -652,7 +656,6 @@
             
             dispatch_async(dispatch_get_main_queue(), ^{
                 [imageFile getDataInBackgroundWithBlock:^(NSData *imgData, NSError *error) {
-                    //NSLog(@"Data returned");
                     if (!error) {
                         csMedia = [[LCPCaseStudyMedia alloc] init];
                         UIImage *btnImg = [[UIImage alloc] initWithData:imgData];
@@ -804,9 +807,6 @@
     UIStoryboard *storyboard = [UIStoryboard storyboardWithName:@"Main" bundle:nil];
     DetailsViewController *dvc = (DetailsViewController *)[storyboard instantiateViewControllerWithIdentifier:@"detailsViewController"];
     
-    NSLog(@"Selected NID %@", [NSString stringWithFormat:@"%ld", (long)sender.tag]);
-    
-    
     // Attempt to make a query on the case study media first.
     // After this query returns with no error, check to see if there is results.
     // If no results are found make a query against samples.
@@ -815,11 +815,7 @@
     [query fromLocalDatastore];
     [query whereKey:@"nid" equalTo:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
     [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-        NSLog(@"Case Study Media Results were returned");
         if (!error) {
-            
-            
-            NSLog(@"Case Study Media Object Count %lu", (unsigned long)[objects count]);
             if ([objects count] > 0) {
                 // Push the case study media reference item onto the stack
                 dvc.contentObject = objects[0];
@@ -832,9 +828,7 @@
                 [query fromLocalDatastore];
                 [query whereKey:@"nid" equalTo:[NSString stringWithFormat:@"%ld", (long)sender.tag]];
                 [query findObjectsInBackgroundWithBlock:^(NSArray *objects, NSError *error) {
-                    NSLog(@"Sample Results were returned");
                     if (!error) {
-                        NSLog(@"Sample Object Count %lu", (unsigned long)[objects count]);
                         // Push the case study media reference item onto the stack
                         dvc.contentObject = objects[0];
                         dvc.contentType = @"samples";

@@ -276,7 +276,11 @@
     int count = 0;
     int x = 0, y = -143;
     
-    for (int i = 0; i < content.navigationIcons.count; i++) {
+    NSArray *keys = [content.navigationTids allKeys];
+    //This looks looks at the objects above and compares them with each-other
+    NSArray *sorted = [keys sortedArrayUsingSelector:@selector(compare:)];
+    
+    for (NSString *key in sorted) {
         if (count % 2 == 0) {
             x = 30;
             y = y + 178;
@@ -287,12 +291,13 @@
         
         dispatch_async(dispatch_get_main_queue(), ^{
             //Create button image for navigation
-            UIButton *tempButton = [self navigationButtons:[content.navigationIcons objectForKey:[NSString stringWithFormat:@"%d", count]]
-                                                  andtitle:[content.navigationTerms objectForKey:[NSString stringWithFormat:@"%d", count]]
+            UIButton *tempButton = [self navigationButtons:[content.navigationIcons objectForKey:key]
+                                                  andtitle:[content.navigationTerms objectForKey:key]
                                                    andXPos:x
                                                    andYPos:y
-                                                    andTag:[content.navigationTids objectForKey:[NSString stringWithFormat:@"%d", count]]];
-            [iconDict setObject:[content.navigationIcons objectForKey:[NSString stringWithFormat:@"%d", count]] forKey:[content.navigationTids objectForKey:[NSString stringWithFormat:@"%d", count]]];
+                                                    andTag:[content.navigationTids objectForKey:key]];
+            
+            [iconDict setObject:[content.navigationIcons objectForKey:key] forKey:key];
             [navContainer addSubview:tempButton];
             
             //UIlabel for navigation
@@ -303,7 +308,7 @@
             title.textAlignment = NSTextAlignmentCenter;
             title.numberOfLines = 0;
             title.lineBreakMode = NSLineBreakByWordWrapping;
-            title.text = [content.navigationTerms objectForKey:[NSString stringWithFormat:@"%d", count]];
+            title.text = [content.navigationTerms objectForKey:key];
             [navContainer addSubview:title];
         });
         count++;

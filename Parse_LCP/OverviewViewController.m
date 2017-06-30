@@ -195,6 +195,8 @@
         
     }
     [navBar addSubview:locationIndicator];
+    
+    NSLog(@"content.termId: %@", content.termId);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -222,9 +224,11 @@
             if (!error) {
                 if (objects.count > 0) {
                     [self buildSummaryView:objects];
+                    NSLog(@"Overview: 1");
                 }
                 else {
                     [self fetchDataFromParse];
+                    NSLog(@"Overview: 2");
                 }
             } else {
                 // Log details of the failure
@@ -276,6 +280,8 @@
 #pragma mark
 #pragma mark - Build Views
 - (void)buildSummaryView:(NSArray *)objects {
+    
+    NSLog(@"Overview: %lu", (unsigned long)objects.count);
     
     for(PFObject *object in objects) {
       

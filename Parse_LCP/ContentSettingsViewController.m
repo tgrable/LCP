@@ -792,6 +792,18 @@
     [selectedContentDivider setBackgroundColor:[UIColor whiteColor]];
     [presentationContent addSubview:selectedContentDivider];
     
+    NSDictionary *info = [[NSBundle mainBundle] infoDictionary];
+    NSString *version = [info objectForKey:@"CFBundleShortVersionString"];
+    
+    UILabel *versionNumberLabel = [[UILabel alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 180, 475, 400, 40)];
+    versionNumberLabel.textColor = [UIColor whiteColor];
+    versionNumberLabel.font = [UIFont fontWithName:@"Oswald" size:20];
+    versionNumberLabel.numberOfLines = 1;
+    versionNumberLabel.backgroundColor = [UIColor clearColor];
+    versionNumberLabel.textAlignment = NSTextAlignmentLeft;
+    versionNumberLabel.text = [NSString stringWithFormat:@"Version: %@", version];
+    [presentationContent addSubview:versionNumberLabel];
+    
     currentlyFavoritedItemsLabel = [[UILabel alloc] initWithFrame:CGRectMake((background.bounds.size.width / 2) + 60, 460, 400, 40)];
     currentlyFavoritedItemsLabel.textColor = [UIColor whiteColor];
     currentlyFavoritedItemsLabel.font = [UIFont fontWithName:@"Oswald" size:20];
